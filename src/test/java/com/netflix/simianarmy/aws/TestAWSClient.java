@@ -42,12 +42,12 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
 
-public class TestAmazonClient extends AmazonClient {
-    public TestAmazonClient() {
+public class TestAWSClient extends AWSClient {
+    public TestAWSClient() {
         super("accessKey", "secretKey", "us-east-1");
     }
 
-    public TestAmazonClient(AWSCredentials cred) {
+    public TestAWSClient(AWSCredentials cred) {
         super(cred, "us-east-1");
     }
 
@@ -73,11 +73,11 @@ public class TestAmazonClient extends AmazonClient {
 
     @Test
     public void testClients() {
-        TestAmazonClient client1 = new TestAmazonClient();
+        TestAWSClient client1 = new TestAWSClient();
         Assert.assertNotNull(client1.superEc2Client(), "non null super ec2Client");
         Assert.assertNotNull(client1.superAsgClient(), "non null super asgClient");
 
-        TestAmazonClient client2 = new TestAmazonClient(new BasicAWSCredentials("accessKey", "secretKey"));
+        TestAWSClient client2 = new TestAWSClient(new BasicAWSCredentials("accessKey", "secretKey"));
         Assert.assertNotNull(client2.superEc2Client(), "non null super ec2Client");
         Assert.assertNotNull(client2.superAsgClient(), "non null super asgClient");
     }

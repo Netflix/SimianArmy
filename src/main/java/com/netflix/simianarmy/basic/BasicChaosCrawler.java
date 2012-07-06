@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.EnumSet;
 
-import com.netflix.simianarmy.aws.AmazonClient;
+import com.netflix.simianarmy.aws.AWSClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 
@@ -34,9 +34,9 @@ public class BasicChaosCrawler implements ChaosCrawler {
         ASG;
     }
 
-    private AmazonClient awsClient;
+    private AWSClient awsClient;
 
-    public BasicChaosCrawler(AmazonClient awsClient) {
+    public BasicChaosCrawler(AWSClient awsClient) {
         this.awsClient = awsClient;
     }
 

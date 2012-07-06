@@ -35,16 +35,16 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
 
-public class AmazonClient implements CloudClient {
+public class AWSClient implements CloudClient {
     private AWSCredentials cred;
     private String region;
 
-    public AmazonClient(String accessKey, String secretKey, String region) {
+    public AWSClient(String accessKey, String secretKey, String region) {
         this.cred = new BasicAWSCredentials(accessKey, secretKey);
         this.region = region;
     }
 
-    public AmazonClient(AWSCredentials cred, String region) {
+    public AWSClient(AWSCredentials cred, String region) {
         this.cred = cred;
         this.region = region;
     }

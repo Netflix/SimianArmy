@@ -27,13 +27,13 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
-import com.netflix.simianarmy.aws.AmazonClient;
+import com.netflix.simianarmy.aws.AWSClient;
 
 public class BasicContext implements ChaosMonkey.Context {
     private MonkeyScheduler scheduler;
     private MonkeyCalendar calendar;
     private MonkeyConfiguration config;
-    private AmazonClient client;
+    private AWSClient client;
     private ChaosCrawler crawler;
     private ChaosInstanceSelector selector;
 
@@ -41,7 +41,7 @@ public class BasicContext implements ChaosMonkey.Context {
         scheduler = new BasicScheduler();
         calendar = new BasicCalendar();
         config = new BasicConfiguration(props);
-        client = new AmazonClient(config.getStr("accountKey"), config.getStr("secretKey"), config.getStrOrElse(
+        client = new AWSClient(config.getStr("accountKey"), config.getStr("secretKey"), config.getStrOrElse(
                 "region", "us-east-1"));
         crawler = new BasicChaosCrawler(client);
         selector = new ChaosInstanceSelector();

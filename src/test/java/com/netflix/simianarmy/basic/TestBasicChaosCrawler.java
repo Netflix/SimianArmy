@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.LinkedList;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.aws.AmazonClient;
+import com.netflix.simianarmy.aws.AWSClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 
@@ -47,10 +47,10 @@ public class TestBasicChaosCrawler {
         return asg;
     }
 
-    private AmazonClient awsMock;
+    private AWSClient awsMock;
 
     public TestBasicChaosCrawler() {
-        awsMock = mock(AmazonClient.class);
+        awsMock = mock(AWSClient.class);
         crawler = new BasicChaosCrawler(awsMock);
     }
 
