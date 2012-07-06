@@ -30,7 +30,10 @@ public class TestBasicContext {
 
     @Test
     public void testContext() {
-        BasicContext ctx = new BasicContext(new Properties());
+        Properties props = new Properties();
+        props.setProperty("accountKey", "fakeAccountKey");
+        props.setProperty("secretKey", "fakeSecretKey");
+        BasicContext ctx = new BasicContext(props);
         Assert.assertNotNull(ctx.scheduler());
         Assert.assertNotNull(ctx.calendar());
         Assert.assertNotNull(ctx.configuration());
