@@ -19,14 +19,19 @@ package com.netflix.simianarmy;
 
 import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Date;
+
+import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
 import org.testng.Assert;
 
 public class TestMonkeyContext implements Monkey.Context {
-    private Class monkeyClass;
+    private Enum monkeyType;
 
-    public TestMonkeyContext(Class monkeyClass) {
-        this.monkeyClass = monkeyClass;
+    public TestMonkeyContext(Enum monkeyType) {
+        this.monkeyType = monkeyType;
     }
 
     public MonkeyScheduler scheduler() {
@@ -40,12 +45,12 @@ public class TestMonkeyContext implements Monkey.Context {
             }
 
             public void start(String name, Runnable run) {
-                Assert.assertEquals(name, monkeyClass.getSimpleName(), "starting monkey");
+                Assert.assertEquals(name, monkeyType.name(), "starting monkey");
                 run.run();
             }
 
             public void stop(String name) {
-                Assert.assertEquals(name, monkeyClass.getSimpleName(), "stopping monkey");
+                Assert.assertEquals(name, monkeyType.name(), "stopping monkey");
             }
         };
     }
@@ -74,6 +79,29 @@ public class TestMonkeyContext implements Monkey.Context {
     public CloudClient cloudClient() {
         return new CloudClient() {
             public void terminateInstance(String instanceId) {
+            }
+        };
+    }
+
+    public MonkeyRecorder recorder() {
+        return new MonkeyRecorder() {
+            public Event newEvent(Enum mkType, Enum eventType, String id) {
+                return new BasicRecorderEvent(mkType, eventType, id);
+            }
+
+            public void recordEvent(Event evt) {
+            }
+
+            public List<Event> findEvent(Enum mkeyType, Enum eventType) {
+                return new LinkedList<Event>();
+            }
+
+            public List<Event> findEvent(Enum mkeyType, Enum eventType, String id) {
+                return new LinkedList<Event>();
+            }
+
+            public List<Event> findEvent(Enum mkeyType, Enum eventType, Date after) {
+                return new LinkedList<Event>();
             }
         };
     }

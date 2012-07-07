@@ -38,8 +38,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyContext.class);
     private BasicConfiguration cfg;
 
-    public TestChaosMonkeyContext(Class monkeyClass, String propFile) {
-        super(monkeyClass);
+    public TestChaosMonkeyContext(String propFile) {
+        super(ChaosMonkey.Type.CHAOS);
         Properties props = new Properties();
         try {
             InputStream is = TestChaosMonkeyContext.class.getResourceAsStream(propFile);

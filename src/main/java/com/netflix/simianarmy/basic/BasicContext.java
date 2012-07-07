@@ -27,7 +27,9 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
+import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.aws.AWSClient;
+import com.netflix.simianarmy.aws.SimpleDBRecorder;
 
 public class BasicContext implements ChaosMonkey.Context {
     private MonkeyScheduler scheduler;
@@ -36,15 +38,20 @@ public class BasicContext implements ChaosMonkey.Context {
     private AWSClient client;
     private ChaosCrawler crawler;
     private ChaosInstanceSelector selector;
+    private MonkeyRecorder recorder;
 
     public BasicContext(Properties props) {
         scheduler = new BasicScheduler();
         calendar = new BasicCalendar();
         config = new BasicConfiguration(props);
-        client = new AWSClient(config.getStr("accountKey"), config.getStr("secretKey"), config.getStrOrElse(
-                "region", "us-east-1"));
+        String account = config.getStr("accountKey");
+        String secret = config.getStr("secretKey");
+        String region = config.getStrOrElse("region", "us-east-1");
+        client = new AWSClient(account, secret, region);
         crawler = new BasicChaosCrawler(client);
         selector = new ChaosInstanceSelector();
+        String domain = config.getStrOrElse("domain", "SIMIAN_ARMY");
+        recorder = new SimpleDBRecorder(account, secret, region, domain);
     }
 
     @Override
@@ -75,6 +82,11 @@ public class BasicContext implements ChaosMonkey.Context {
     @Override
     public ChaosInstanceSelector chaosInstanceSelector() {
         return selector;
+    }
+
+    @Override
+    public MonkeyRecorder recorder() {
+        return recorder;
     }
 
 }

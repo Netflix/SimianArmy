@@ -17,33 +17,35 @@
  */
 package com.netflix.simianarmy;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
+import java.util.Map;
+import java.util.List;
+import java.util.Date;
 
-public class TestMonkey extends Monkey {
-    public TestMonkey() {
-        super(new TestMonkeyContext(Type.TEST));
+public interface MonkeyRecorder {
+
+    public interface Event {
+        String id();
+
+        Date eventTime();
+
+        Enum monkeyType();
+
+        Enum eventType();
+
+        Map<String, String> fields();
+
+        String field(String name);
+
+        Event addField(String name, String value);
     }
 
-    public enum Type {
-        TEST
-    };
+    Event newEvent(Enum monkeyType, Enum eventType, String id);
 
-    public Enum type() {
-        return Type.TEST;
-    }
+    void recordEvent(Event evt);
 
-    public void doMonkeyBusiness() {
-        Assert.assertTrue(true, "ran monkey business");
-    }
+    List<Event> findEvent(Enum monkeyType, Enum eventType);
 
-    @Test
-    public void testStart() {
-        this.start();
-    }
+    List<Event> findEvent(Enum monkeyType, Enum eventType, String id);
 
-    @Test
-    public void testStop() {
-        this.stop();
-    }
+    List<Event> findEvent(Enum monkeyType, Enum eventType, Date after);
 }

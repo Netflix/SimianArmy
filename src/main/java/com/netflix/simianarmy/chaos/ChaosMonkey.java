@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 public class ChaosMonkey extends Monkey {
@@ -59,8 +60,16 @@ public class ChaosMonkey extends Monkey {
         runsPerDay = units / ctx.scheduler().frequency();
     }
 
-    public String name() {
-        return "ChaosMonkey";
+    public enum Type {
+        CHAOS
+    }
+
+    public Enum type() {
+        return Type.CHAOS;
+    }
+
+    public enum EventTypes {
+        CHAOS_TERMINATION
     }
 
     public void doMonkeyBusiness() {
@@ -82,6 +91,10 @@ public class ChaosMonkey extends Monkey {
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {}, set {}=false", inst, prop);
                     } else {
+                        Event evt = ctx.recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, inst);
+                        evt.addField("groupType", group.type().name());
+                        evt.addField("groupName", group.name());
+                        ctx.recorder().recordEvent(evt);
                         ctx.cloudClient().terminateInstance(inst);
                     }
                 }

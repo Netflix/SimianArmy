@@ -24,6 +24,8 @@ public abstract class Monkey {
         MonkeyCalendar calendar();
 
         CloudClient cloudClient();
+
+        MonkeyRecorder recorder();
     }
 
     private Context ctx;
@@ -32,13 +34,13 @@ public abstract class Monkey {
         this.ctx = ctx;
     }
 
-    public abstract String name();
+    public abstract Enum type();
 
     public abstract void doMonkeyBusiness();
 
     public void start() {
         final Monkey me = this;
-        ctx.scheduler().start(name(), new Runnable() {
+        ctx.scheduler().start(type().name(), new Runnable() {
             public void run() {
                 if (ctx.calendar().isMonkeyTime(me)) {
                     me.doMonkeyBusiness();
@@ -48,7 +50,7 @@ public abstract class Monkey {
     }
 
     public void stop() {
-        ctx.scheduler().stop(name());
+        ctx.scheduler().stop(type().name());
     }
 
 }

@@ -27,7 +27,7 @@ import org.testng.Assert;
 public class TestChaosMonkey {
     @Test
     public void testDisabled() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "disabled.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("disabled.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -39,7 +39,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testEnabledA() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "enabledA.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledA.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -55,7 +55,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testUnleashedEnabledA() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "unleashedEnabledA.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("unleashedEnabledA.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -73,7 +73,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testEnabledB() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "enabledB.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledB.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -89,7 +89,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testUnleashedEnabledB() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "unleashedEnabledB.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("unleashedEnabledB.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -107,7 +107,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testEnabledAwithout1() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "enabledAwithout1.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledAwithout1.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -122,7 +122,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testEnabledAwith0() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "enabledAwith0.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledAwith0.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -137,7 +137,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testAll() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "all.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("all.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -161,7 +161,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testNoProbability() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "noProbability.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("noProbability.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
@@ -181,7 +181,7 @@ public class TestChaosMonkey {
 
     @Test
     public void testNoProbabilityByName() {
-        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(ChaosMonkey.class, "noProbabilityByName.properties");
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("noProbabilityByName.properties");
         ChaosMonkey chaos = new ChaosMonkey(ctx);
         chaos.start();
         chaos.stop();

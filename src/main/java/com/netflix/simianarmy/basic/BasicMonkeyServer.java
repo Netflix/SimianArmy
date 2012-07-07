@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
+@SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
 
