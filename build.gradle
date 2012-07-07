@@ -59,3 +59,7 @@ dependencies {
 test {
     useTestNG()    
 }
+
+tasks.withType(Compile) {
+    options.compilerArgs << "-Xlint" << "-Werror"
+} 
