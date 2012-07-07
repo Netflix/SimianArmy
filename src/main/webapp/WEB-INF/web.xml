@@ -4,7 +4,7 @@
     <servlet>
         <servlet-name>Monkey Server</servlet-name>
         <servlet-class>
-            com.netflix.cloudmonkeys.basic.BasicMonkeyServer
+            com.netflix.simianarmy.basic.BasicMonkeyServer
         </servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
