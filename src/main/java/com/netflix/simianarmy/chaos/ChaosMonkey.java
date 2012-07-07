@@ -20,6 +20,9 @@ package com.netflix.simianarmy.chaos;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 
@@ -91,10 +94,12 @@ public class ChaosMonkey extends Monkey {
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {}, set {}=false", inst, prop);
                     } else {
-                        Event evt = ctx.recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, inst);
-                        evt.addField("groupType", group.type().name());
-                        evt.addField("groupName", group.name());
-                        ctx.recorder().recordEvent(evt);
+                        if (hasPreviousTerminations(group)) {
+                            LOGGER.info("ChaosMonkey takes pity on group {} [{}] since it was attacked ealier today",
+                                    group.name(), group.type());
+                            continue;
+                        }
+                        recordTermination(group, inst);
                         ctx.cloudClient().terminateInstance(inst);
                     }
                 }
@@ -103,5 +108,26 @@ public class ChaosMonkey extends Monkey {
                         new Object[] {group.name(), group.type(), prop, defaultProp + ".enabled"});
             }
         }
+    }
+
+    protected boolean hasPreviousTerminations(InstanceGroup group) {
+        Map<String, String> query = new HashMap<String, String>();
+        query.put("groupType", group.type().name());
+        query.put("groupName", group.name());
+        Calendar today = Calendar.getInstance();
+        // set to midnight
+        today.set(Calendar.HOUR_OF_DAY, 0);
+        today.set(Calendar.MINUTE, 0);
+        today.set(Calendar.SECOND, 0);
+        today.set(Calendar.MILLISECOND, 0);
+        List<Event> evts = ctx.recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, today.getTime());
+        return !evts.isEmpty();
+    }
+
+    protected void recordTermination(InstanceGroup group, String instance) {
+        Event evt = ctx.recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, instance);
+        evt.addField("groupType", group.type().name());
+        evt.addField("groupName", group.name());
+        ctx.recorder().recordEvent(evt);
     }
 }

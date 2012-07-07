@@ -20,6 +20,7 @@ package com.netflix.simianarmy.aws;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Arrays;
@@ -141,33 +142,47 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
 
-        verifyEvents(findEvent(Type.MONKEY, Type.EVENT));
+        Map<String, String> query = new LinkedHashMap<String, String>();
+        query.put("instanceId", "testId1");
+
+        verifyEvents(findEvents(query, new Date(0)));
 
         verify(sdbMock, times(2)).select(arg.capture());
         SelectRequest req = arg.getValue();
         StringBuilder sb = new StringBuilder();
         sb.append("select * from DOMAIN where region = 'region'");
+        sb.append(" and instanceId = 'testId1'");
+        Assert.assertEquals(req.getSelectExpression(), sb.toString());
+
+        // reset for next test
+        when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
+
+        verifyEvents(findEvents(Type.MONKEY, query, new Date(0)));
+
+        verify(sdbMock, times(4)).select(arg.capture());
+        req = arg.getValue();
         sb.append(" and monkeyType = 'MONKEY|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type'");
+        Assert.assertEquals(req.getSelectExpression(), sb.toString());
+
+        // reset for next test
+        when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
+
+        verifyEvents(findEvents(Type.MONKEY, Type.EVENT, query, new Date(0)));
+
+        verify(sdbMock, times(6)).select(arg.capture());
+        req = arg.getValue();
         sb.append(" and eventType = 'EVENT|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type'");
         Assert.assertEquals(req.getSelectExpression(), sb.toString());
 
         // reset for next test
         when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
 
-        verifyEvents(findEvent(Type.MONKEY, Type.EVENT, "testId1"));
+        verifyEvents(findEvents(Type.MONKEY, Type.EVENT, query, new Date(1330538400000L)));
 
-        verify(sdbMock, times(4)).select(arg.capture());
+        verify(sdbMock, times(8)).select(arg.capture());
         req = arg.getValue();
-        Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and id = 'testId1'");
-
-        // reset for next test
-        when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
-
-        verifyEvents(findEvent(Type.MONKEY, Type.EVENT, new Date(1330538400000L)));
-
-        verify(sdbMock, times(6)).select(arg.capture());
-        req = arg.getValue();
-        Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > 1330538400000");
+        sb.append(" and eventTime > 1330538400000");
+        Assert.assertEquals(req.getSelectExpression(), sb.toString());
     }
 
     void verifyEvents(List<Event> events) {

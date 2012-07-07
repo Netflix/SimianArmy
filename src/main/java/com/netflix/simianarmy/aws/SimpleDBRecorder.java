@@ -20,6 +20,7 @@ package com.netflix.simianarmy.aws;
 import java.util.Map;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.Date;
 import java.util.Set;
 import java.util.HashSet;
@@ -81,6 +82,27 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         return String.format("%s|%s", e.name(), e.getClass().getName());
     }
 
+    @SuppressWarnings("unchecked")
+    private static Enum valueToEnum(String value) {
+        // parts = [enum value, enum class type]
+        String[] parts = value.split("\\|", 2);
+        if (parts.length < 2) {
+            throw new RuntimeException("value " + value + " does not appear to be an internal enum format");
+        }
+
+        Class enumClass;
+        try {
+            enumClass = Class.forName(parts[1]);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("class for enum value " + value + " not found");
+        }
+        if (enumClass.isEnum()) {
+            final Class<? extends Enum> enumSubClass = enumClass.asSubclass(Enum.class);
+            return Enum.valueOf(enumSubClass, parts[0]);
+        }
+        throw new RuntimeException("value " + value + " does not appear to be an enum type");
+    }
+
     public Event newEvent(Enum monkeyType, Enum eventType, String id) {
         return new BasicRecorderEvent(monkeyType, eventType, id);
     }
@@ -105,18 +127,17 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     }
 
-    protected List<Event> findEvent(Enum monkeyType, Enum eventType, String id, long after) {
-        String query = String.format("select * from %s where region = '%s' and monkeyType = '%s' and eventType = '%s'",
-                domain, region, enumToValue(monkeyType), enumToValue(eventType));
-        if (!id.equals("")) {
-            query += String.format(" and id = '%s'", id);
+    protected List<Event> findEvents(Map<String, String> queryMap, long after) {
+        StringBuilder query = new StringBuilder(String.format("select * from %s where region = '%s'", domain, region));
+        for (Map.Entry<String, String> pair : queryMap.entrySet()) {
+            query.append(String.format(" and %s = '%s'", pair.getKey(), pair.getValue()));
         }
         if (after > 0) {
-            query += String.format(" and eventTime > %d", after);
+            query.append(String.format(" and eventTime > %d", after));
         }
 
         List<Event> list = new LinkedList<Event>();
-        SelectRequest request = new SelectRequest(query);
+        SelectRequest request = new SelectRequest(query.toString());
         request.setConsistentRead(Boolean.TRUE);
 
         SelectResult result = new SelectResult();
@@ -133,6 +154,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
                     }
                 }
                 String eid = res.get(Keys.id.name());
+                Enum monkeyType = valueToEnum(res.get(Keys.monkeyType.name()));
+                Enum eventType = valueToEnum(res.get(Keys.eventType.name()));
                 long eventTime = Long.parseLong(res.get(Keys.eventTime.name()));
                 list.add(new BasicRecorderEvent(monkeyType, eventType, eid, eventTime).addFields(fields));
             }
@@ -140,15 +163,20 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         return list;
     }
 
-    public List<Event> findEvent(Enum monkeyType, Enum eventType) {
-        return findEvent(monkeyType, eventType, "", 0L);
+    public List<Event> findEvents(Map<String, String> query, Date after) {
+        return findEvents(query, after.getTime());
     }
 
-    public List<Event> findEvent(Enum monkeyType, Enum eventType, String id) {
-        return findEvent(monkeyType, eventType, id, 0L);
+    public List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after) {
+        Map<String, String> copy = new LinkedHashMap<String, String>(query);
+        copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
+        return findEvents(copy, after);
     }
 
-    public List<Event> findEvent(Enum monkeyType, Enum eventType, Date after) {
-        return findEvent(monkeyType, eventType, "", after.getTime());
+    public List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after) {
+        Map<String, String> copy = new LinkedHashMap<String, String>(query);
+        copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
+        copy.put(Keys.eventType.name(), enumToValue(eventType));
+        return findEvents(copy, after);
     }
 }

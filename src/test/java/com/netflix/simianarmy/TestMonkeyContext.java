@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Date;
 
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
@@ -92,15 +93,15 @@ public class TestMonkeyContext implements Monkey.Context {
             public void recordEvent(Event evt) {
             }
 
-            public List<Event> findEvent(Enum mkeyType, Enum eventType) {
+            public List<Event> findEvents(Map<String, String> query, Date after) {
                 return new LinkedList<Event>();
             }
 
-            public List<Event> findEvent(Enum mkeyType, Enum eventType, String id) {
+            public List<Event> findEvents(Enum mkeyType, Map<String, String> query, Date after) {
                 return new LinkedList<Event>();
             }
 
-            public List<Event> findEvent(Enum mkeyType, Enum eventType, Date after) {
+            public List<Event> findEvents(Enum mkeyType, Enum eventType, Map<String, String> query, Date after) {
                 return new LinkedList<Event>();
             }
         };

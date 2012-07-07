@@ -43,9 +43,9 @@ public interface MonkeyRecorder {
 
     void recordEvent(Event evt);
 
-    List<Event> findEvent(Enum monkeyType, Enum eventType);
+    List<Event> findEvents(Map<String, String> query, Date after);
 
-    List<Event> findEvent(Enum monkeyType, Enum eventType, String id);
+    List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after);
 
-    List<Event> findEvent(Enum monkeyType, Enum eventType, Date after);
+    List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after);
 }
