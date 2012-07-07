@@ -64,6 +64,7 @@ public class BasicMonkeyServer extends HttpServlet {
         addMonkey(new ChaosMonkey(ctx));
 
         for (Monkey monkey : monkeys) {
+            LOGGER.info("Starting " + monkey.type().name() + " Monkey");
             monkey.start();
         }
     }
@@ -71,6 +72,7 @@ public class BasicMonkeyServer extends HttpServlet {
     @Override
     public void destroy() {
         for (Monkey monkey : monkeys) {
+            LOGGER.info("Stopping " + monkey.type().name() + " Monkey");
             monkey.stop();
         }
         super.destroy();

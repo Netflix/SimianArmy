@@ -17,7 +17,12 @@
  */
 package com.netflix.simianarmy;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public abstract class Monkey {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Monkey.class);
+
     public interface Context {
         MonkeyScheduler scheduler();
 
@@ -42,8 +47,14 @@ public abstract class Monkey {
         final Monkey me = this;
         ctx.scheduler().start(type().name(), new Runnable() {
             public void run() {
-                if (ctx.calendar().isMonkeyTime(me)) {
-                    me.doMonkeyBusiness();
+                try {
+                    if (ctx.calendar().isMonkeyTime(me)) {
+                        me.doMonkeyBusiness();
+                    } else {
+                        LOGGER.info("Not Time for " + me.type().name() + " Monkey");
+                    }
+                } catch (Exception e) {
+                    LOGGER.error(me.type().name() + " Monkey Error: ", e);
                 }
             }
         });

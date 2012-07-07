@@ -39,15 +39,16 @@ public class BasicContext implements ChaosMonkey.Context {
     private ChaosCrawler crawler;
     private ChaosInstanceSelector selector;
     private MonkeyRecorder recorder;
+    private static final int MONKEY_THREADS = 4;
 
     public BasicContext(Properties props) {
-        scheduler = new BasicScheduler();
         calendar = new BasicCalendar();
         config = new BasicConfiguration(props);
         String account = config.getStr("accountKey");
         String secret = config.getStr("secretKey");
         String region = config.getStrOrElse("region", "us-east-1");
         client = new AWSClient(account, secret, region);
+        scheduler = new BasicScheduler((int) config.getNumOrElse("monkey.threads", MONKEY_THREADS));
         crawler = new BasicChaosCrawler(client);
         selector = new ChaosInstanceSelector();
         String domain = config.getStrOrElse("domain", "SIMIAN_ARMY");
