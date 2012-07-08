@@ -44,7 +44,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.6.4'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
-    compile 'com.amazonaws:aws-java-sdk:1.3.11'
+    compile 'com.amazon:aws-java-sdk:1.3.11'
 
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'
