@@ -22,6 +22,7 @@ task javadocJar(type: Jar, dependsOn:javadoc) {
 }
 
 artifacts {
+    archives jar
     archives sourcesJar
     archives javadocJar
 }
