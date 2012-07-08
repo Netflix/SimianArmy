@@ -41,19 +41,19 @@ dependencies {
     compile 'com.sun.jersey:jersey-core:1.11'
     compile 'com.sun.jersey:jersey-server:1.11'
     compile 'com.sun.jersey:jersey-servlet:1.11'
-    compile 'org.slf4j:slf4j-api:1.+'
-    compile 'org.codehaus.jackson:jackson-core-asl:1.+'
-    compile 'org.codehaus.jackson:jackson-mapper-asl:1.+'
-    compile 'com.amazonaws:aws-java-sdk:1.+'
+    compile 'org.slf4j:slf4j-api:1.6.3'
+    compile 'org.codehaus.jackson:jackson-core-asl:1.9.8'
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.8'
+    compile 'com.amazonaws:aws-java-sdk:1.3.12'
 
-    testCompile 'org.testng:testng:6.+'
-    testCompile 'org.mockito:mockito-core:1.+'
+    testCompile 'org.testng:testng:6.1.1'
+    testCompile 'org.mockito:mockito-core:1.8.5'
 
     // needed for findbug Missing Class: org.slf4j.impl.StaticLoggerBinder
-    providedCompile 'org.slf4j:slf4j-log4j12:1.+'
-    providedCompile "javax.servlet:servlet-api:2.+"
+    providedCompile 'org.slf4j:slf4j-log4j12:1.6.3'
+    providedCompile 'javax.servlet:servlet-api:2.5'
     // needed for findbug Missing Class: javax.annotation.Nonnull
-    providedCompile "com.google.code.findbugs:jsr305:1.+"
+    providedCompile 'com.google.code.findbugs:jsr305:1.3.9'
 }
 
 test {
