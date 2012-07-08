@@ -50,11 +50,11 @@ import org.testng.Assert;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestSimpleDBRecorder extends SimpleDBRecorder {
-    TestSimpleDBRecorder() {
+    public TestSimpleDBRecorder() {
         super("accessKey", "secretKey", "region", "DOMAIN");
     }
 
-    TestSimpleDBRecorder(AWSCredentials cred) {
+    public TestSimpleDBRecorder(AWSCredentials cred) {
         super(cred, "region", "DOMAIN");
     }
 
