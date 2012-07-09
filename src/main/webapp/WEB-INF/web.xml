@@ -1,6 +1,9 @@
 <web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee ">
+    <listener>
+      <listener-class>com.netflix.simianarmy.basic.BasicMonkeyServer$ContextListener</listener-class>
+    </listener>
     <servlet>
         <servlet-name>Monkey Server</servlet-name>
         <servlet-class>
@@ -8,4 +11,29 @@
         </servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+      <servlet-name>jersey-servlet</servlet-name>
+      <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+      <init-param>
+        <param-name>com.sun.jersey.config.property.packages</param-name>
+        <param-value>com.netflix.simianarmy.chaos</param-value>
+      </init-param>
+      <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+      <servlet-name>jersey-servlet</servlet-name>
+      <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+      
+    <!-- <servlet> -->
+    <!--   <servlet-name>ChaosServlet</servlet-name> -->
+    <!--   <servlet-class>com.netflix.simianarmy.chaos.ChaosMonkey$Servlet</servlet-class> -->
+    <!--   <load -->
+    <!--   <init-on-startup>1</load-on-startup> -->
+    <!-- </servlet> -->
+    <!-- <servlet-mapping> -->
+    <!--   <servlet-name>ChaosServlet</servlet-name> -->
+    <!--   <url-pattern>/chaos/*</url-pattern> -->
+    <!-- </servlet-mapping> -->
+
 </web-app>

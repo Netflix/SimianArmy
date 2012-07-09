@@ -20,6 +20,7 @@ package com.netflix.simianarmy.basic;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
+import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.TestMonkey;
 
 import org.slf4j.Logger;
@@ -38,8 +39,8 @@ public class TestBasicMonkeyServer {
 
     @Test
     public void testServer() {
+        MonkeyRunner.getInstance().addMonkey(SillyMonkey.class);
         BasicMonkeyServer server = new BasicMonkeyServer();
-        server.addMonkey(new SillyMonkey());
         boolean init = false;
         try {
             server.init();
@@ -62,18 +63,5 @@ public class TestBasicMonkeyServer {
             LOGGER.error("failed to destroy server:", e);
         }
         Assert.assertTrue(destroy, "destroy server");
-
-        System.setProperty("simianarmy.properties", "/does-not-exist.properties");
-
-        server = new BasicMonkeyServer();
-        init = false;
-        try {
-            server.init();
-            init = true;
-        } catch (Exception e) {
-            // we expect this to fail
-            init = false;
-        }
-        Assert.assertFalse(init, "init server start with missing properties");
     }
 }

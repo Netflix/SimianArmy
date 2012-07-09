@@ -20,8 +20,6 @@ package com.netflix.simianarmy.basic;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
-import java.util.Properties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +28,7 @@ public class TestBasicContext {
 
     @Test
     public void testContext() {
-        Properties props = new Properties();
-        props.setProperty("accountKey", "fakeAccountKey");
-        props.setProperty("secretKey", "fakeSecretKey");
-        BasicContext ctx = new BasicContext(props);
+        BasicContext ctx = new BasicContext();
         Assert.assertNotNull(ctx.scheduler());
         Assert.assertNotNull(ctx.calendar());
         Assert.assertNotNull(ctx.configuration());

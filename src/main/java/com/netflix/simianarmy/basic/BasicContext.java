@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.basic;
 
 import java.util.Properties;
+import java.io.InputStream;
 
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
@@ -31,7 +32,11 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class BasicContext implements ChaosMonkey.Context {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
     private MonkeyScheduler scheduler;
     private MonkeyCalendar calendar;
     private MonkeyConfiguration config;
@@ -41,9 +46,26 @@ public class BasicContext implements ChaosMonkey.Context {
     private MonkeyRecorder recorder;
     private static final int MONKEY_THREADS = 4;
 
-    public BasicContext(Properties props) {
+    private static final Properties PROPS;
+    static {
+        String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
+        PROPS = new Properties();
+        try {
+            InputStream is = BasicContext.class.getResourceAsStream(propFile);
+            try {
+                PROPS.load(is);
+            } finally {
+                is.close();
+            }
+        } catch (Exception e) {
+            LOGGER.error("Unable to load properties file " + propFile
+                    + " set System property \"simianarmy.properties\" to valid file");
+        }
+    }
+
+    public BasicContext() {
         calendar = new BasicCalendar();
-        config = new BasicConfiguration(props);
+        config = new BasicConfiguration(PROPS);
         String account = config.getStr("accountKey");
         String secret = config.getStr("secretKey");
         String region = config.getStrOrElse("region", "us-east-1");

@@ -17,64 +17,62 @@
  */
 package com.netflix.simianarmy.basic;
 
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.ServletException;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletContextEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
+    private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
-    private List<Monkey> monkeys = new LinkedList<Monkey>();
-
-    public void addMonkey(Monkey monkey) {
-        monkeys.add(monkey);
+    static {
+        RUNNER.addMonkey(ChaosMonkey.class, BasicContext.class);
     }
 
     @Override
     public void init() throws ServletException {
         super.init();
+        RUNNER.start();
 
-        String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
-        Properties props = new Properties();
-        try {
-            InputStream is = BasicMonkeyServer.class.getResourceAsStream(propFile);
-            try {
-                props.load(is);
-            } finally {
-                is.close();
-            }
-        } catch (Exception e) {
-            LOGGER.error("Unable to load properties file " + propFile
-                    + " set System property \"simianarmy.properties\" to valid file");
-            throw new ServletException(e.getMessage());
-        }
-
-        BasicContext ctx = new BasicContext(props);
-        addMonkey(new ChaosMonkey(ctx));
-
-        for (Monkey monkey : monkeys) {
-            LOGGER.info("Starting " + monkey.type().name() + " Monkey");
-            monkey.start();
-        }
     }
 
     @Override
     public void destroy() {
-        for (Monkey monkey : monkeys) {
-            LOGGER.info("Stopping " + monkey.type().name() + " Monkey");
-            monkey.stop();
-        }
+        RUNNER.stop();
         super.destroy();
+    }
+
+    public static class ContextListener implements ServletContextListener {
+        @Override
+        public void contextInitialized(ServletContextEvent sce) {
+            for (Monkey monkey : RUNNER.getMonkeys()) {
+                final Class<? extends Monkey> monkeyClass = monkey.getClass();
+                final Class<? extends Monkey.Context> ctxClass = RUNNER.getContextClass(monkeyClass);
+                Callable<Monkey> c = new Callable<Monkey>() {
+                    public Monkey call() {
+                        return RUNNER.factory(monkeyClass, ctxClass);
+                    }
+                };
+                sce.getServletContext().setAttribute(monkey.type().name().toLowerCase() + "MonkeyFactory", c);
+            }
+        }
+
+        @Override
+        public void contextDestroyed(ServletContextEvent sce) {
+            for (Monkey monkey : RUNNER.getMonkeys()) {
+                sce.getServletContext().removeAttribute(monkey.type().name().toLowerCase() + "MonkeyFactory");
+            }
+        }
     }
 }
