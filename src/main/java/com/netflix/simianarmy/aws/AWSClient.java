@@ -57,7 +57,7 @@ public class AWSClient implements CloudClient {
 
     protected AmazonAutoScalingClient asgClient() {
         AmazonAutoScalingClient client = new AmazonAutoScalingClient(cred);
-        client.setEndpoint("autoscaling" + region + ".amazonaws.com");
+        client.setEndpoint("autoscaling." + region + ".amazonaws.com");
         return client;
     }
 
