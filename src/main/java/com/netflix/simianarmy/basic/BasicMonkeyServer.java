@@ -17,17 +17,12 @@
  */
 package com.netflix.simianarmy.basic;
 
-import java.util.concurrent.Callable;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.ServletException;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletContextEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
@@ -44,35 +39,11 @@ public class BasicMonkeyServer extends HttpServlet {
     public void init() throws ServletException {
         super.init();
         RUNNER.start();
-
     }
 
     @Override
     public void destroy() {
         RUNNER.stop();
         super.destroy();
-    }
-
-    public static class ContextListener implements ServletContextListener {
-        @Override
-        public void contextInitialized(ServletContextEvent sce) {
-            for (Monkey monkey : RUNNER.getMonkeys()) {
-                final Class<? extends Monkey> monkeyClass = monkey.getClass();
-                final Class<? extends Monkey.Context> ctxClass = RUNNER.getContextClass(monkeyClass);
-                Callable<Monkey> c = new Callable<Monkey>() {
-                    public Monkey call() {
-                        return RUNNER.factory(monkeyClass, ctxClass);
-                    }
-                };
-                sce.getServletContext().setAttribute(monkey.type().name().toLowerCase() + "MonkeyFactory", c);
-            }
-        }
-
-        @Override
-        public void contextDestroyed(ServletContextEvent sce) {
-            for (Monkey monkey : RUNNER.getMonkeys()) {
-                sce.getServletContext().removeAttribute(monkey.type().name().toLowerCase() + "MonkeyFactory");
-            }
-        }
     }
 }

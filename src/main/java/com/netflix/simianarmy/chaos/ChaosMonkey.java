@@ -24,13 +24,27 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.TimeUnit;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.codehaus.jackson.JsonEncoding;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.MappingJsonFactory;
 
 public class ChaosMonkey extends Monkey {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosMonkey.class);
@@ -129,5 +143,48 @@ public class ChaosMonkey extends Monkey {
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
         ctx.recorder().recordEvent(evt);
+    }
+
+    @Path("/chaos")
+    @SuppressWarnings("serial")
+    public static class Servlet {
+        private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory();
+
+        private ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+
+        @GET
+        public Response getChaosEvents(@javax.ws.rs.core.Context UriInfo uriInfo) throws IOException {
+            Map<String, String> query = new HashMap<String, String>();
+            Date date = new Date(0);
+            for (Map.Entry<String, List<String>> pair : uriInfo.getQueryParameters().entrySet()) {
+                if (pair.getValue().isEmpty()) {
+                    continue;
+                }
+                if (pair.getKey().equals("since")) {
+                    date = new Date(Long.parseLong(pair.getValue().get(0)));
+                } else {
+                    query.put(pair.getKey(), pair.getValue().get(0));
+                }
+            }
+
+            List<Event> evts = monkey.ctx.recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, date);
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            JsonGenerator gen = JSON_FACTORY.createJsonGenerator(baos, JsonEncoding.UTF8);
+            gen.writeStartArray();
+            for (Event evt : evts) {
+                gen.writeStartObject();
+                gen.writeStringField("monkeyType", evt.monkeyType().name());
+                gen.writeStringField("eventType", evt.eventType().name());
+                gen.writeNumberField("eventTime", evt.eventTime().getTime());
+                for (Map.Entry<String, String> pair : evt.fields().entrySet()) {
+                    gen.writeStringField(pair.getKey(), pair.getValue());
+                }
+                gen.writeEndObject();
+            }
+            gen.writeEndArray();
+            gen.close();
+            return Response.status(Response.Status.OK).entity(baos).build();
+        }
     }
 }

@@ -74,29 +74,22 @@ public enum MonkeyRunner {
         monkeys.add(factory(monkeyClass, ctxClass));
     }
 
-    public Monkey factory(Class<? extends Monkey> monkeyClass) {
-        try {
-            // assume Monkey class has has void ctor
-            return (Monkey) monkeyClass.newInstance();
-        } catch (Exception e) {
-            LOGGER.error("monkeyFactory error: ", e);
-        }
-
-        return null;
+    public <T extends Monkey> T factory(Class<T> monkeyClass) {
+        return factory(monkeyClass, getContextClass(monkeyClass));
     }
 
-    public Monkey factory(Class<? extends Monkey> monkeyClass, Class<? extends Monkey.Context> contextClass) {
+    public <T extends Monkey> T factory(Class<T> monkeyClass, Class<? extends Monkey.Context> contextClass) {
         try {
             if (contextClass == null) {
                 // assume Monkey class has has void ctor
-                return (Monkey) monkeyClass.newInstance();
+                return monkeyClass.newInstance();
             }
             // assume Monkey class has ctor that take a Context inner interface as argument
             // so first find the monkey Context class:
             Class ctorArgClass = Class.forName(monkeyClass.getName() + "$Context");
             // then find corresponding ctor
-            Constructor ctor = monkeyClass.getDeclaredConstructor(ctorArgClass);
-            return (Monkey) ctor.newInstance(contextClass.newInstance());
+            Constructor<T> ctor = monkeyClass.getDeclaredConstructor(ctorArgClass);
+            return ctor.newInstance(contextClass.newInstance());
         } catch (Exception e) {
             LOGGER.error("monkeyFactory error: ", e);
         }
