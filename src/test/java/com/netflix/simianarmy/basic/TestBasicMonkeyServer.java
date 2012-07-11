@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 public class TestBasicMonkeyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicMonkeyServer.class);
+    private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
     private static boolean monkeyRan = false;
 
@@ -39,29 +40,25 @@ public class TestBasicMonkeyServer {
 
     @Test
     public void testServer() {
-        MonkeyRunner.getInstance().addMonkey(SillyMonkey.class);
+        RUNNER.addMonkey(SillyMonkey.class);
         BasicMonkeyServer server = new BasicMonkeyServer();
-        boolean init = false;
         try {
             server.init();
-            init = true;
         } catch (Exception e) {
-            LOGGER.error("failed to init server:", e);
+            Assert.fail("failed to init server");
         }
 
-        Assert.assertTrue(init, "init server");
         // there is a race condition since the monkeys will run
         // in a different thread. On some systems we might
         // need to add a sleep
         Assert.assertTrue(monkeyRan, "silly monkey ran");
 
-        boolean destroy = false;
         try {
             server.destroy();
-            destroy = true;
         } catch (Exception e) {
-            LOGGER.error("failed to destroy server:", e);
+            Assert.fail("failed to destroy server");
         }
-        Assert.assertTrue(destroy, "destroy server");
+        Assert.assertEquals(RUNNER.getMonkeys().size(), 1);
+        Assert.assertEquals(RUNNER.getMonkeys().get(0).getClass(), SillyMonkey.class);
     }
 }

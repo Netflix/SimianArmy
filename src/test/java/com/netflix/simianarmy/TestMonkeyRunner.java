@@ -104,5 +104,12 @@ public class TestMonkeyRunner {
         Assert.assertEquals(monkeyBRan, true, "monkeyB ran");
 
         runner.stop();
+
+        runner.removeMonkey(MonkeyA.class);
+        Assert.assertEquals(monkeys.size(), 1);
+        Assert.assertEquals(monkeys.get(0).type().name(), "B");
+        
+        runner.removeMonkey(MonkeyB.class);
+        Assert.assertEquals(monkeys.size(), 0);
     }
 }

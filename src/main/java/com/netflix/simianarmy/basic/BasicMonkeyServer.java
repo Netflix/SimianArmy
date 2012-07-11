@@ -31,19 +31,17 @@ public class BasicMonkeyServer extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
-    static {
-        RUNNER.addMonkey(ChaosMonkey.class, BasicContext.class);
-    }
-
     @Override
     public void init() throws ServletException {
         super.init();
+        RUNNER.replaceMonkey(ChaosMonkey.class, BasicContext.class);
         RUNNER.start();
     }
 
     @Override
     public void destroy() {
         RUNNER.stop();
+        RUNNER.removeMonkey(ChaosMonkey.class);
         super.destroy();
     }
 }

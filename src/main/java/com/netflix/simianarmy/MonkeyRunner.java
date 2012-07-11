@@ -91,6 +91,20 @@ public enum MonkeyRunner {
         monkeys.add(factory(monkeyClass, ctxClass));
     }
 
+    public void removeMonkey(Class<? extends Monkey> monkeyClass) {
+        ListIterator<Monkey> li = monkeys.listIterator();
+        while (li.hasNext()) {
+            Monkey monkey = li.next();
+            if (monkey.getClass() == monkeyClass) {
+                monkey.stop();
+                li.remove();
+                break;
+            }
+        }
+        
+        monkeyMap.remove(monkeyClass);
+    }
+
     public <T extends Monkey> T factory(Class<T> monkeyClass) {
         return factory(monkeyClass, getContextClass(monkeyClass));
     }
