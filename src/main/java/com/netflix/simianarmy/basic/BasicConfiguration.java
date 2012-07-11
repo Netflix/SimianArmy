@@ -56,4 +56,9 @@ public class BasicConfiguration implements MonkeyConfiguration {
         String val = props.getProperty(property);
         return val == null ? dflt : val;
     }
+
+    @Override
+    public void reload() {
+        // BasicConfiguration is based on static properties, so reload is a no-op
+    }
 }

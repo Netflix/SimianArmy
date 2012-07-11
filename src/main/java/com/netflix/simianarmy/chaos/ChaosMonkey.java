@@ -90,6 +90,7 @@ public class ChaosMonkey extends Monkey {
     }
 
     public void doMonkeyBusiness() {
+        cfg.reload();
         String prop = NS + "enabled";
         if (!cfg.getBoolOrElse(prop, true)) {
             LOGGER.info("ChaosMonkey disabled, set {}=true", prop);

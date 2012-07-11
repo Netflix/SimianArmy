@@ -27,4 +27,6 @@ public interface MonkeyConfiguration {
     String getStr(String property);
 
     String getStrOrElse(String property, String dflt);
+
+    void reload();
 }
