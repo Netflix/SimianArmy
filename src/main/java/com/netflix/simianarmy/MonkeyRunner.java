@@ -101,7 +101,7 @@ public enum MonkeyRunner {
                 break;
             }
         }
-        
+
         monkeyMap.remove(monkeyClass);
     }
 

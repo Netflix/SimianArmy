@@ -69,10 +69,6 @@ public class TestChaosMonkeyServlet {
         MockitoAnnotations.initMocks(this);
     }
 
-    // public static <K, V> Map<K, V> anyMapOf(Class<K> keyClazz, Class<V> valueClazz) {
-    // return (Map<K,V>) org.mockito.Matchers.reportMatcher(org.mockito.Any.ANY).returnMap();
-    //}
-
     @Test
     public void testServlet() {
         MonkeyRunner.getInstance().replaceMonkey(ChaosMonkey.class, MockTestChaosMonkeyContext.class);
