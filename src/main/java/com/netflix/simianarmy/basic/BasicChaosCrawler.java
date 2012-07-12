@@ -42,13 +42,20 @@ public class BasicChaosCrawler implements ChaosCrawler {
 
     public static class BasicInstanceGroup implements InstanceGroup {
         private final String name;
+        private final Enum type;
 
         BasicInstanceGroup(String name) {
             this.name = name;
+            this.type = Types.ASG;
+        }
+
+        BasicInstanceGroup(String name, Enum type) {
+            this.name = name;
+            this.type = type;
         }
 
         public Enum type() {
-            return Types.ASG;
+            return type;
         }
 
         public String name() {
