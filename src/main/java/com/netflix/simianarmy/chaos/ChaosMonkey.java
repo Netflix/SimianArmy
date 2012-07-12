@@ -114,8 +114,13 @@ public class ChaosMonkey extends Monkey {
                                     group.name(), group.type());
                             continue;
                         }
-                        recordTermination(group, inst);
-                        ctx.cloudClient().terminateInstance(inst);
+                        try {
+                            recordTermination(group, inst);
+                            ctx.cloudClient().terminateInstance(inst);
+                        }
+                        catch ( Exception e ) {
+                            handleTerminationError(inst, e);
+                        }
                     }
                 }
             } else {
@@ -123,6 +128,12 @@ public class ChaosMonkey extends Monkey {
                         new Object[] {group.name(), group.type(), prop, defaultProp + ".enabled"});
             }
         }
+    }
+
+    // abstracted so subclasses can decide to continue causing chaos if desired
+    protected void handleTerminationError(String instance, Throwable e) {
+        LOGGER.error("failed to terminate instance " + instance, e.getMessage());
+        throw e;
     }
 
     protected boolean hasPreviousTerminations(InstanceGroup group) {
