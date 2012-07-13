@@ -15,12 +15,13 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.chaos;
+package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 import org.testng.annotations.Test;
@@ -31,9 +32,9 @@ import org.slf4j.Logger;
 import static org.slf4j.helpers.NOPLogger.NOP_LOGGER;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
-public class TestChaosInstanceSelector {
-    private ChaosInstanceSelector selector = new ChaosInstanceSelector() {
-        // turn off selector logger for this test since we call is ~1m times
+public class TestBasicChaosInstanceSelector {
+    private ChaosInstanceSelector selector = new BasicChaosInstanceSelector() {
+        // turn off selector logger for this test since we call it ~1M times
         protected Logger logger() {
             return NOP_LOGGER;
         }

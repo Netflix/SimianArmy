@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.basic;
+package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -43,7 +43,7 @@ public class BasicChaosCrawler implements ChaosCrawler {
     public static class BasicInstanceGroup implements InstanceGroup {
         private final String name;
         private final Enum type;
-        
+
         public BasicInstanceGroup(String name) {
             this.name = name;
             this.type = Types.ASG;

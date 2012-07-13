@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
@@ -34,14 +34,14 @@ public class BasicMonkeyServer extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        RUNNER.replaceMonkey(ChaosMonkey.class, BasicContext.class);
+        RUNNER.replaceMonkey(BasicChaosMonkey.class, BasicContext.class);
         RUNNER.start();
     }
 
     @Override
     public void destroy() {
         RUNNER.stop();
-        RUNNER.removeMonkey(ChaosMonkey.class);
+        RUNNER.removeMonkey(BasicChaosMonkey.class);
         super.destroy();
     }
 }

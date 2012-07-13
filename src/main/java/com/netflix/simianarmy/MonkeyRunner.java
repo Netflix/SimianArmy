@@ -88,7 +88,8 @@ public enum MonkeyRunner {
                 return;
             }
         }
-        monkeys.add(factory(monkeyClass, ctxClass));
+        Monkey monkey = factory(monkeyClass, ctxClass);
+        monkeys.add(monkey);
     }
 
     public void removeMonkey(Class<? extends Monkey> monkeyClass) {
@@ -101,12 +102,22 @@ public enum MonkeyRunner {
                 break;
             }
         }
-
         monkeyMap.remove(monkeyClass);
     }
 
     public <T extends Monkey> T factory(Class<T> monkeyClass) {
-        return factory(monkeyClass, getContextClass(monkeyClass));
+        Class<? extends Monkey.Context> ctxClass = getContextClass(monkeyClass);
+        if (ctxClass == null) {
+            // look for derived class already in our map
+            for (Map.Entry<Class<? extends Monkey>, Class<? extends Monkey.Context>> pair : monkeyMap.entrySet()) {
+                if (monkeyClass.isAssignableFrom(pair.getKey())) {
+                    @SuppressWarnings("unchecked")
+                    T monkey = (T) factory(pair.getKey(), pair.getValue());
+                    return monkey;
+                }
+            }
+        }
+        return factory(monkeyClass, ctxClass);
     }
 
     public <T extends Monkey> T factory(Class<T> monkeyClass, Class<? extends Monkey.Context> contextClass) {
@@ -115,14 +126,22 @@ public enum MonkeyRunner {
                 // assume Monkey class has has void ctor
                 return monkeyClass.newInstance();
             }
-            // assume Monkey class has ctor that take a Context inner interface as argument
-            // so first find the monkey Context class:
-            Class ctorArgClass = Class.forName(monkeyClass.getName() + "$Context");
+
             // then find corresponding ctor
-            Constructor<T> ctor = monkeyClass.getDeclaredConstructor(ctorArgClass);
-            return ctor.newInstance(contextClass.newInstance());
+            for (Constructor<?> ctor : monkeyClass.getDeclaredConstructors()) {
+                Class<?>[] paramTypes = ctor.getParameterTypes();
+                if (paramTypes.length != 1) {
+                    continue;
+                }
+                if (paramTypes[0].getName().endsWith("$Context")) {
+                    @SuppressWarnings("unchecked")
+                    T monkey = (T) ctor.newInstance(contextClass.newInstance());
+                    return monkey;
+                }
+            }
         } catch (Exception e) {
-            LOGGER.error("monkeyFactory error: ", e);
+            LOGGER.error("monkeyFactory error, cannot make monkey from " + monkeyClass.getName() + " with "
+                         + (contextClass == null ? null : contextClass.getName()), e);
         }
 
         return null;
