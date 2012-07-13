@@ -17,33 +17,8 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.util.Random;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
-public class ChaosInstanceSelector {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosInstanceSelector.class);
-    private static final Random RANDOM = new Random();
-
-    protected Logger logger() {
-        return LOGGER;
-    }
-
-    public String select(InstanceGroup group, double probability) {
-        if (probability <= 0) {
-            logger().info("Group {} [type {}] has disabled probability: {}",
-                    new Object[] {group.name(), group.type(), probability});
-            return null;
-        }
-        double rand = Math.random();
-        if (rand > probability) {
-            logger().info("Group {} [type {}] got lucky: {} > {}",
-                    new Object[] {group.name(), group.type(), rand, probability});
-            return null;
-        }
-        return group.instances().get(RANDOM.nextInt(group.instances().size()));
-    }
+public interface ChaosInstanceSelector {
+    String select(InstanceGroup group, double probability);
 }

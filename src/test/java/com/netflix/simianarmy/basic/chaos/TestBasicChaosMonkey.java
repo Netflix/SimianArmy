@@ -15,20 +15,23 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.chaos;
+package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
-public class TestChaosMonkey {
+public class TestBasicChaosMonkey {
     @Test
     public void testDisabled() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("disabled.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -40,7 +43,7 @@ public class TestChaosMonkey {
     @Test
     public void testEnabledA() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledA.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -56,7 +59,7 @@ public class TestChaosMonkey {
     @Test
     public void testUnleashedEnabledA() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("unleashedEnabledA.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -74,7 +77,7 @@ public class TestChaosMonkey {
     @Test
     public void testEnabledB() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledB.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -90,7 +93,7 @@ public class TestChaosMonkey {
     @Test
     public void testUnleashedEnabledB() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("unleashedEnabledB.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -108,7 +111,7 @@ public class TestChaosMonkey {
     @Test
     public void testEnabledAwithout1() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledAwithout1.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -123,7 +126,7 @@ public class TestChaosMonkey {
     @Test
     public void testEnabledAwith0() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("enabledAwith0.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -138,7 +141,7 @@ public class TestChaosMonkey {
     @Test
     public void testAll() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("all.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -162,7 +165,7 @@ public class TestChaosMonkey {
     @Test
     public void testNoProbability() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("noProbability.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();
@@ -182,7 +185,7 @@ public class TestChaosMonkey {
     @Test
     public void testNoProbabilityByName() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("noProbabilityByName.properties");
-        ChaosMonkey chaos = new ChaosMonkey(ctx);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
         List<InstanceGroup> selectedOn = ctx.selectedOn();

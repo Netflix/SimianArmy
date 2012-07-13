@@ -43,6 +43,10 @@ public abstract class Monkey {
 
     public abstract void doMonkeyBusiness();
 
+    public Context context() {
+        return ctx;
+    }
+
     public void start() {
         final Monkey me = this;
         ctx.scheduler().start(type().name(), new Runnable() {

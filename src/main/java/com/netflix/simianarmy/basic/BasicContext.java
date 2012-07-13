@@ -32,6 +32,9 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
 
+import com.netflix.simianarmy.basic.chaos.BasicChaosCrawler;
+import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +75,7 @@ public class BasicContext implements ChaosMonkey.Context {
         client = new AWSClient(account, secret, region);
         scheduler = new BasicScheduler((int) config.getNumOrElse("monkey.threads", MONKEY_THREADS));
         crawler = new BasicChaosCrawler(client);
-        selector = new ChaosInstanceSelector();
+        selector = new BasicChaosInstanceSelector();
         String domain = config.getStrOrElse("domain", "SIMIAN_ARMY");
         recorder = new SimpleDBRecorder(account, secret, region, domain);
     }
