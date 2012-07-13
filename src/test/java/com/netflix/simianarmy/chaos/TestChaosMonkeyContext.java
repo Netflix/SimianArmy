@@ -19,9 +19,10 @@ package com.netflix.simianarmy.chaos;
 
 import com.netflix.simianarmy.TestMonkeyContext;
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 
 import java.util.Properties;
 import java.io.InputStream;
@@ -117,7 +118,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     }
 
     public ChaosInstanceSelector chaosInstanceSelector() {
-        return new ChaosInstanceSelector() {
+        return new BasicChaosInstanceSelector() {
             public String select(InstanceGroup group, double probability) {
                 selectedOn.add(group);
                 return super.select(group, probability);

@@ -15,7 +15,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.chaos;
+package com.netflix.simianarmy.basic.chaos;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -42,13 +42,16 @@ import org.testng.Assert;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
+
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestChaosMonkeyServlet {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkey.class);
+public class TestBasicChaosMonkeyServlet {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicChaosMonkeyServlet.class);
 
     @Captor
     private ArgumentCaptor<Enum> monkeyTypeArg;
@@ -71,9 +74,9 @@ public class TestChaosMonkeyServlet {
 
     @Test
     public void testServlet() {
-        MonkeyRunner.getInstance().replaceMonkey(ChaosMonkey.class, MockTestChaosMonkeyContext.class);
+        MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, MockTestChaosMonkeyContext.class);
 
-        ChaosMonkey.Servlet servlet = new ChaosMonkey.Servlet();
+        BasicChaosMonkey.Servlet servlet = new BasicChaosMonkey.Servlet();
 
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
         queryParams.add("groupType", "ASG");
@@ -124,6 +127,6 @@ public class TestChaosMonkeyServlet {
 
     String getResource(String name) {
         // get resource as stream, use Scanner to read stream as one token
-        return new Scanner(TestChaosMonkey.class.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
+        return new Scanner(TestBasicChaosMonkey.class.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
     }
 }

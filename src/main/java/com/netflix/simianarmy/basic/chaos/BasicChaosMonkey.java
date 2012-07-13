@@ -15,10 +15,13 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.chaos;
+package com.netflix.simianarmy.basic.chaos;
 
-import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -32,13 +35,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -46,25 +44,16 @@ import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
 
-public class ChaosMonkey extends Monkey {
+public class BasicChaosMonkey extends ChaosMonkey {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosMonkey.class);
     private static final String NS = "simianarmy.chaos.";
 
-    public interface Context extends Monkey.Context {
-        MonkeyConfiguration configuration();
-
-        ChaosCrawler chaosCrawler();
-
-        ChaosInstanceSelector chaosInstanceSelector();
-    }
-
-    private Context ctx;
     private MonkeyConfiguration cfg;
     private long runsPerDay;
 
-    public ChaosMonkey(Context ctx) {
+    public BasicChaosMonkey(ChaosMonkey.Context ctx) {
         super(ctx);
-        this.ctx = ctx;
+
         this.cfg = ctx.configuration();
 
         Calendar open = ctx.calendar().now();
@@ -77,18 +66,6 @@ public class ChaosMonkey extends Monkey {
         runsPerDay = units / ctx.scheduler().frequency();
     }
 
-    public enum Type {
-        CHAOS
-    }
-
-    public Enum type() {
-        return Type.CHAOS;
-    }
-
-    public enum EventTypes {
-        CHAOS_TERMINATION
-    }
-
     public void doMonkeyBusiness() {
         cfg.reload();
         String prop = NS + "enabled";
@@ -97,13 +74,13 @@ public class ChaosMonkey extends Monkey {
             return;
         }
 
-        for (InstanceGroup group : ctx.chaosCrawler().groups()) {
+        for (InstanceGroup group : context().chaosCrawler().groups()) {
             prop = NS + group.type() + "." + group.name() + ".enabled";
             String defaultProp = NS + group.type();
             if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp + ".enabled"))) {
                 String probProp = NS + group.type() + "." + group.name() + ".probability";
                 double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                String inst = ctx.chaosInstanceSelector().select(group, prob / runsPerDay);
+                String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 if (inst != null) {
                     prop = NS + "leashed";
                     if (cfg.getBoolOrElse(prop, true)) {
@@ -116,7 +93,7 @@ public class ChaosMonkey extends Monkey {
                         }
                         try {
                             recordTermination(group, inst);
-                            ctx.cloudClient().terminateInstance(inst);
+                            context().cloudClient().terminateInstance(inst);
                         } catch (Exception e) {
                             handleTerminationError(inst, e);
                         }
@@ -135,7 +112,7 @@ public class ChaosMonkey extends Monkey {
         throw new RuntimeException("failed to terminate instance " + instance, e);
     }
 
-    protected boolean hasPreviousTerminations(InstanceGroup group) {
+    public boolean hasPreviousTerminations(InstanceGroup group) {
         Map<String, String> query = new HashMap<String, String>();
         query.put("groupType", group.type().name());
         query.put("groupName", group.name());
@@ -145,15 +122,16 @@ public class ChaosMonkey extends Monkey {
         today.set(Calendar.MINUTE, 0);
         today.set(Calendar.SECOND, 0);
         today.set(Calendar.MILLISECOND, 0);
-        List<Event> evts = ctx.recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, today.getTime());
+        List<Event> evts = context().recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query,
+                today.getTime());
         return !evts.isEmpty();
     }
 
-    protected void recordTermination(InstanceGroup group, String instance) {
-        Event evt = ctx.recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, instance);
+    public void recordTermination(InstanceGroup group, String instance) {
+        Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
-        ctx.recorder().recordEvent(evt);
+        context().recorder().recordEvent(evt);
     }
 
     @Path("/chaos")
@@ -178,7 +156,8 @@ public class ChaosMonkey extends Monkey {
                 }
             }
 
-            List<Event> evts = monkey.ctx.recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, date);
+            List<Event> evts = monkey.context().recorder()
+                    .findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, date);
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             JsonGenerator gen = JSON_FACTORY.createJsonGenerator(baos, JsonEncoding.UTF8);

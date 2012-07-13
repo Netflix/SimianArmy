@@ -15,16 +15,17 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.chaos;
+package com.netflix.simianarmy.basic.chaos;
 
 import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
-public class ChaosInstanceSelector {
+public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosInstanceSelector.class);
     private static final Random RANDOM = new Random();
 
