@@ -26,7 +26,7 @@ import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosInstanceSelector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosInstanceSelector.class);
     private static final Random RANDOM = new Random();
 
     protected Logger logger() {

@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BasicChaosMonkey extends ChaosMonkey {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosMonkey.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosMonkey.class);
     private static final String NS = "simianarmy.chaos.";
 
     private MonkeyConfiguration cfg;
