@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BasicContext implements ChaosMonkey.Context {
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicContext.class);
     private MonkeyScheduler scheduler;
     private MonkeyCalendar calendar;
     private MonkeyConfiguration config;
