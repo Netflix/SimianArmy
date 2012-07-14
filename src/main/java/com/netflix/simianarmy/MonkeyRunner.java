@@ -141,7 +141,7 @@ public enum MonkeyRunner {
             }
         } catch (Exception e) {
             LOGGER.error("monkeyFactory error, cannot make monkey from " + monkeyClass.getName() + " with "
-                         + (contextClass == null ? null : contextClass.getName()), e);
+                    + (contextClass == null ? null : contextClass.getName()), e);
         }
 
         return null;
