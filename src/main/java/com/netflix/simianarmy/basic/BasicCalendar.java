@@ -23,6 +23,7 @@ import java.util.TreeSet;
 import java.util.TimeZone;
 
 import com.netflix.simianarmy.MonkeyCalendar;
+import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.Monkey;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
@@ -32,7 +33,10 @@ public class BasicCalendar implements MonkeyCalendar {
     private final TimeZone tz;
     private final Set<Integer> holidays = new TreeSet<Integer>();
 
-    public BasicCalendar() {
+    private MonkeyConfiguration cfg;
+
+    public BasicCalendar(MonkeyConfiguration cfg) {
+        this.cfg = cfg;
         openHour = 9;
         closeHour = 15;
         tz = TimeZone.getTimeZone("America/Los_Angeles");
@@ -61,6 +65,10 @@ public class BasicCalendar implements MonkeyCalendar {
 
     @Override
     public boolean isMonkeyTime(Monkey monkey) {
+        if (cfg.getStrOrElse("simianarmy.isMonkeyTime", null) != null) {
+            return cfg.getBool("simianarmy.isMonkeyTime");
+        }
+
         Calendar now = now();
         int dow = now.get(Calendar.DAY_OF_WEEK);
         if (dow == Calendar.SATURDAY || dow == Calendar.SUNDAY) {

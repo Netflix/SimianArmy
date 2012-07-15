@@ -50,9 +50,9 @@ public class BasicContext extends BasicContextShell {
     }
 
     public BasicContext() {
-        setCalendar(new BasicCalendar());
         BasicConfiguration config = new BasicConfiguration(PROPS);
         setConfiguration(config);
+        setCalendar(new BasicCalendar(config));
         String account = config.getStr("accountKey");
         String secret = config.getStr("secretKey");
         String region = config.getStrOrElse("region", "us-east-1");

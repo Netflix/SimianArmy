@@ -26,6 +26,7 @@ import org.testng.annotations.DataProvider;
 
 import java.util.TimeZone;
 import java.util.Calendar;
+import java.util.Properties;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 
@@ -35,9 +36,15 @@ import org.slf4j.LoggerFactory;
 public class TestBasicCalendar extends BasicCalendar {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicCalendar.class);
 
+    private static final Properties PROPS = new Properties();
+    private static final BasicConfiguration CFG = new BasicConfiguration(PROPS);
+    public TestBasicCalendar() {
+        super(CFG);
+    }
+
     @Test
     public void testConstructors() {
-        BasicCalendar cal = new BasicCalendar();
+        BasicCalendar cal = new BasicCalendar(CFG);
         Assert.assertEquals(cal.openHour(), 9);
         Assert.assertEquals(cal.closeHour(), 15);
         Assert.assertEquals(cal.now().getTimeZone(), TimeZone.getTimeZone("America/Los_Angeles"));
@@ -87,6 +94,13 @@ public class TestBasicCalendar extends BasicCalendar {
         test.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
         test.set(Calendar.HOUR_OF_DAY, 10);
         setNow(test);
+        Assert.assertFalse(isMonkeyTime(monkey));
+
+        // test config overrides
+        PROPS.setProperty("simianarmy.isMonkeyTime", Boolean.toString(true));
+        Assert.assertTrue(isMonkeyTime(monkey));
+
+        PROPS.setProperty("simianarmy.isMonkeyTime", Boolean.toString(false));
         Assert.assertFalse(isMonkeyTime(monkey));
     }
 
