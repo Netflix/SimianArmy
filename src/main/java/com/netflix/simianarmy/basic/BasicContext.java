@@ -20,15 +20,6 @@ package com.netflix.simianarmy.basic;
 import java.util.Properties;
 import java.io.InputStream;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-
-import com.netflix.simianarmy.MonkeyScheduler;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.chaos.ChaosCrawler;
-import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
-import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
 
@@ -38,18 +29,10 @@ import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BasicContext implements ChaosMonkey.Context {
+public class BasicContext extends BasicContextShell {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicContext.class);
-    private MonkeyScheduler scheduler;
-    private MonkeyCalendar calendar;
-    private MonkeyConfiguration config;
-    private AWSClient client;
-    private ChaosCrawler crawler;
-    private ChaosInstanceSelector selector;
-    private MonkeyRecorder recorder;
-    private static final int MONKEY_THREADS = 4;
-
     private static final Properties PROPS;
+    private static final int MONKEY_THREADS = 4;
     static {
         String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
         PROPS = new Properties();
@@ -67,52 +50,18 @@ public class BasicContext implements ChaosMonkey.Context {
     }
 
     public BasicContext() {
-        calendar = new BasicCalendar();
-        config = new BasicConfiguration(PROPS);
+        setCalendar(new BasicCalendar());
+        BasicConfiguration config = new BasicConfiguration(PROPS);
+        setConfiguration(config);
         String account = config.getStr("accountKey");
         String secret = config.getStr("secretKey");
         String region = config.getStrOrElse("region", "us-east-1");
-        client = new AWSClient(account, secret, region);
-        scheduler = new BasicScheduler((int) config.getNumOrElse("monkey.threads", MONKEY_THREADS));
-        crawler = new BasicChaosCrawler(client);
-        selector = new BasicChaosInstanceSelector();
+        AWSClient client = new AWSClient(account, secret, region);
+        setCloudClient(client);
+        setScheduler(new BasicScheduler((int) config.getNumOrElse("monkey.threads", MONKEY_THREADS)));
+        setChaosCrawler(new BasicChaosCrawler(client));
+        setChaosInstanceSelector(new BasicChaosInstanceSelector());
         String domain = config.getStrOrElse("domain", "SIMIAN_ARMY");
-        recorder = new SimpleDBRecorder(account, secret, region, domain);
+        setRecorder(new SimpleDBRecorder(account, secret, region, domain));
     }
-
-    @Override
-    public MonkeyScheduler scheduler() {
-        return scheduler;
-    }
-
-    @Override
-    public MonkeyCalendar calendar() {
-        return calendar;
-    }
-
-    @Override
-    public MonkeyConfiguration configuration() {
-        return config;
-    }
-
-    @Override
-    public CloudClient cloudClient() {
-        return client;
-    }
-
-    @Override
-    public ChaosCrawler chaosCrawler() {
-        return crawler;
-    }
-
-    @Override
-    public ChaosInstanceSelector chaosInstanceSelector() {
-        return selector;
-    }
-
-    @Override
-    public MonkeyRecorder recorder() {
-        return recorder;
-    }
-
 }
