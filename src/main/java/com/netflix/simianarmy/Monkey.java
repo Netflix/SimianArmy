@@ -47,16 +47,20 @@ public abstract class Monkey {
         return ctx;
     }
 
+    public void run() {
+        if (ctx.calendar().isMonkeyTime(this)) {
+            this.doMonkeyBusiness();
+        } else {
+            LOGGER.info("Not Time for " + this.type().name() + " Monkey");
+        }
+    }
+
     public void start() {
         final Monkey me = this;
         ctx.scheduler().start(type().name(), new Runnable() {
             public void run() {
                 try {
-                    if (ctx.calendar().isMonkeyTime(me)) {
-                        me.doMonkeyBusiness();
-                    } else {
-                        LOGGER.info("Not Time for " + me.type().name() + " Monkey");
-                    }
+                    me.run();
                 } catch (Exception e) {
                     LOGGER.error(me.type().name() + " Monkey Error: ", e);
                 }
