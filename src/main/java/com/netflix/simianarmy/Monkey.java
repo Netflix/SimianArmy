@@ -47,7 +47,7 @@ public abstract class Monkey {
         return ctx;
     }
 
-    public void run() {
+    public void run() throws Exception {
         if (ctx.calendar().isMonkeyTime(this)) {
             this.doMonkeyBusiness();
         } else {
