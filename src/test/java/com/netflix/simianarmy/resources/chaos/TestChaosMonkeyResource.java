@@ -51,8 +51,8 @@ import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestChaosMonkeyServlet {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyServlet.class);
+public class TestChaosMonkeyResource {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyResource.class);
 
     @Captor
     private ArgumentCaptor<Enum> monkeyTypeArg;
@@ -77,7 +77,7 @@ public class TestChaosMonkeyServlet {
     public void testServlet() {
         MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, MockTestChaosMonkeyContext.class);
 
-        ChaosMonkeyServlet servlet = new ChaosMonkeyServlet();
+        ChaosMonkeyResource resource = new ChaosMonkeyResource();
 
         MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
         queryParams.add("groupType", "ASG");
@@ -94,7 +94,7 @@ public class TestChaosMonkeyServlet {
                 Arrays.asList(mkEvent("i-1234356780"), mkEvent("i-123456781")));
 
         try {
-            Response resp = servlet.getChaosEvents(mockUriInfo);
+            Response resp = resource.getChaosEvents(mockUriInfo);
             Assert.assertEquals(resp.getEntity().toString(), getResource("getChaosEventsResponse.json"));
         } catch (Exception e) {
             LOGGER.error("exception from getChaosEvents", e);
@@ -128,6 +128,6 @@ public class TestChaosMonkeyServlet {
 
     String getResource(String name) {
         // get resource as stream, use Scanner to read stream as one token
-        return new Scanner(TestChaosMonkeyServlet.class.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
+        return new Scanner(TestChaosMonkeyResource.class.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
     }
 }

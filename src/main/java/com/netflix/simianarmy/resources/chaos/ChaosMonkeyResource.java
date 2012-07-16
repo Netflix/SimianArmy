@@ -39,7 +39,7 @@ import org.codehaus.jackson.map.MappingJsonFactory;
 
 @Path("/chaos")
 @SuppressWarnings("serial")
-public class ChaosMonkeyServlet {
+public class ChaosMonkeyResource {
     private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory();
 
     private ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
