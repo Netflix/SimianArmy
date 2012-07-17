@@ -30,6 +30,7 @@ import java.util.Collections;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
@@ -73,8 +74,18 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         this.domain = domain;
     }
 
+    /**
+     * Use {@link DefaultAWSCredentialsProviderChain} to provide credentials.
+     * @param region
+     * @param domain
+     */
+    public SimpleDBRecorder(String region, String domain) {
+        this(new DefaultAWSCredentialsProviderChain().getCredentials(), region, domain);
+    }
+
     protected AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client = new AmazonSimpleDBClient(cred);
+        client.setEndpoint("sdb." + region + ".amazonaws.com");
         return client;
     }
 
@@ -111,6 +122,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         List<ReplaceableAttribute> attrs = new LinkedList<ReplaceableAttribute>();
         attrs.add(new ReplaceableAttribute(Keys.id.name(), evt.id(), true));
         attrs.add(new ReplaceableAttribute(Keys.eventTime.name(), String.valueOf(evt.eventTime().getTime()), true));
+        //TODO I think region is overloaded here, probably need to distinguish between the region being changed
+        //and where the data is being stored.
         attrs.add(new ReplaceableAttribute(Keys.region.name(), region, true));
         attrs.add(new ReplaceableAttribute(Keys.recordType.name(), "MonkeyEvent", true));
         attrs.add(new ReplaceableAttribute(Keys.monkeyType.name(), enumToValue(evt.monkeyType()), true));

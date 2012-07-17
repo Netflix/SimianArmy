@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.LinkedList;
 
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.netflix.simianarmy.CloudClient;
 
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -47,6 +48,14 @@ public class AWSClient implements CloudClient {
     public AWSClient(AWSCredentials cred, String region) {
         this.cred = cred;
         this.region = region;
+    }
+
+    /**
+     * This constructor will use the {@link DefaultAWSCredentialsProviderChain} to obtain credentials.
+     * @param region
+     */
+    public AWSClient(String region){
+        this(new DefaultAWSCredentialsProviderChain().getCredentials(), region);
     }
 
     protected AmazonEC2 ec2Client() {
