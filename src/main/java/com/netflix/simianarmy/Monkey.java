@@ -49,6 +49,7 @@ public abstract class Monkey {
 
     public void run() throws Exception {
         if (ctx.calendar().isMonkeyTime(this)) {
+            LOGGER.info(this.type().name() + " Monkey Running ...");
             this.doMonkeyBusiness();
         } else {
             LOGGER.info("Not Time for " + this.type().name() + " Monkey");
