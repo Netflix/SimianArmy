@@ -38,6 +38,7 @@ public class TestBasicCalendar extends BasicCalendar {
 
     private static final Properties PROPS = new Properties();
     private static final BasicConfiguration CFG = new BasicConfiguration(PROPS);
+
     public TestBasicCalendar() {
         super(CFG);
     }

@@ -67,14 +67,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
             if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp + ".enabled"))) {
                 String probProp = NS + group.type() + "." + group.name() + ".probability";
                 double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                LOGGER.info("Group {} [type {}] enabled [prob {}]",
-                            new Object[] {group.name(), group.type(), prob});
+                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(), prob});
                 String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 if (inst != null) {
                     prop = NS + "leashed";
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
-                                    new Object[] {inst, group.name(), group.type(), prop});
+                                new Object[] {inst, group.name(), group.type(), prop});
                     } else {
                         if (hasPreviousTerminations(group)) {
                             LOGGER.info("ChaosMonkey takes pity on group {} [{}] since it was attacked ealier today",

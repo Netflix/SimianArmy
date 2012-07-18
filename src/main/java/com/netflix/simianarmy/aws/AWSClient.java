@@ -52,9 +52,10 @@ public class AWSClient implements CloudClient {
 
     /**
      * This constructor will use the {@link DefaultAWSCredentialsProviderChain} to obtain credentials.
+     *
      * @param region
      */
-    public AWSClient(String region){
+    public AWSClient(String region) {
         this(new DefaultAWSCredentialsProviderChain().getCredentials(), region);
     }
 
