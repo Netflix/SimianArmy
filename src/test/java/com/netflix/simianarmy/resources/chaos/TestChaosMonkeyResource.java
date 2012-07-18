@@ -74,7 +74,7 @@ public class TestChaosMonkeyResource {
     }
 
     @Test
-    public void testServlet() {
+    public void testResource() {
         MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, MockTestChaosMonkeyContext.class);
 
         ChaosMonkeyResource resource = new ChaosMonkeyResource();
