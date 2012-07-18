@@ -76,6 +76,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     /**
      * Use {@link DefaultAWSCredentialsProviderChain} to provide credentials.
+     *
      * @param region
      * @param domain
      */
@@ -85,7 +86,14 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     protected AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client = new AmazonSimpleDBClient(cred);
-        client.setEndpoint("sdb." + region + ".amazonaws.com");
+
+        // us-east-1 has special naming
+        // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
+        if (region.equals("us-east-1")) {
+            client.setEndpoint("sdb.amazonaws.com");
+        } else {
+            client.setEndpoint("sdb." + region + ".amazonaws.com");
+        }
         return client;
     }
 
@@ -122,8 +130,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         List<ReplaceableAttribute> attrs = new LinkedList<ReplaceableAttribute>();
         attrs.add(new ReplaceableAttribute(Keys.id.name(), evt.id(), true));
         attrs.add(new ReplaceableAttribute(Keys.eventTime.name(), String.valueOf(evt.eventTime().getTime()), true));
-        //TODO I think region is overloaded here, probably need to distinguish between the region being changed
-        //and where the data is being stored.
+        // TODO I think region is overloaded here, probably need to distinguish between the region being changed
+        // and where the data is being stored.
         attrs.add(new ReplaceableAttribute(Keys.region.name(), region, true));
         attrs.add(new ReplaceableAttribute(Keys.recordType.name(), "MonkeyEvent", true));
         attrs.add(new ReplaceableAttribute(Keys.monkeyType.name(), enumToValue(evt.monkeyType()), true));
