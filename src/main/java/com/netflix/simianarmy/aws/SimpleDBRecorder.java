@@ -133,7 +133,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
             query.append(String.format(" and %s = '%s'", pair.getKey(), pair.getValue()));
         }
         if (after > 0) {
-            query.append(String.format(" and eventTime > %d", after));
+            query.append(String.format(" and eventTime > '%d'", after));
         }
 
         List<Event> list = new LinkedList<Event>();

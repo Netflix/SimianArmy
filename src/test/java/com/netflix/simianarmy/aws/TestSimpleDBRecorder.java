@@ -181,7 +181,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         verify(sdbMock, times(8)).select(arg.capture());
         req = arg.getValue();
-        sb.append(" and eventTime > 1330538400000");
+        sb.append(" and eventTime > '1330538400000'");
         Assert.assertEquals(req.getSelectExpression(), sb.toString());
     }
 
