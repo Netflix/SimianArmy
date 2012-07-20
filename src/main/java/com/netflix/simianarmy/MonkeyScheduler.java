@@ -19,12 +19,41 @@ package com.netflix.simianarmy;
 
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The Interface MonkeyScheduler.
+ */
 public interface MonkeyScheduler {
+
+    /**
+     * Frequency. How often the monkey should run, works in conjunction with frequencyUnit(). If frequency is 2 and
+     * frequencyUnit is TimeUnit.HOUR then the monkey will run once ever 2 hours.
+     *
+     * @return the frequency interval
+     */
     int frequency();
 
+    /**
+     * Frequency unit. This is the time unit that corresponds with frequency().
+     *
+     * @return time unit
+     */
     TimeUnit frequencyUnit();
 
+    /**
+     * Start the scheduler to cause the monkey run at a specified interval.
+     *
+     * @param name
+     *            monkey name
+     * @param run
+     *            the Runnable to start, generally calls doMonkeyBusiness
+     */
     void start(String name, Runnable run);
 
+    /**
+     * Stop the scheduler for a given monkey. After this the monkey will no longer run on the fixed schedule.
+     *
+     * @param name
+     *            monkey name
+     */
     void stop(String name);
 }

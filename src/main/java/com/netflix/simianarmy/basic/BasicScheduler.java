@@ -25,34 +25,53 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * The Class BasicScheduler.
+ */
 public class BasicScheduler implements MonkeyScheduler {
+
+    /** The futures. */
     private HashMap<String, ScheduledFuture<?>> futures = new HashMap<String, ScheduledFuture<?>>();
 
+    /** The scheduler. */
     private final ScheduledExecutorService scheduler;
 
+    /**
+     * Instantiates a new basic scheduler.
+     */
     public BasicScheduler() {
         scheduler = Executors.newScheduledThreadPool(1);
     }
 
+    /**
+     * Instantiates a new basic scheduler.
+     *
+     * @param concurrent
+     *            the concurrent number of threads
+     */
     public BasicScheduler(int concurrent) {
         scheduler = Executors.newScheduledThreadPool(concurrent);
     }
 
+    /** {@inheritDoc} */
     @Override
     public int frequency() {
         return 1;
     }
 
+    /** {@inheritDoc} */
     @Override
     public TimeUnit frequencyUnit() {
         return TimeUnit.HOURS;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void start(String name, Runnable command) {
         futures.put(name, scheduler.scheduleWithFixedDelay(command, 0, frequency(), frequencyUnit()));
     }
 
+    /** {@inheritDoc} */
     @Override
     public void stop(String name) {
         if (futures.containsKey(name)) {

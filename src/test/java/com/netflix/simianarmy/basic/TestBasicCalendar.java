@@ -1,3 +1,4 @@
+// CHECKSTYLE IGNORE Javadoc
 /*
  *
  *  Copyright 2012 Netflix, Inc.
@@ -98,10 +99,10 @@ public class TestBasicCalendar extends BasicCalendar {
         Assert.assertFalse(isMonkeyTime(monkey));
 
         // test config overrides
-        PROPS.setProperty("simianarmy.isMonkeyTime", Boolean.toString(true));
+        PROPS.setProperty("simianarmy.calendar.isMonkeyTime", Boolean.toString(true));
         Assert.assertTrue(isMonkeyTime(monkey));
 
-        PROPS.setProperty("simianarmy.isMonkeyTime", Boolean.toString(false));
+        PROPS.setProperty("simianarmy.calendar.isMonkeyTime", Boolean.toString(false));
         Assert.assertFalse(isMonkeyTime(monkey));
     }
 

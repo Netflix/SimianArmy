@@ -17,6 +17,17 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
+ * "the cloud".
+ */
 public interface CloudClient {
+
+    /**
+     * Terminate instance.
+     *
+     * @param instanceId
+     *            the instance id
+     */
     void terminateInstance(String instanceId);
 }

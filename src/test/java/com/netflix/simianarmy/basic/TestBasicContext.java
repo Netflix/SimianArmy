@@ -1,3 +1,4 @@
+// CHECKSTYLE IGNORE Javadoc
 /*
  *
  *  Copyright 2012 Netflix, Inc.

@@ -19,12 +19,39 @@ package com.netflix.simianarmy;
 
 import java.util.Calendar;
 
+/**
+ * The Interface MonkeyCalendar used to tell if a monkey should be running or now. We only want monkeys to run during
+ * business hours, so that engineers will be on-hand if something goes wrong.
+ */
 public interface MonkeyCalendar {
+
+    /**
+     * Checks if is monkey time.
+     *
+     * @param monkey
+     *            the monkey
+     * @return true, if is monkey time
+     */
     boolean isMonkeyTime(Monkey monkey);
 
+    /**
+     * Open hour. This is the "open" hour for then the monkey should start working.
+     *
+     * @return the int
+     */
     int openHour();
 
+    /**
+     * Close hour. This is the "close" hour for when the monkey should stop working.
+     *
+     * @return the int
+     */
     int closeHour();
 
+    /**
+     * Get the current time using whatever timezone is used for monkey date calculations.
+     *
+     * @return the calendar
+     */
     Calendar now();
 }

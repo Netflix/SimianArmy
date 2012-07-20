@@ -36,15 +36,40 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
 
+/**
+ * The Class AWSClient. Simple Amazon EC2 and Amazon ASG client interface.
+ */
 public class AWSClient implements CloudClient {
+
+    /** The credential. */
     private AWSCredentials cred;
+
+    /** The region. */
     private String region;
 
+    /**
+     * Instantiates a new AWS client.
+     *
+     * @param accessKey
+     *            the access key
+     * @param secretKey
+     *            the secret key
+     * @param region
+     *            the region
+     */
     public AWSClient(String accessKey, String secretKey, String region) {
         this.cred = new BasicAWSCredentials(accessKey, secretKey);
         this.region = region;
     }
 
+    /**
+     * Instantiates a new aWS client.
+     *
+     * @param cred
+     *            the credential
+     * @param region
+     *            the region
+     */
     public AWSClient(AWSCredentials cred, String region) {
         this.cred = cred;
         this.region = region;
@@ -54,23 +79,39 @@ public class AWSClient implements CloudClient {
      * This constructor will use the {@link DefaultAWSCredentialsProviderChain} to obtain credentials.
      *
      * @param region
+     *            the region
      */
     public AWSClient(String region) {
         this(new DefaultAWSCredentialsProviderChain().getCredentials(), region);
     }
 
+    /**
+     * Amazon EC2 client. Abstracted to aid testing.
+     *
+     * @return the amazon ec2 client
+     */
     protected AmazonEC2 ec2Client() {
         AmazonEC2 client = new AmazonEC2Client(cred);
         client.setEndpoint("ec2." + region + ".amazonaws.com");
         return client;
     }
 
+    /**
+     * Amazon ASG client. Abstradted to aid testing.
+     *
+     * @return the amazon auto scaling client
+     */
     protected AmazonAutoScalingClient asgClient() {
         AmazonAutoScalingClient client = new AmazonAutoScalingClient(cred);
         client.setEndpoint("autoscaling." + region + ".amazonaws.com");
         return client;
     }
 
+    /**
+     * Describe auto scaling groups.
+     *
+     * @return the list
+     */
     public List<AutoScalingGroup> describeAutoScalingGroups() {
         List<AutoScalingGroup> asgs = new LinkedList<AutoScalingGroup>();
 
@@ -87,6 +128,7 @@ public class AWSClient implements CloudClient {
         return asgs;
     }
 
+    /** {@inheritDoc} */
     public void terminateInstance(String instanceId) {
         ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
     }

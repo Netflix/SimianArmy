@@ -17,16 +17,64 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * The Interface MonkeyConfiguration.
+ */
 public interface MonkeyConfiguration {
+
+    /**
+     * Gets the boolean associated with property string. If not found it will return false.
+     *
+     * @param property
+     *            the property
+     * @return the bool
+     */
     boolean getBool(String property);
 
+    /**
+     * Gets the boolean associated with property string. If not found it will return dflt.
+     *
+     * @param property
+     *            the property
+     * @param dflt
+     *            the dflt
+     * @return the bool or else
+     */
     boolean getBoolOrElse(String property, boolean dflt);
 
+    /**
+     * Gets the number (double) associated with property string. If not found it will return dflt.
+     *
+     * @param property
+     *            the property
+     * @param dflt
+     *            the dflt
+     * @return the num or else
+     */
     double getNumOrElse(String property, double dflt);
 
+    /**
+     * Gets the string associated with property string. If not found it will return null.
+     *
+     * @param property
+     *            the property
+     * @return the str
+     */
     String getStr(String property);
 
+    /**
+     * Gets the string associated with property string. If not found it will return dflt.
+     *
+     * @param property
+     *            the property
+     * @param dflt
+     *            the dflt
+     * @return the str or else
+     */
     String getStrOrElse(String property, String dflt);
 
+    /**
+     * If the configuration has dynamic elements then they should be reloaded with this.
+     */
     void reload();
 }

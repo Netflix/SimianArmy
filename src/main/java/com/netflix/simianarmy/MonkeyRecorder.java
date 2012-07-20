@@ -21,31 +21,129 @@ import java.util.Map;
 import java.util.List;
 import java.util.Date;
 
+/**
+ * The Interface MonkeyRecorder. This is use to store and find events in some datastore.
+ */
 public interface MonkeyRecorder {
 
+    /**
+     * The Interface Event.
+     */
     public interface Event {
+
+        /**
+         * Event Id.
+         *
+         * @return the string
+         */
         String id();
 
+        /**
+         * Event time.
+         *
+         * @return the date
+         */
         Date eventTime();
 
+        /**
+         * Monkey type.
+         *
+         * @return the monkey type enum
+         */
         Enum monkeyType();
 
+        /**
+         * Event type.
+         *
+         * @return the event type enum
+         */
         Enum eventType();
 
+        /**
+         * Fields.
+         *
+         * @return the map of strings that may have been provided when the event was created
+         */
         Map<String, String> fields();
 
+        /**
+         * Field.
+         *
+         * @param name
+         *            the name
+         * @return the string assiciated with that field
+         */
         String field(String name);
 
+        /**
+         * Adds the field.
+         *
+         * @param name
+         *            the name
+         * @param value
+         *            the value
+         * @return <b>this</b> so you can chain multiple addField calls together
+         */
         Event addField(String name, String value);
     }
 
+    /**
+     * New event.
+     *
+     * @param monkeyType
+     *            the monkey type
+     * @param eventType
+     *            the event type
+     * @param id
+     *            the id
+     * @return the event
+     */
     Event newEvent(Enum monkeyType, Enum eventType, String id);
 
+    /**
+     * Record event.
+     *
+     * @param evt
+     *            the evt
+     */
     void recordEvent(Event evt);
 
+    /**
+     * Find events.
+     *
+     * @param query
+     *            arbitrary map of strings to used to filter the results
+     * @param after
+     *            the after
+     * @return the list of events
+     */
     List<Event> findEvents(Map<String, String> query, Date after);
 
+    /**
+     * Find events.
+     *
+     * @param monkeyType
+     *            the monkey type
+     * @param query
+     *            arbitrary map of strings to used to filter the results
+     * @param after
+     *            the after
+     * @return the list of events
+     */
     List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after);
 
+    /**
+     * Find events.
+     *
+     * @param monkeyType
+     *            the monkey type
+     * @param eventType
+     *            the event type
+     * @param query
+     *            arbitrary map of strings to used to filter the results
+     * @param after
+     *            the after
+     * @return the list
+     */
     List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after);
 }

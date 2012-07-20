@@ -21,42 +21,58 @@ import java.util.Properties;
 
 import com.netflix.simianarmy.MonkeyConfiguration;
 
+/**
+ * The Class BasicConfiguration.
+ */
 public class BasicConfiguration implements MonkeyConfiguration {
 
+    /** The properties. */
     private Properties props;
 
+    /**
+     * Instantiates a new basic configuration.
+     *
+     * @param props
+     *            the properties
+     */
     public BasicConfiguration(Properties props) {
         this.props = props;
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean getBool(String property) {
         return getBoolOrElse(property, false);
     }
 
+    /** {@inheritDoc} */
     @Override
     public boolean getBoolOrElse(String property, boolean dflt) {
         String val = props.getProperty(property);
         return val == null ? dflt : Boolean.parseBoolean(val);
     }
 
+    /** {@inheritDoc} */
     @Override
     public double getNumOrElse(String property, double dflt) {
         String val = props.getProperty(property);
         return val == null ? dflt : Double.parseDouble(val);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getStr(String property) {
         return getStrOrElse(property, null);
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getStrOrElse(String property, String dflt) {
         String val = props.getProperty(property);
         return val == null ? dflt : val;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void reload() {
         // BasicConfiguration is based on static properties, so reload is a no-op

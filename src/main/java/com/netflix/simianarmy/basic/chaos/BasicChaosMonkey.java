@@ -31,13 +31,29 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Class BasicChaosMonkey.
+ */
 public class BasicChaosMonkey extends ChaosMonkey {
+
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosMonkey.class);
+
+    /** The Constant NS. */
     private static final String NS = "simianarmy.chaos.";
 
+    /** The cfg. */
     private MonkeyConfiguration cfg;
+
+    /** The runs per day. */
     private long runsPerDay;
 
+    /**
+     * Instantiates a new basic chaos monkey.
+     *
+     * @param ctx
+     *            the ctx
+     */
     public BasicChaosMonkey(ChaosMonkey.Context ctx) {
         super(ctx);
 
@@ -53,6 +69,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         runsPerDay = units / ctx.scheduler().frequency();
     }
 
+    /** {@inheritDoc} */
     public void doMonkeyBusiness() {
         cfg.reload();
         String prop = NS + "enabled";
@@ -95,12 +112,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
-    // abstracted so subclasses can decide to continue causing chaos if desired
+    /**
+     * Handle termination error. This has been abstracted so subclasses can decide to conitue causing chaos if desired.
+     *
+     * @param instance
+     *            the instance
+     * @param e
+     *            the exception
+     */
     protected void handleTerminationError(String instance, Throwable e) {
         LOGGER.error("failed to terminate instance " + instance, e.getMessage());
         throw new RuntimeException("failed to terminate instance " + instance, e);
     }
 
+    /** {@inheritDoc} */
     public boolean hasPreviousTerminations(InstanceGroup group) {
         Map<String, String> query = new HashMap<String, String>();
         query.put("groupType", group.type().name());
@@ -116,6 +141,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return !evts.isEmpty();
     }
 
+    /** {@inheritDoc} */
     public void recordTermination(InstanceGroup group, String instance) {
         Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, instance);
         evt.addField("groupType", group.type().name());

@@ -28,58 +28,101 @@ import com.amazonaws.services.autoscaling.model.Instance;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
+/**
+ * The Class BasicChaosCrawler. This will crawl for all available AutoScalingGroups associated with the AWS account.
+ */
 public class BasicChaosCrawler implements ChaosCrawler {
 
+    /**
+     * The group types Types.
+     */
     public enum Types {
+
+        /** only crawls AutoScalingGroups. */
         ASG;
     }
 
+    /** The aws client. */
     private AWSClient awsClient;
 
+    /**
+     * Instantiates a new basic chaos crawler.
+     *
+     * @param awsClient
+     *            the aws client
+     */
     public BasicChaosCrawler(AWSClient awsClient) {
         this.awsClient = awsClient;
     }
 
+    /**
+     * The Class BasicInstanceGroup.
+     */
     public static class BasicInstanceGroup implements InstanceGroup {
+
+        /** The name. */
         private final String name;
+
+        /** The type. */
         private final Enum type;
 
+        /**
+         * Instantiates a new basic instance group.
+         *
+         * @param name
+         *            the name
+         */
         public BasicInstanceGroup(String name) {
             this.name = name;
             this.type = Types.ASG;
         }
 
+        /**
+         * Instantiates a new basic instance group.
+         *
+         * @param name
+         *            the name
+         * @param type
+         *            the type
+         */
         public BasicInstanceGroup(String name, Enum type) {
             this.name = name;
             this.type = type;
         }
 
+        /** {@inheritDoc} */
         public Enum type() {
             return type;
         }
 
+        /** {@inheritDoc} */
         public String name() {
             return name;
         }
 
+        /** The list. */
         private List<String> list = new LinkedList<String>();
 
+        /** {@inheritDoc} */
         @Override
         public List<String> instances() {
             return list;
         }
 
+        /** {@inheritDoc} */
         @Override
         public void addInstance(String instance) {
             list.add(instance);
         }
     }
 
+    /** {@inheritDoc} */
     @Override
     public EnumSet<?> groupTypes() {
         return EnumSet.allOf(Types.class);
     }
 
+    /** {@inheritDoc} */
     @Override
     public List<InstanceGroup> groups() {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();

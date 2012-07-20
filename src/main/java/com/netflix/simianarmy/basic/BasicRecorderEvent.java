@@ -24,13 +24,36 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.Collections;
 
+/**
+ * The Class BasicRecorderEvent.
+ */
 public class BasicRecorderEvent implements MonkeyRecorder.Event {
+
+    /** The monkey type. */
     private Enum monkeyType;
+
+    /** The event type. */
     private Enum eventType;
+
+    /** The event id. */
     private String id;
+
+    /** The fields. */
     private Map<String, String> fields = new HashMap<String, String>();
+
+    /** The event time. */
     private Date date;
 
+    /**
+     * Instantiates a new basic recorder event.
+     *
+     * @param monkeyType
+     *            the monkey type
+     * @param eventType
+     *            the event type
+     * @param id
+     *            the event id
+     */
     public BasicRecorderEvent(Enum monkeyType, Enum eventType, String id) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
@@ -38,6 +61,18 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
         this.date = new Date();
     }
 
+    /**
+     * Instantiates a new basic recorder event.
+     *
+     * @param monkeyType
+     *            the monkey type
+     * @param eventType
+     *            the event type
+     * @param id
+     *            the event id
+     * @param time
+     *            the event time
+     */
     public BasicRecorderEvent(Enum monkeyType, Enum eventType, String id, long time) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
@@ -45,35 +80,49 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
         this.date = new Date(time);
     }
 
+    /** {@inheritDoc} */
     public String id() {
         return id;
     }
 
+    /** {@inheritDoc} */
     public Date eventTime() {
         return new Date(date.getTime());
     }
 
+    /** {@inheritDoc} */
     public Enum monkeyType() {
         return monkeyType;
     }
 
+    /** {@inheritDoc} */
     public Enum eventType() {
         return eventType;
     }
 
+    /** {@inheritDoc} */
     public Map<String, String> fields() {
         return Collections.unmodifiableMap(fields);
     }
 
+    /** {@inheritDoc} */
     public String field(String name) {
         return fields.get(name);
     }
 
-    public MonkeyRecorder.Event addFields(Map<String, String> input) {
-        fields.putAll(input);
+    /**
+     * Adds the fields.
+     *
+     * @param toAdd
+     *            the fields to set
+     * @return <b>this</b> so you can chain many addFields calls together
+     */
+    public MonkeyRecorder.Event addFields(Map<String, String> toAdd) {
+        fields.putAll(toAdd);
         return this;
     }
 
+    /** {@inheritDoc} */
     public MonkeyRecorder.Event addField(String name, String value) {
         fields.put(name, value);
         return this;

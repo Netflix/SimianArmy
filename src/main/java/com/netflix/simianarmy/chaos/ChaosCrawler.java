@@ -20,18 +20,57 @@ package com.netflix.simianarmy.chaos;
 import java.util.List;
 import java.util.EnumSet;
 
+/**
+ * The Interface ChaosCrawler.
+ */
 public interface ChaosCrawler {
+
+    /**
+     * The Interface InstanceGroup.
+     */
     public interface InstanceGroup {
+
+        /**
+         * Type.
+         *
+         * @return the group type enum
+         */
         Enum type();
 
+        /**
+         * Name.
+         *
+         * @return the group string
+         */
         String name();
 
+        /**
+         * Instances.
+         *
+         * @return the list of instances
+         */
         List<String> instances();
 
+        /**
+         * Adds the instance.
+         *
+         * @param instance
+         *            the instance
+         */
         void addInstance(String instance);
     }
 
+    /**
+     * Group types.
+     *
+     * @return the type of groups this crawler creates \set
+     */
     EnumSet<?> groupTypes();
 
+    /**
+     * Groups.
+     *
+     * @return the list
+     */
     List<InstanceGroup> groups();
 }

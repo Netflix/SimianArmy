@@ -26,11 +26,24 @@ import org.slf4j.LoggerFactory;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 
+/**
+ * The Class BasicMonkeyServer.
+ */
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
+
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
+
+    /** The Constant RUNNER. */
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
+    /**
+     * Inits the.
+     *
+     * @throws ServletException
+     *             the servlet exception
+     */
     @Override
     public void init() throws ServletException {
         super.init();
@@ -38,6 +51,9 @@ public class BasicMonkeyServer extends HttpServlet {
         RUNNER.start();
     }
 
+    /**
+     * Destroy.
+     */
     @Override
     public void destroy() {
         RUNNER.stop();

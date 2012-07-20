@@ -25,14 +25,27 @@ import org.slf4j.LoggerFactory;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
+/**
+ * The Class BasicChaosInstanceSelector.
+ */
 public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
+
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosInstanceSelector.class);
+
+    /** The Constant RANDOM. */
     private static final Random RANDOM = new Random();
 
+    /**
+     * Logger, this is abstracted so subclasses (for testing) can reset logger to make it less verbose.
+     *
+     * @return the logger
+     */
     protected Logger logger() {
         return LOGGER;
     }
 
+    /** {@inheritDoc} */
     public String select(InstanceGroup group, double probability) {
         if (probability <= 0) {
             logger().info("Group {} [type {}] has disabled probability: {}",

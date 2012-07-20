@@ -20,33 +20,88 @@ package com.netflix.simianarmy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The abstract Monkey class, it provides a minimal interface from which all monkeys must be derived.
+ */
 public abstract class Monkey {
+
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(Monkey.class);
 
+    /**
+     * The Interface Context.
+     */
     public interface Context {
+
+        /**
+         * Scheduler.
+         *
+         * @return the monkey scheduler
+         */
         MonkeyScheduler scheduler();
 
+        /**
+         * Calendar.
+         *
+         * @return the monkey calendar
+         */
         MonkeyCalendar calendar();
 
+        /**
+         * Cloud client.
+         *
+         * @return the cloud client
+         */
         CloudClient cloudClient();
 
+        /**
+         * Recorder.
+         *
+         * @return the monkey recorder
+         */
         MonkeyRecorder recorder();
     }
 
+    /** The context. */
     private Context ctx;
 
+    /**
+     * Instantiates a new monkey.
+     *
+     * @param ctx
+     *            the context
+     */
     public Monkey(Context ctx) {
         this.ctx = ctx;
     }
 
+    /**
+     * Type.
+     *
+     * @return the monkey type enum
+     */
     public abstract Enum type();
 
+    /**
+     * Do monkey business.
+     */
     public abstract void doMonkeyBusiness();
 
+    /**
+     * Context.
+     *
+     * @return the context
+     */
     public Context context() {
         return ctx;
     }
 
+    /**
+     * Run. This is run on the schedule set by the MonkeyScheduler
+     *
+     * @throws Exception
+     *             the exception
+     */
     public void run() throws Exception {
         if (ctx.calendar().isMonkeyTime(this)) {
             LOGGER.info(this.type().name() + " Monkey Running ...");
@@ -56,6 +111,9 @@ public abstract class Monkey {
         }
     }
 
+    /**
+     * Start. Sets up the schedule for the monkey to run on.
+     */
     public void start() {
         final Monkey me = this;
         ctx.scheduler().start(type().name(), new Runnable() {
@@ -69,6 +127,9 @@ public abstract class Monkey {
         });
     }
 
+    /**
+     * Stop. Removes the monkey from the schedule.
+     */
     public void stop() {
         ctx.scheduler().stop(type().name());
     }

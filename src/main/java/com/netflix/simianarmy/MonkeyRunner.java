@@ -28,16 +28,29 @@ import java.lang.reflect.Constructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The MonkeyRunner Singleton.
+ */
 public enum MonkeyRunner {
 
+    /** The instance. */
     INSTANCE;
 
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(MonkeyRunner.class);
 
+    /**
+     * Gets the single instance of MonkeyRunner.
+     *
+     * @return single instance of MonkeyRunner
+     */
     public static MonkeyRunner getInstance() {
         return INSTANCE;
     }
 
+    /**
+     * Start all the monkeys registered with addMonkey or replaceMonkey.
+     */
     public void start() {
         for (Monkey monkey : monkeys) {
             LOGGER.info("Starting " + monkey.type().name() + " Monkey");
@@ -45,6 +58,9 @@ public enum MonkeyRunner {
         }
     }
 
+    /**
+     * Stop all of the registered monkeys.
+     */
     public void stop() {
         for (Monkey monkey : monkeys) {
             LOGGER.info("Stopping " + monkey.type().name() + " Monkey");
@@ -52,23 +68,53 @@ public enum MonkeyRunner {
         }
     }
 
+    /**
+     * The monkey map. Maps the monkey class to the context class that is registered. This is so we can create new
+     * monkeys in factory() that have the same context types as the registered ones.
+     */
     // SUPPRESS CHECKSTYLE LineLength
     private Map<Class<? extends Monkey>, Class<? extends Monkey.Context>> monkeyMap = new HashMap<Class<? extends Monkey>, Class<? extends Monkey.Context>>();
+
+    /** The monkeys. */
     private List<Monkey> monkeys = new LinkedList<Monkey>();
 
+    /**
+     * Gets the registered monkeys.
+     *
+     * @return the monkeys
+     */
     public List<Monkey> getMonkeys() {
         return Collections.unmodifiableList(monkeys);
     }
 
-    // simple monkey with no Context class
+    /**
+     * Adds a simple monkey void constructor.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     */
     public void addMonkey(Class<? extends Monkey> monkeyClass) {
         addMonkey(monkeyClass, null);
     }
 
+    /**
+     * Replace a simple monkey that has void constructor.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     */
     public void replaceMonkey(Class<? extends Monkey> monkeyClass) {
         replaceMonkey(monkeyClass, null);
     }
 
+    /**
+     * Adds the monkey.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     * @param ctxClass
+     *            the context class that is passed to the monkey class constructor.
+     */
     public void addMonkey(Class<? extends Monkey> monkeyClass, Class<? extends Monkey.Context> ctxClass) {
         if (monkeyMap.containsKey(monkeyClass)) {
             throw new RuntimeException(monkeyClass.getName()
@@ -78,6 +124,14 @@ public enum MonkeyRunner {
         monkeys.add(factory(monkeyClass, ctxClass));
     }
 
+    /**
+     * Replace monkey. If a monkey is already registered this will replace that registered monkey.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     * @param ctxClass
+     *            the context class that is passed to the monkey class constructor.
+     */
     public void replaceMonkey(Class<? extends Monkey> monkeyClass, Class<? extends Monkey.Context> ctxClass) {
         monkeyMap.put(monkeyClass, ctxClass);
         ListIterator<Monkey> li = monkeys.listIterator();
@@ -92,6 +146,12 @@ public enum MonkeyRunner {
         monkeys.add(monkey);
     }
 
+    /**
+     * Removes the monkey. factory() will no longer be able to construct monkeys of the specified monkey class.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     */
     public void removeMonkey(Class<? extends Monkey> monkeyClass) {
         ListIterator<Monkey> li = monkeys.listIterator();
         while (li.hasNext()) {
@@ -105,6 +165,26 @@ public enum MonkeyRunner {
         monkeyMap.remove(monkeyClass);
     }
 
+    /**
+     * Monkey factory. This will generate a new monkey object of the monkeyClass type. If a monkey of monkeyClass has
+     * not been registered then this will attempt to find a registered subclass and create an object of that type.
+     * Example:
+     *
+     * <pre>
+     * {@code
+     * MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
+     *
+     * // This will actualy return a BasicChaosMonkey since that is the only subclass that was registered
+     * ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+     *}
+     * </pre>
+     *
+     * @param <T>
+     *            the generic type, must be a subclass of Monkey
+     * @param monkeyClass
+     *            the monkey class
+     * @return the monkey
+     */
     public <T extends Monkey> T factory(Class<T> monkeyClass) {
         Class<? extends Monkey.Context> ctxClass = getContextClass(monkeyClass);
         if (ctxClass == null) {
@@ -120,6 +200,18 @@ public enum MonkeyRunner {
         return factory(monkeyClass, ctxClass);
     }
 
+    /**
+     * Monkey Factory. Given a monkey class and a monkey context class it will generate a new monkey. If the
+     * contextClass is null it will try to generate a new monkeyClass with a void constructor;
+     *
+     * @param <T>
+     *            the generic type, must be a subclass of Monkey
+     * @param monkeyClass
+     *            the monkey class
+     * @param contextClass
+     *            the context class
+     * @return the monkey
+     */
     public <T extends Monkey> T factory(Class<T> monkeyClass, Class<? extends Monkey.Context> contextClass) {
         try {
             if (contextClass == null) {
@@ -147,6 +239,13 @@ public enum MonkeyRunner {
         return null;
     }
 
+    /**
+     * Gets the context class. You shouldnt need this.
+     *
+     * @param monkeyClass
+     *            the monkey class
+     * @return the context class or null if a monkeyClass has not been registered
+     */
     public Class<? extends Monkey.Context> getContextClass(Class<? extends Monkey> monkeyClass) {
         return monkeyMap.get(monkeyClass);
     }

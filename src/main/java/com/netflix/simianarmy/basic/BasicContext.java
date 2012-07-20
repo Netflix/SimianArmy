@@ -29,9 +29,20 @@ import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The Class BasicContext. This provde the basix context needed for the monkeys to run. It will confiugre the monkeys
+ * based on a simianarmy.properties file. The properties file can be override with
+ * -Dsimianarmy.properties=/path/to/my.properties
+ */
 public class BasicContext extends BasicContextShell {
+
+    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicContext.class);
+
+    /** The Constant PROPS. */
     private static final Properties PROPS;
+
+    /** The Constant MONKEY_THREADS. */
     private static final int MONKEY_THREADS = 4;
     static {
         String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
@@ -49,19 +60,22 @@ public class BasicContext extends BasicContextShell {
         }
     }
 
+    /**
+     * Instantiates a new basic context.
+     */
     public BasicContext() {
         BasicConfiguration config = new BasicConfiguration(PROPS);
         setConfiguration(config);
         setCalendar(new BasicCalendar(config));
-        String account = config.getStr("accountKey");
-        String secret = config.getStr("secretKey");
-        String region = config.getStrOrElse("region", "us-east-1");
+        String account = config.getStr("simianarmy.aws.accountKey");
+        String secret = config.getStr("simianarmy.aws.secretKey");
+        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
         AWSClient client = new AWSClient(account, secret, region);
         setCloudClient(client);
-        setScheduler(new BasicScheduler((int) config.getNumOrElse("monkey.threads", MONKEY_THREADS)));
+        setScheduler(new BasicScheduler((int) config.getNumOrElse("simianarmy.scheduler.threads", MONKEY_THREADS)));
         setChaosCrawler(new BasicChaosCrawler(client));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
-        String domain = config.getStrOrElse("domain", "SIMIAN_ARMY");
+        String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");
         setRecorder(new SimpleDBRecorder(account, secret, region, domain));
     }
 }

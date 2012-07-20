@@ -44,15 +44,40 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
+/**
+ * The Class SimpleDBRecorder. Records events to and fetched events from a Amazon SimpleDB table (default SIMIAN_ARMY)
+ */
 @SuppressWarnings("serial")
 public class SimpleDBRecorder implements MonkeyRecorder {
+
+    /** The cred. */
     private AWSCredentials cred;
+
+    /** The region. */
     private String region;
+
+    /** The domain. */
     private String domain;
 
+    /**
+     * The Enum Keys.
+     */
     private enum Keys {
-        id, eventTime, region, recordType, monkeyType, eventType;
 
+        /** The event id. */
+        id,
+        /** The event time. */
+        eventTime,
+        /** The region. */
+        region,
+        /** The record type. */
+        recordType,
+        /** The monkey type. */
+        monkeyType,
+        /** The event type. */
+        eventType;
+
+        /** The Constant KEYSET. */
         public static final Set<String> KEYSET = Collections.unmodifiableSet(new HashSet<String>() {
             {
                 for (Keys k : Keys.values()) {
@@ -62,12 +87,34 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         });
     };
 
+    /**
+     * Instantiates a new simple db recorder.
+     *
+     * @param accessKey
+     *            the access key
+     * @param secretKey
+     *            the secret key
+     * @param region
+     *            the region
+     * @param domain
+     *            the domain
+     */
     public SimpleDBRecorder(String accessKey, String secretKey, String region, String domain) {
         this.cred = new BasicAWSCredentials(accessKey, secretKey);
         this.region = region;
         this.domain = domain;
     }
 
+    /**
+     * Instantiates a new simple db recorder.
+     *
+     * @param cred
+     *            the cred
+     * @param region
+     *            the region
+     * @param domain
+     *            the domain
+     */
     public SimpleDBRecorder(AWSCredentials cred, String region, String domain) {
         this.cred = cred;
         this.region = region;
@@ -78,12 +125,19 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      * Use {@link DefaultAWSCredentialsProviderChain} to provide credentials.
      *
      * @param region
+     *            the region
      * @param domain
+     *            the domain
      */
     public SimpleDBRecorder(String region, String domain) {
         this(new DefaultAWSCredentialsProviderChain().getCredentials(), region, domain);
     }
 
+    /**
+     * simple client. abstracted to aid testing
+     *
+     * @return the amazon simple db
+     */
     protected AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client = new AmazonSimpleDBClient(cred);
 
@@ -97,10 +151,24 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         return client;
     }
 
+    /**
+     * Enum to value. Converts an enum to "name|type" string
+     *
+     * @param e
+     *            the e
+     * @return the string
+     */
     private static String enumToValue(Enum e) {
         return String.format("%s|%s", e.name(), e.getClass().getName());
     }
 
+    /**
+     * Value to enum. Converts a "name|type" string back to an enum.
+     *
+     * @param value
+     *            the value
+     * @return the enum
+     */
     @SuppressWarnings("unchecked")
     private static Enum valueToEnum(String value) {
         // parts = [enum value, enum class type]
@@ -122,10 +190,12 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         throw new RuntimeException("value " + value + " does not appear to be an enum type");
     }
 
+    /** {@inheritDoc} */
     public Event newEvent(Enum monkeyType, Enum eventType, String id) {
         return new BasicRecorderEvent(monkeyType, eventType, id);
     }
 
+    /** {@inheritDoc} */
     public void recordEvent(Event evt) {
         List<ReplaceableAttribute> attrs = new LinkedList<ReplaceableAttribute>();
         attrs.add(new ReplaceableAttribute(Keys.id.name(), evt.id(), true));
@@ -148,6 +218,15 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     }
 
+    /**
+     * Find events.
+     *
+     * @param queryMap
+     *            the query map
+     * @param after
+     *            the start time to query for all events after
+     * @return the list
+     */
     protected List<Event> findEvents(Map<String, String> queryMap, long after) {
         StringBuilder query = new StringBuilder(String.format("select * from %s where region = '%s'", domain, region));
         for (Map.Entry<String, String> pair : queryMap.entrySet()) {
@@ -184,16 +263,19 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         return list;
     }
 
+    /** {@inheritDoc} */
     public List<Event> findEvents(Map<String, String> query, Date after) {
         return findEvents(query, after.getTime());
     }
 
+    /** {@inheritDoc} */
     public List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         return findEvents(copy, after);
     }
 
+    /** {@inheritDoc} */
     public List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
