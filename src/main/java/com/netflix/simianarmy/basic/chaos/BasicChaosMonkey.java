@@ -22,6 +22,8 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
+import com.amazonaws.AmazonServiceException;
+
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -100,6 +102,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
                         try {
                             recordTermination(group, inst);
                             context().cloudClient().terminateInstance(inst);
+                        } catch (AmazonServiceException e) {
+                            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                                LOGGER.warn("Failed to terminate " + inst
+                                        + ", it does not exist. Perhaps it was already terminated");
+                            } else {
+                                handleTerminationError(inst, e);
+                            }
                         } catch (Exception e) {
                             handleTerminationError(inst, e);
                         }
