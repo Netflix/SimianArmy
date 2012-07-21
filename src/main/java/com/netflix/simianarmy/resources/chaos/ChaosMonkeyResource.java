@@ -94,6 +94,6 @@ public class ChaosMonkeyResource {
         }
         gen.writeEndArray();
         gen.close();
-        return Response.status(Response.Status.OK).entity(baos).build();
+        return Response.status(Response.Status.OK).entity(baos.toString("UTF-8")).build();
     }
 }
