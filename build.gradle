@@ -50,8 +50,10 @@ dependencies {
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'
 
-    // needed for findbug Missing Class: org.slf4j.impl.StaticLoggerBinder
     runtime 'org.slf4j:slf4j-log4j12:1.6.1'
+
+    // needed for findbug Missing Class: org.slf4j.impl.StaticLoggerBinder
+    providedCompile 'org.slf4j:slf4j-log4j12:1.6.1'
 
     providedCompile 'javax.servlet:servlet-api:2.5'
     // needed for findbug Missing Class: javax.annotation.Nonnull
