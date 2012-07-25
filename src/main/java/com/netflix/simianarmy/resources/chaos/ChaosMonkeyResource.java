@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Date;
+import java.util.Calendar;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -64,7 +65,7 @@ public class ChaosMonkeyResource {
     @GET
     public Response getChaosEvents(@javax.ws.rs.core.Context UriInfo uriInfo) throws IOException {
         Map<String, String> query = new HashMap<String, String>();
-        Date date = new Date(0);
+        Date date = null;
         for (Map.Entry<String, List<String>> pair : uriInfo.getQueryParameters().entrySet()) {
             if (pair.getValue().isEmpty()) {
                 continue;
@@ -74,6 +75,12 @@ public class ChaosMonkeyResource {
             } else {
                 query.put(pair.getKey(), pair.getValue().get(0));
             }
+        }
+        // if "since" not set, default to 24 hours ago
+        if (date == null) {
+            Calendar now = monkey.context().calendar().now();
+            now.add(Calendar.DAY_OF_YEAR, -1);
+            date = now.getTime();
         }
 
         List<Event> evts = monkey.context().recorder()
