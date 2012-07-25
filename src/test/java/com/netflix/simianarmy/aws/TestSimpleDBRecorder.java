@@ -153,7 +153,8 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         StringBuilder sb = new StringBuilder();
         sb.append("select * from DOMAIN where region = 'region'");
         sb.append(" and instanceId = 'testId1'");
-        Assert.assertEquals(req.getSelectExpression(), sb.toString());
+
+        Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > '0' order by eventTime desc");
 
         // reset for next test
         when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
@@ -163,7 +164,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         verify(sdbMock, times(4)).select(arg.capture());
         req = arg.getValue();
         sb.append(" and monkeyType = 'MONKEY|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type'");
-        Assert.assertEquals(req.getSelectExpression(), sb.toString());
+        Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > '0' order by eventTime desc");
 
         // reset for next test
         when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
@@ -173,7 +174,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         verify(sdbMock, times(6)).select(arg.capture());
         req = arg.getValue();
         sb.append(" and eventType = 'EVENT|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type'");
-        Assert.assertEquals(req.getSelectExpression(), sb.toString());
+        Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > '0' order by eventTime desc");
 
         // reset for next test
         when(sdbMock.select(any(SelectRequest.class))).thenReturn(result1).thenReturn(result2);
@@ -182,7 +183,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         verify(sdbMock, times(8)).select(arg.capture());
         req = arg.getValue();
-        sb.append(" and eventTime > '1330538400000'");
+        sb.append(" and eventTime > '1330538400000' order by eventTime desc");
         Assert.assertEquals(req.getSelectExpression(), sb.toString());
     }
 

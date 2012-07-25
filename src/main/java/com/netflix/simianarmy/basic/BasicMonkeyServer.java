@@ -39,7 +39,14 @@ public class BasicMonkeyServer extends HttpServlet {
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
     /**
-     * Inits the.
+     * Add monkeys to run.
+     */
+    public void addMonkeys() {
+        RUNNER.replaceMonkey(BasicChaosMonkey.class, BasicContext.class);
+    }
+
+    /**
+     * Inits the server.
      *
      * @throws ServletException
      *             the servlet exception
@@ -47,7 +54,7 @@ public class BasicMonkeyServer extends HttpServlet {
     @Override
     public void init() throws ServletException {
         super.init();
-        RUNNER.replaceMonkey(BasicChaosMonkey.class, BasicContext.class);
+        addMonkeys();
         RUNNER.start();
     }
 

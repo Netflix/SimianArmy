@@ -17,18 +17,30 @@
  */
 package com.netflix.simianarmy.basic;
 
+import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyScheduler;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.HashMap;
+import java.util.Collections;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The Class BasicScheduler.
  */
 public class BasicScheduler implements MonkeyScheduler {
+
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicScheduler.class);
 
     /** The futures. */
     private HashMap<String, ScheduledFuture<?>> futures = new HashMap<String, ScheduledFuture<?>>();
@@ -67,15 +79,37 @@ public class BasicScheduler implements MonkeyScheduler {
 
     /** {@inheritDoc} */
     @Override
-    public void start(String name, Runnable command) {
-        futures.put(name, scheduler.scheduleWithFixedDelay(command, 0, frequency(), frequencyUnit()));
+    public void start(Monkey monkey, Runnable command) {
+        long cycle = TimeUnit.MILLISECONDS.convert(frequency(), frequencyUnit());
+
+        // go back 1 cycle to see if we have any events
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MILLISECOND, (int) (-1 * cycle));
+
+        Date then = cal.getTime();
+        List<Event> events = monkey.context().recorder()
+                .findEvents(monkey.type(), Collections.<String, String>emptyMap(), then);
+        if (events.isEmpty()) {
+            // no events so just run now
+            futures.put(monkey.type().name(),
+                    scheduler.scheduleWithFixedDelay(command, 0, frequency(), frequencyUnit()));
+        } else {
+            // we have events, so set the start time to the time left in what would have been the last cycle
+            Date eventTime = events.get(0).eventTime();
+            Date now = new Date();
+            long init = cycle - (now.getTime() - eventTime.getTime());
+            LOGGER.info("Detected previous events within cycle, setting " + monkey.type().name() + " start to "
+                    + new Date(now.getTime() + init));
+            futures.put(monkey.type().name(),
+                    scheduler.scheduleWithFixedDelay(command, init, cycle, TimeUnit.MILLISECONDS));
+        }
     }
 
     /** {@inheritDoc} */
     @Override
-    public void stop(String name) {
-        if (futures.containsKey(name)) {
-            futures.remove(name).cancel(true);
+    public void stop(Monkey monkey) {
+        if (futures.containsKey(monkey.type().name())) {
+            futures.remove(monkey.type().name()).cancel(true);
         }
     }
 }

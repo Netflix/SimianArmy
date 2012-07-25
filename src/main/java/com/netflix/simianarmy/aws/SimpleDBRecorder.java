@@ -232,9 +232,9 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         for (Map.Entry<String, String> pair : queryMap.entrySet()) {
             query.append(String.format(" and %s = '%s'", pair.getKey(), pair.getValue()));
         }
-        if (after > 0) {
-            query.append(String.format(" and eventTime > '%d'", after));
-        }
+        query.append(String.format(" and eventTime > '%d'", after));
+        // always return with most recent record first
+        query.append(" order by eventTime desc");
 
         List<Event> list = new LinkedList<Event>();
         SelectRequest request = new SelectRequest(query.toString());

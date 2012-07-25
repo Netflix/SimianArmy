@@ -42,18 +42,18 @@ public interface MonkeyScheduler {
     /**
      * Start the scheduler to cause the monkey run at a specified interval.
      *
-     * @param name
-     *            monkey name
+     * @param monkey
+     *            the monkey being scheduled
      * @param run
      *            the Runnable to start, generally calls doMonkeyBusiness
      */
-    void start(String name, Runnable run);
+    void start(Monkey monkey, Runnable run);
 
     /**
      * Stop the scheduler for a given monkey. After this the monkey will no longer run on the fixed schedule.
      *
-     * @param name
-     *            monkey name
+     * @param monkey
+     *            the monkey being scheduled
      */
-    void stop(String name);
+    void stop(Monkey monkey);
 }

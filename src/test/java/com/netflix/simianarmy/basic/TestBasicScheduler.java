@@ -21,8 +21,17 @@ package com.netflix.simianarmy.basic;
 import org.testng.annotations.Test;
 import org.testng.Assert;
 
-import java.util.concurrent.TimeUnit;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+
+import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.TestMonkeyContext;
+
+// CHECKSTYLE IGNORE MagicNumber
 public class TestBasicScheduler extends BasicScheduler {
 
     @Test
@@ -34,30 +43,84 @@ public class TestBasicScheduler extends BasicScheduler {
         Assert.assertNotNull(new BasicScheduler(2));
     }
 
-    private static int counter = 0;
+    private int frequency = 2;
 
     public int frequency() {
-        return 2;
+        return frequency;
     }
 
+    private TimeUnit frequencyUnit = TimeUnit.SECONDS;
+
     public TimeUnit frequencyUnit() {
-        return TimeUnit.SECONDS;
+        return frequencyUnit;
     }
+
+    private enum Enums {
+        MONKEY, EVENT
+    };
 
     @Test
     public void testRunner() throws InterruptedException {
-        // CHECKSTYLE IGNORE MagicNumberCheck
-        start("testRunner", new Runnable() {
+        BasicScheduler sched = new TestBasicScheduler();
+        Monkey mockMonkey = mock(Monkey.class);
+        when(mockMonkey.context()).thenReturn(new TestMonkeyContext(Enums.MONKEY));
+        when(mockMonkey.type()).thenReturn(Enums.MONKEY).thenReturn(Enums.MONKEY);
+
+        final AtomicLong counter = new AtomicLong(0L);
+        sched.start(mockMonkey, new Runnable() {
             public void run() {
-                counter++;
+                counter.incrementAndGet();
             }
         });
         Thread.sleep(1000);
-        Assert.assertEquals(counter, 1);
+        Assert.assertEquals(counter.get(), 1);
         Thread.sleep(2000);
-        Assert.assertEquals(counter, 2);
-        stop("testRunner");
+        Assert.assertEquals(counter.get(), 2);
+        sched.stop(mockMonkey);
         Thread.sleep(2000);
-        Assert.assertEquals(counter, 2);
+        Assert.assertEquals(counter.get(), 2);
+    }
+
+    @Test
+    public void testDelayedStart() throws InterruptedException {
+        TestBasicScheduler sched = new TestBasicScheduler();
+
+        // set monkey to run hourly
+        sched.frequency = 1;
+        sched.frequencyUnit = TimeUnit.HOURS;
+
+        TestMonkeyContext context = new TestMonkeyContext(Enums.MONKEY);
+        Monkey mockMonkey = mock(Monkey.class);
+        when(mockMonkey.context()).thenReturn(context).thenReturn(context);
+        when(mockMonkey.type()).thenReturn(Enums.MONKEY).thenReturn(Enums.MONKEY);
+
+        // first monkey has no previous events, so it runs immediately
+        final AtomicLong counter = new AtomicLong(0L);
+        sched.start(mockMonkey, new Runnable() {
+            public void run() {
+                counter.incrementAndGet();
+            }
+        });
+        Thread.sleep(10);
+        Assert.assertEquals(counter.get(), 1);
+        sched.stop(mockMonkey);
+
+        // create an event 5 min ago
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.MINUTE, -5);
+        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, Enums.EVENT, "test-id", cal.getTime().getTime());
+        context.recorder().recordEvent(evt);
+
+        // this time when it runs it will not increment within 10ms since it should be scheduled for 55m from now.
+        sched.start(mockMonkey, new Runnable() {
+            public void run() {
+                counter.incrementAndGet();
+            }
+        });
+        Thread.sleep(10);
+
+        // counter did not increment because start was delayed due to previous event
+        Assert.assertEquals(counter.get(), 1);
+        sched.stop(mockMonkey);
     }
 }

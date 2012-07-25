@@ -46,13 +46,13 @@ public class TestMonkeyContext implements Monkey.Context {
                 return TimeUnit.HOURS;
             }
 
-            public void start(String name, Runnable run) {
-                Assert.assertEquals(name, monkeyType.name(), "starting monkey");
+            public void start(Monkey monkey, Runnable run) {
+                Assert.assertEquals(monkey.type().name(), monkeyType.name(), "starting monkey");
                 run.run();
             }
 
-            public void stop(String name) {
-                Assert.assertEquals(name, monkeyType.name(), "stopping monkey");
+            public void stop(Monkey monkey) {
+                Assert.assertEquals(monkey.type().name(), monkeyType.name(), "stopping monkey");
             }
         };
     }
@@ -85,26 +85,40 @@ public class TestMonkeyContext implements Monkey.Context {
         };
     }
 
+    private MonkeyRecorder recorder = new MonkeyRecorder() {
+        private List<Event> events = new LinkedList<Event>();
+
+        public Event newEvent(Enum mkType, Enum eventType, String id) {
+            return new BasicRecorderEvent(mkType, eventType, id);
+        }
+
+        public void recordEvent(Event evt) {
+            events.add(evt);
+        }
+
+        public List<Event> findEvents(Map<String, String> query, Date after) {
+            return events;
+        }
+
+        public List<Event> findEvents(Enum mkeyType, Map<String, String> query, Date after) {
+            // used from BasicScheduler
+            return events;
+        }
+
+        public List<Event> findEvents(Enum mkeyType, Enum eventType, Map<String, String> query, Date after) {
+            // used from ChaosMonkey
+            List<Event> evts = new LinkedList<Event>();
+            for (Event evt : events) {
+                if (query.get("groupName").equals(evt.field("groupName")) && evt.monkeyType() == mkeyType
+                        && evt.eventType() == eventType && evt.eventTime().after(after)) {
+                    evts.add(evt);
+                }
+            }
+            return evts;
+        }
+    };
+
     public MonkeyRecorder recorder() {
-        return new MonkeyRecorder() {
-            public Event newEvent(Enum mkType, Enum eventType, String id) {
-                return new BasicRecorderEvent(mkType, eventType, id);
-            }
-
-            public void recordEvent(Event evt) {
-            }
-
-            public List<Event> findEvents(Map<String, String> query, Date after) {
-                return new LinkedList<Event>();
-            }
-
-            public List<Event> findEvents(Enum mkeyType, Map<String, String> query, Date after) {
-                return new LinkedList<Event>();
-            }
-
-            public List<Event> findEvents(Enum mkeyType, Enum eventType, Map<String, String> query, Date after) {
-                return new LinkedList<Event>();
-            }
-        };
+        return recorder;
     }
 }

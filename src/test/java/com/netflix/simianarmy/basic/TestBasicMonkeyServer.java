@@ -23,11 +23,14 @@ import org.testng.Assert;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.TestMonkey;
+import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TestBasicMonkeyServer {
+@SuppressWarnings("serial")
+public class TestBasicMonkeyServer extends BasicMonkeyServer {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicMonkeyServer.class);
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
@@ -39,14 +42,19 @@ public class TestBasicMonkeyServer {
         }
     }
 
+    public void addMonkeys() {
+        MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, TestChaosMonkeyContext.class);
+        MonkeyRunner.getInstance().addMonkey(SillyMonkey.class);
+    }
+
     @Test
     public void testServer() {
-        RUNNER.addMonkey(SillyMonkey.class);
-        BasicMonkeyServer server = new BasicMonkeyServer();
+        BasicMonkeyServer server = new TestBasicMonkeyServer();
+
         try {
             server.init();
         } catch (Exception e) {
-            Assert.fail("failed to init server");
+            Assert.fail("failed to init server", e);
         }
 
         // there is a race condition since the monkeys will run
@@ -57,7 +65,7 @@ public class TestBasicMonkeyServer {
         try {
             server.destroy();
         } catch (Exception e) {
-            Assert.fail("failed to destroy server");
+            Assert.fail("failed to destroy server", e);
         }
         Assert.assertEquals(RUNNER.getMonkeys().size(), 1);
         Assert.assertEquals(RUNNER.getMonkeys().get(0).getClass(), SillyMonkey.class);

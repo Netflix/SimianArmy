@@ -116,7 +116,7 @@ public abstract class Monkey {
      */
     public void start() {
         final Monkey me = this;
-        ctx.scheduler().start(type().name(), new Runnable() {
+        ctx.scheduler().start(this, new Runnable() {
             public void run() {
                 try {
                     me.run();
@@ -131,7 +131,7 @@ public abstract class Monkey {
      * Stop. Removes the monkey from the schedule.
      */
     public void stop() {
-        ctx.scheduler().stop(type().name());
+        ctx.scheduler().stop(this);
     }
 
 }
