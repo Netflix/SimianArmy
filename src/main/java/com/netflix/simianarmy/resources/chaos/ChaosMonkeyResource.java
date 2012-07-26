@@ -41,7 +41,7 @@ import org.codehaus.jackson.map.MappingJsonFactory;
 /**
  * The Class ChaosMonkeyResource for json REST apis.
  */
-@Path("/chaos")
+@Path("/v1/chaos")
 @SuppressWarnings("serial")
 public class ChaosMonkeyResource {
 
@@ -52,7 +52,7 @@ public class ChaosMonkeyResource {
     private ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
 
     /**
-     * Gets the chaos events. Creates GET /chaos api which outputs the chaos events in json. Users can specify cgi query
+     * Gets the chaos events. Creates GET /api/v1/chaos api which outputs the chaos events in json. Users can specify cgi query
      * params to filter the results and use "since" query param to set the start of a timerange. "since" will number of
      * milliseconds since the epoch.
      *
