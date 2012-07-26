@@ -102,6 +102,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
                         try {
                             recordTermination(group, inst);
                             context().cloudClient().terminateInstance(inst);
+                            LOGGER.info("Terminated {} from group {} [{}]",
+                                    new Object[] {inst, group.name(), group.type()});
                         } catch (AmazonServiceException e) {
                             if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
                                 LOGGER.warn("Failed to terminate " + inst
