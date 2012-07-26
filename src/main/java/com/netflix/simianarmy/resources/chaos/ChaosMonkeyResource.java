@@ -52,9 +52,9 @@ public class ChaosMonkeyResource {
     private ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
 
     /**
-     * Gets the chaos events. Creates GET /api/v1/chaos api which outputs the chaos events in json. Users can specify cgi query
-     * params to filter the results and use "since" query param to set the start of a timerange. "since" will number of
-     * milliseconds since the epoch.
+     * Gets the chaos events. Creates GET /api/v1/chaos api which outputs the chaos events in json. Users can specify
+     * cgi query params to filter the results and use "since" query param to set the start of a timerange. "since" will
+     * number of milliseconds since the epoch.
      *
      * @param uriInfo
      *            the uri info
