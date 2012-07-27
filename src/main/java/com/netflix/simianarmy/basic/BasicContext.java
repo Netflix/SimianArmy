@@ -44,7 +44,7 @@ public class BasicContext extends BasicContextShell {
     private static final Properties PROPS;
 
     /** The Constant MONKEY_THREADS. */
-    private static final int MONKEY_THREADS = 4;
+    private static final int MONKEY_THREADS = 1;
     static {
         String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
         PROPS = new Properties();
