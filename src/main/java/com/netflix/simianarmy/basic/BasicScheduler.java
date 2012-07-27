@@ -48,6 +48,12 @@ public class BasicScheduler implements MonkeyScheduler {
     /** The scheduler. */
     private final ScheduledExecutorService scheduler;
 
+    /** the frequency. */
+    private int frequency = 1;
+
+    /** the frequencyUnit. */
+    private TimeUnit frequencyUnit = TimeUnit.HOURS;
+
     /**
      * Instantiates a new basic scheduler.
      */
@@ -58,23 +64,27 @@ public class BasicScheduler implements MonkeyScheduler {
     /**
      * Instantiates a new basic scheduler.
      *
+     * @param freq
+     *            the frequency to run on
+     * @param freqUnit
+     *            the unit for the freq argument
      * @param concurrent
      *            the concurrent number of threads
      */
-    public BasicScheduler(int concurrent) {
+    public BasicScheduler(int freq, TimeUnit freqUnit, int concurrent) {
         scheduler = Executors.newScheduledThreadPool(concurrent);
     }
 
     /** {@inheritDoc} */
     @Override
     public int frequency() {
-        return 1;
+        return frequency;
     }
 
     /** {@inheritDoc} */
     @Override
     public TimeUnit frequencyUnit() {
-        return TimeUnit.HOURS;
+        return frequencyUnit;
     }
 
     /** {@inheritDoc} */

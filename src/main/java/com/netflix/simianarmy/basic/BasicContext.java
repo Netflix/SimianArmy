@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.basic;
 
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.io.InputStream;
 
 import com.netflix.simianarmy.aws.AWSClient;
@@ -72,7 +73,10 @@ public class BasicContext extends BasicContextShell {
         String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
         AWSClient client = new AWSClient(account, secret, region);
         setCloudClient(client);
-        setScheduler(new BasicScheduler((int) config.getNumOrElse("simianarmy.scheduler.threads", MONKEY_THREADS)));
+        int freq = (int) config.getNumOrElse("simianarmy.scheduler.frequency", 1);
+        TimeUnit freqUnit = TimeUnit.valueOf(config.getStrOrElse("simianarmy.scheduler.frequencyUnit", "HOURS"));
+        int threads = (int) config.getNumOrElse("simianarmy.scheduler.threads", MONKEY_THREADS);
+        setScheduler(new BasicScheduler(freq, freqUnit, threads));
         setChaosCrawler(new BasicChaosCrawler(client));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
         String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");

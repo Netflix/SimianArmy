@@ -40,7 +40,7 @@ public class TestBasicScheduler extends BasicScheduler {
         Assert.assertNotNull(sched);
         Assert.assertEquals(sched.frequency(), 1);
         Assert.assertEquals(sched.frequencyUnit(), TimeUnit.HOURS);
-        Assert.assertNotNull(new BasicScheduler(2));
+        Assert.assertNotNull(new BasicScheduler(12, TimeUnit.HOURS, 2));
     }
 
     private int frequency = 2;
