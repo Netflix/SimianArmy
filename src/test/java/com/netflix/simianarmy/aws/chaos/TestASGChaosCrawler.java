@@ -16,7 +16,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.basic.chaos;
+package com.netflix.simianarmy.aws.chaos;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
@@ -36,8 +36,8 @@ import com.netflix.simianarmy.aws.AWSClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 
-public class TestBasicChaosCrawler {
-    private BasicChaosCrawler crawler;
+public class TestASGChaosCrawler {
+    private ASGChaosCrawler crawler;
 
     private AutoScalingGroup mkAsg(String asgName, String instanceId) {
         AutoScalingGroup asg = new AutoScalingGroup();
@@ -50,9 +50,9 @@ public class TestBasicChaosCrawler {
 
     private AWSClient awsMock;
 
-    public TestBasicChaosCrawler() {
+    public TestASGChaosCrawler() {
         awsMock = mock(AWSClient.class);
-        crawler = new BasicChaosCrawler(awsMock);
+        crawler = new ASGChaosCrawler(awsMock);
     }
 
     @Test
@@ -76,12 +76,12 @@ public class TestBasicChaosCrawler {
 
         Assert.assertEquals(groups.size(), 2);
 
-        Assert.assertEquals(groups.get(0).type(), BasicChaosCrawler.Types.ASG);
+        Assert.assertEquals(groups.get(0).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(0).name(), "asg1");
         Assert.assertEquals(groups.get(0).instances().size(), 1);
         Assert.assertEquals(groups.get(0).instances().get(0), "i-123456780");
 
-        Assert.assertEquals(groups.get(1).type(), BasicChaosCrawler.Types.ASG);
+        Assert.assertEquals(groups.get(1).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(1).name(), "asg2");
         Assert.assertEquals(groups.get(1).instances().size(), 1);
         Assert.assertEquals(groups.get(1).instances().get(0), "i-123456781");

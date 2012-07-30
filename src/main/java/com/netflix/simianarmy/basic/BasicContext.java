@@ -23,8 +23,8 @@ import java.io.InputStream;
 
 import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
+import com.netflix.simianarmy.aws.chaos.ASGChaosCrawler;
 
-import com.netflix.simianarmy.basic.chaos.BasicChaosCrawler;
 import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 
 import org.slf4j.Logger;
@@ -77,7 +77,7 @@ public class BasicContext extends BasicContextShell {
         TimeUnit freqUnit = TimeUnit.valueOf(config.getStrOrElse("simianarmy.scheduler.frequencyUnit", "HOURS"));
         int threads = (int) config.getNumOrElse("simianarmy.scheduler.threads", MONKEY_THREADS);
         setScheduler(new BasicScheduler(freq, freqUnit, threads));
-        setChaosCrawler(new BasicChaosCrawler(client));
+        setChaosCrawler(new ASGChaosCrawler(client));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
         String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");
         setRecorder(new SimpleDBRecorder(account, secret, region, domain));
