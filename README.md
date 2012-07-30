@@ -1,6 +1,6 @@
 ## DESCRIPTION
 
-SimianArmy is a service that runs Chaos Monkey.  Chaos Monkey will terminate random a random instance in your ASGs
+SimianArmy is a service that runs Chaos Monkey.  Chaos Monkey will terminate a random instance in your ASGs
 so you can test failure scenarios.
 
 ## DETAILS
