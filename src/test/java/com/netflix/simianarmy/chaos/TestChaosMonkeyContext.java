@@ -68,11 +68,13 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     public static class TestInstanceGroup implements InstanceGroup {
         private final Enum type;
         private final String name;
+        private final String region;
         private final String instance;
 
-        public TestInstanceGroup(Enum type, String name, String instance) {
+        public TestInstanceGroup(Enum type, String name, String region, String instance) {
             this.type = type;
             this.name = name;
+            this.region = region;
             this.instance = instance;
         }
 
@@ -82,6 +84,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
         public String name() {
             return name;
+        }
+
+        public String region() {
+            return region;
         }
 
         public List<String> instances() {
@@ -103,10 +109,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             public List<InstanceGroup> groups() {
-                InstanceGroup gA0 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name0", "0:i-123456780");
-                InstanceGroup gA1 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name1", "1:i-123456781");
-                InstanceGroup gB2 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name2", "2:i-123456782");
-                InstanceGroup gB3 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name3", "3:i-123456783");
+                InstanceGroup gA0 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name0", "reg1", "0:i-123456780");
+                InstanceGroup gA1 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name1", "reg1", "1:i-123456781");
+                InstanceGroup gB2 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name2", "reg1", "2:i-123456782");
+                InstanceGroup gB3 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name3", "reg1", "3:i-123456783");
                 return Arrays.asList(gA0, gA1, gB2, gB3);
             }
         };

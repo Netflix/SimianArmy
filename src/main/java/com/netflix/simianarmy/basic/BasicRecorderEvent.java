@@ -38,6 +38,9 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
     /** The event id. */
     private String id;
 
+    /** The event region. */
+    private String region;
+
     /** The fields. */
     private Map<String, String> fields = new HashMap<String, String>();
 
@@ -51,13 +54,16 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      *            the monkey type
      * @param eventType
      *            the event type
+     * @param region
+     *            the region event occured in
      * @param id
      *            the event id
      */
-    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String id) {
+    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String region, String id) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
         this.id = id;
+        this.region = region;
         this.date = new Date();
     }
 
@@ -68,21 +74,29 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      *            the monkey type
      * @param eventType
      *            the event type
+     * @param region
+     *            the region event occured in
      * @param id
      *            the event id
      * @param time
      *            the event time
      */
-    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String id, long time) {
+    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String region, String id, long time) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
         this.id = id;
+        this.region = region;
         this.date = new Date(time);
     }
 
     /** {@inheritDoc} */
     public String id() {
         return id;
+    }
+
+    /** {@inheritDoc} */
+    public String region() {
+        return region;
     }
 
     /** {@inheritDoc} */

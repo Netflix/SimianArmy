@@ -66,7 +66,7 @@ public class ASGChaosCrawler implements ChaosCrawler {
     public List<InstanceGroup> groups() {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
         for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups()) {
-            InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG);
+            InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
             for (Instance inst : asg.getInstances()) {
                 ig.addInstance(inst.getInstanceId());
             }

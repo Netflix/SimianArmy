@@ -191,8 +191,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
     }
 
     /** {@inheritDoc} */
-    public Event newEvent(Enum monkeyType, Enum eventType, String id) {
-        return new BasicRecorderEvent(monkeyType, eventType, id);
+    public Event newEvent(Enum monkeyType, Enum eventType, String reg, String id) {
+        return new BasicRecorderEvent(monkeyType, eventType, reg, id);
     }
 
     /** {@inheritDoc} */
@@ -200,9 +200,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         List<ReplaceableAttribute> attrs = new LinkedList<ReplaceableAttribute>();
         attrs.add(new ReplaceableAttribute(Keys.id.name(), evt.id(), true));
         attrs.add(new ReplaceableAttribute(Keys.eventTime.name(), String.valueOf(evt.eventTime().getTime()), true));
-        // TODO I think region is overloaded here, probably need to distinguish between the region being changed
-        // and where the data is being stored.
-        attrs.add(new ReplaceableAttribute(Keys.region.name(), region, true));
+        attrs.add(new ReplaceableAttribute(Keys.region.name(), evt.region(), true));
         attrs.add(new ReplaceableAttribute(Keys.recordType.name(), "MonkeyEvent", true));
         attrs.add(new ReplaceableAttribute(Keys.monkeyType.name(), enumToValue(evt.monkeyType()), true));
         attrs.add(new ReplaceableAttribute(Keys.eventType.name(), enumToValue(evt.eventType()), true));
@@ -254,10 +252,11 @@ public class SimpleDBRecorder implements MonkeyRecorder {
                     }
                 }
                 String eid = res.get(Keys.id.name());
+                String ereg = res.get(Keys.region.name());
                 Enum monkeyType = valueToEnum(res.get(Keys.monkeyType.name()));
                 Enum eventType = valueToEnum(res.get(Keys.eventType.name()));
                 long eventTime = Long.parseLong(res.get(Keys.eventTime.name()));
-                list.add(new BasicRecorderEvent(monkeyType, eventType, eid, eventTime).addFields(fields));
+                list.add(new BasicRecorderEvent(monkeyType, eventType, ereg, eid, eventTime).addFields(fields));
             }
         } while (result.getNextToken() != null);
         return list;

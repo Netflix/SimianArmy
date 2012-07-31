@@ -89,6 +89,15 @@ public class AWSClient implements CloudClient {
     }
 
     /**
+     * The Region.
+     *
+     * @return the region the client is configured to communicate with
+     */
+    public String region() {
+        return region;
+    }
+
+    /**
      * Amazon EC2 client. Abstracted to aid testing.
      *
      * @return the amazon ec2 client

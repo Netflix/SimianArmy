@@ -149,7 +149,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     public void recordTermination(InstanceGroup group, String instance) {
-        Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, instance);
+        Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, group.region(), instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
         context().recorder().recordEvent(evt);

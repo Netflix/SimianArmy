@@ -108,7 +108,8 @@ public class TestBasicScheduler extends BasicScheduler {
         // create an event 5 min ago
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, -5);
-        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, Enums.EVENT, "test-id", cal.getTime().getTime());
+        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, Enums.EVENT, "region", "test-id", cal.getTime()
+                .getTime());
         context.recorder().recordEvent(evt);
 
         // this time when it runs it will not increment within 10ms since it should be scheduled for 55m from now.

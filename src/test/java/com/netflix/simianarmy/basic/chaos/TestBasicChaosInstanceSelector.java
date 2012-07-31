@@ -54,6 +54,10 @@ public class TestBasicChaosInstanceSelector {
             return "TestGroup";
         }
 
+        public String region() {
+            return "region";
+        }
+
         public List<String> instances() {
             return Arrays.asList("i-123456780", "i-123456781", "i-123456782", "i-123456783", "i-123456784",
                     "i-123456785", "i-123456786", "i-123456787", "i-123456788", "i-123456789");

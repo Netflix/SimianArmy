@@ -118,8 +118,8 @@ public class TestChaosMonkeyResource {
         final Enum monkeyType = ChaosMonkey.Type.CHAOS;
         final Enum eventType = ChaosMonkey.EventTypes.CHAOS_TERMINATION;
         // SUPPRESS CHECKSTYLE MagicNumber
-        return new BasicRecorderEvent(monkeyType, eventType, "id", 1330538400000L).addField("instanceId", instance)
-                .addField("groupType", "ASG").addField("groupName", "testGroup").addField("region", "us-east-1");
+        return new BasicRecorderEvent(monkeyType, eventType, "region", "id", 1330538400000L)
+                .addField("instanceId", instance).addField("groupType", "ASG").addField("groupName", "testGroup");
     }
 
     public static class MockTestChaosMonkeyContext extends TestChaosMonkeyContext {

@@ -60,6 +60,13 @@ public interface MonkeyRecorder {
         Enum eventType();
 
         /**
+         * Region.
+         *
+         * @return the region for the event
+         */
+        String region();
+
+        /**
          * Fields.
          *
          * @return the map of strings that may have been provided when the event was created
@@ -94,11 +101,13 @@ public interface MonkeyRecorder {
      *            the monkey type
      * @param eventType
      *            the event type
+     * @param region
+     *            the region the event occured
      * @param id
      *            the id
      * @return the event
      */
-    Event newEvent(Enum monkeyType, Enum eventType, String id);
+    Event newEvent(Enum monkeyType, Enum eventType, String region, String id);
 
     /**
      * Record event.

@@ -33,12 +33,12 @@ public class TestBasicRecorderEvent {
     public void test() {
         Enum monkeyType = Types.MONKEY;
         Enum eventType = Types.EVENT;
-        BasicRecorderEvent evt = new BasicRecorderEvent(monkeyType, eventType, "test-id");
+        BasicRecorderEvent evt = new BasicRecorderEvent(monkeyType, eventType, "region", "test-id");
         testEvent(evt);
 
         // CHECKSTYLE IGNORE MagicNumberCheck
         long time = 1330538400000L;
-        evt = new BasicRecorderEvent(monkeyType, eventType, "test-id", time);
+        evt = new BasicRecorderEvent(monkeyType, eventType, "region", "test-id", time);
         testEvent(evt);
         Assert.assertEquals(evt.eventTime().getTime(), time);
 
@@ -48,6 +48,7 @@ public class TestBasicRecorderEvent {
         Assert.assertEquals(evt.id(), "test-id");
         Assert.assertEquals(evt.monkeyType(), Types.MONKEY);
         Assert.assertEquals(evt.eventType(), Types.EVENT);
+        Assert.assertEquals(evt.region(), "region");
         Assert.assertEquals(evt.addField("a", "1"), evt);
         Map<String, String> map = new HashMap<String, String>();
         map.put("b", "2");

@@ -86,7 +86,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
     public void testRecordEvent() {
         ArgumentCaptor<PutAttributesRequest> arg = ArgumentCaptor.forClass(PutAttributesRequest.class);
 
-        Event evt = newEvent(Type.MONKEY, Type.EVENT, "testId");
+        Event evt = newEvent(Type.MONKEY, Type.EVENT, "region", "testId");
         evt.addField("field1", "value1");
         evt.addField("field2", "value2");
         // this will be ignored as it conflicts with reserved key

@@ -88,8 +88,8 @@ public class TestMonkeyContext implements Monkey.Context {
     private MonkeyRecorder recorder = new MonkeyRecorder() {
         private List<Event> events = new LinkedList<Event>();
 
-        public Event newEvent(Enum mkType, Enum eventType, String id) {
-            return new BasicRecorderEvent(mkType, eventType, id);
+        public Event newEvent(Enum mkType, Enum eventType, String region, String id) {
+            return new BasicRecorderEvent(mkType, eventType, region, id);
         }
 
         public void recordEvent(Event evt) {

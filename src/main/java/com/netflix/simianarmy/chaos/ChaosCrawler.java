@@ -45,6 +45,13 @@ public interface ChaosCrawler {
         String name();
 
         /**
+         * Region.
+         *
+         * @return the region the group exists in
+         */
+        String region();
+
+        /**
          * Instances.
          *
          * @return the list of instances

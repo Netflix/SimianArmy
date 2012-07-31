@@ -94,6 +94,7 @@ public class ChaosMonkeyResource {
             gen.writeStringField("monkeyType", evt.monkeyType().name());
             gen.writeStringField("eventType", evt.eventType().name());
             gen.writeNumberField("eventTime", evt.eventTime().getTime());
+            gen.writeStringField("region", evt.region());
             for (Map.Entry<String, String> pair : evt.fields().entrySet()) {
                 gen.writeStringField(pair.getKey(), pair.getValue());
             }

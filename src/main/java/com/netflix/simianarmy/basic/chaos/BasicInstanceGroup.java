@@ -33,6 +33,9 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** The type. */
     private final Enum type;
 
+    /** The region. */
+    private final String region;
+
     /**
      * Instantiates a new basic instance group.
      *
@@ -41,9 +44,10 @@ public class BasicInstanceGroup implements InstanceGroup {
      * @param type
      *            the type
      */
-    public BasicInstanceGroup(String name, Enum type) {
+    public BasicInstanceGroup(String name, Enum type, String region) {
         this.name = name;
         this.type = type;
+        this.region = region;
     }
 
     /** {@inheritDoc} */
@@ -54,6 +58,11 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** {@inheritDoc} */
     public String name() {
         return name;
+    }
+
+    /** {@inheritDoc} */
+    public String region() {
+        return region;
     }
 
     /** The list. */
