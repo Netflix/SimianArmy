@@ -26,7 +26,7 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
 
 /**
  * The Class ASGChaosCrawler. This will crawl for all available AutoScalingGroups associated with the AWS account.
@@ -55,67 +55,6 @@ public class ASGChaosCrawler implements ChaosCrawler {
         this.awsClient = awsClient;
     }
 
-    /**
-     * The Class ASGInstanceGroup.
-     */
-    public static class ASGInstanceGroup implements InstanceGroup {
-
-        /** The name. */
-        private final String name;
-
-        /** The type. */
-        private final Enum type;
-
-        /**
-         * Instantiates a new basic instance group.
-         *
-         * @param name
-         *            the name
-         */
-        public ASGInstanceGroup(String name) {
-            this.name = name;
-            this.type = Types.ASG;
-        }
-
-        /**
-         * Instantiates a new basic instance group.
-         *
-         * @param name
-         *            the name
-         * @param type
-         *            the type
-         */
-        public ASGInstanceGroup(String name, Enum type) {
-            this.name = name;
-            this.type = type;
-        }
-
-        /** {@inheritDoc} */
-        public Enum type() {
-            return type;
-        }
-
-        /** {@inheritDoc} */
-        public String name() {
-            return name;
-        }
-
-        /** The list. */
-        private List<String> list = new LinkedList<String>();
-
-        /** {@inheritDoc} */
-        @Override
-        public List<String> instances() {
-            return list;
-        }
-
-        /** {@inheritDoc} */
-        @Override
-        public void addInstance(String instance) {
-            list.add(instance);
-        }
-    }
-
     /** {@inheritDoc} */
     @Override
     public EnumSet<?> groupTypes() {
@@ -127,7 +66,7 @@ public class ASGChaosCrawler implements ChaosCrawler {
     public List<InstanceGroup> groups() {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
         for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups()) {
-            InstanceGroup ig = new ASGInstanceGroup(asg.getAutoScalingGroupName());
+            InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG);
             for (Instance inst : asg.getInstances()) {
                 ig.addInstance(inst.getInstanceId());
             }
