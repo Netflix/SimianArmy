@@ -23,6 +23,9 @@ import java.util.LinkedList;
 
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.NotFoundException;
+
+import com.amazonaws.AmazonServiceException;
 
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
@@ -130,6 +133,13 @@ public class AWSClient implements CloudClient {
 
     /** {@inheritDoc} */
     public void terminateInstance(String instanceId) {
-        ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
+        try {
+            ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
     }
 }

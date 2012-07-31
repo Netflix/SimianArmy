@@ -28,6 +28,10 @@ public interface CloudClient {
      *
      * @param instanceId
      *            the instance id
+     *
+     * @throws NotFoundException
+     *            if the instance no longer exists or was already terminated after the crawler discovered it
+     *            then you should get a NotFoundException
      */
     void terminateInstance(String instanceId);
 }

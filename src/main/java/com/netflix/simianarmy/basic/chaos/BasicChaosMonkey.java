@@ -20,9 +20,8 @@ package com.netflix.simianarmy.basic.chaos;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-
-import com.amazonaws.AmazonServiceException;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -104,13 +103,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
                             context().cloudClient().terminateInstance(inst);
                             LOGGER.info("Terminated {} from group {} [{}]",
                                     new Object[] {inst, group.name(), group.type()});
-                        } catch (AmazonServiceException e) {
-                            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
-                                LOGGER.warn("Failed to terminate " + inst
-                                        + ", it does not exist. Perhaps it was already terminated");
-                            } else {
-                                handleTerminationError(inst, e);
-                            }
+                        } catch (NotFoundException e) {
+                            LOGGER.warn("Failed to terminate " + inst
+                                    + ", it does not exist. Perhaps it was already terminated");
                         } catch (Exception e) {
                             handleTerminationError(inst, e);
                         }
