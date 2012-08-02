@@ -19,6 +19,7 @@ package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Collections;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
@@ -71,7 +72,7 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** {@inheritDoc} */
     @Override
     public List<String> instances() {
-        return list;
+        return Collections.unmodifiableList(list);
     }
 
     /** {@inheritDoc} */
