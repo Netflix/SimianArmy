@@ -3,8 +3,12 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee ">
     <servlet>
         <servlet-name>Monkey Server</servlet-name>
-        <servlet-class>com.netflix.simianarmy.basic.IS24DatacenterMonkeyServer</servlet-class>
+        <servlet-class>com.netflix.simianarmy.basic.BasicMonkeyServer</servlet-class>
         <load-on-startup>1</load-on-startup>
+        <init-param>
+            <param-name>CLIENT_PROPERTIES</param-name> 
+            <param-value>client.properties</param-value> 
+        </init-param>
     </servlet>
     <servlet>
       <servlet-name>jersey-servlet</servlet-name>

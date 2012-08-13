@@ -17,6 +17,10 @@
  */
 package com.netflix.simianarmy.basic;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
@@ -25,55 +29,84 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
-/**
- * The Class BasicMonkeyServer.
- */
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
-
-    /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
 
-    /** The Constant RUNNER. */
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
-    /**
-     * Add monkeys to run.
-     */
     @SuppressWarnings("unchecked")
-	public void addMonkeys() {
-        RUNNER.replaceMonkey(getMonkeyClass(), getContextClass());
+	public void addMonkeysToRun() {
+        RUNNER.replaceMonkey(getMonkeyClass(), this.clientContextClass);
     }
 
 	@SuppressWarnings("rawtypes")
-	protected Class getContextClass() {
-		LOGGER.info("########## BasicMonkeyServer.getContextClass()");
-		return BasicContext.class;
-	}
-
+    public Class clientContextClass = com.netflix.simianarmy.basic.BasicContext.class; 
+    
 	@SuppressWarnings("rawtypes")
 	protected Class getMonkeyClass() {
-		LOGGER.info("########## BasicMonkeyServer.getMonkeyClass()");
 		return BasicChaosMonkey.class;
 	}
 
-    /**
-     * Inits the server.
-     *
-     * @throws ServletException
-     *             the servlet exception
-     */
     @Override
     public void init() throws ServletException {
         super.init();
-        addMonkeys();
+        configureClient();
+        addMonkeysToRun();
         RUNNER.start();
     }
 
     /**
-     * Destroy.
+     * Loads the client that is configured
+     * 
+     * @throws ServletException if the configured client cannot be loaded properly 
      */
+    private void configureClient() throws ServletException {
+    	Properties clientConfig = loadClientConfigProperties();
+
+    	loadClientContextClass(clientConfig);
+
+	}
+
+	private void loadClientContextClass(Properties clientConfig) throws ServletException {
+		String clientContextClassKey = "client.context.class";
+    	ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
+        try {
+			String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
+			this.clientContextClass = classLoader.loadClass(clientContextClassName );
+            LOGGER.info("as "+clientContextClassKey+" loaded "+clientContextClass.getCanonicalName());
+        } catch (ClassNotFoundException e) {
+            throw new ServletException("Could not load " +clientContextClassKey,e);
+        }
+	}
+
+    /**
+     * Load the client config properties file
+     *  
+     * @return Properties The contents of the client config dile
+     * @throws ServletException if file cannot be read
+     */
+	private Properties loadClientConfigProperties() throws ServletException {
+		String clientConfigFileName = "/client.properties"; //TODO IK read as servlet attribute //(String) getServletContext().getInitParameter("CLIENT_PROPERTIES");
+    	LOGGER.info("using client properties "+clientConfigFileName);
+    	
+    	InputStream input = null;
+    	Properties p = new Properties();
+    	try {
+    		try {
+	    		input = BasicMonkeyServer.class.getResourceAsStream(clientConfigFileName);
+				p.load(input);
+				return p;
+    		}finally {
+    			if (input != null) input.close();
+    		}
+    	} catch (IOException e) {
+			throw new ServletException("Could not load "+clientConfigFileName,e);
+    	}
+	}
+
     @SuppressWarnings("unchecked")
 	@Override
     public void destroy() {
