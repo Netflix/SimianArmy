@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee ">
     <servlet>
         <servlet-name>Monkey Server</servlet-name>
-        <servlet-class>com.netflix.simianarmy.basic.BasicMonkeyServer</servlet-class>
+        <servlet-class>com.netflix.simianarmy.basic.IS24DatacenterMonkeyServer</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet>

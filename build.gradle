@@ -2,6 +2,7 @@
 ext.releaseVersion = '2.2'
 ext.githubProjectName = name
 group = "com.netflix.${githubProjectName}"
+apply plugin:'eclipse-wtp'
 
 buildscript {
     repositories { mavenCentral() }
@@ -38,6 +39,10 @@ apply plugin: 'war'
 apply plugin: 'jetty'
 
 dependencies {
+	// for the VMWareClient
+    compile 'com.cloudbees.thirdparty:vijava:5.0.0'
+    compile 'dom4j:dom4j:1.6.1'
+
     compile 'javax.ws.rs:jsr311-api:1.1.1'
     compile 'com.sun.jersey:jersey-core:1.11'
     compile 'com.sun.jersey:jersey-server:1.11'

@@ -17,16 +17,15 @@
  */
 package com.netflix.simianarmy.aws.chaos;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 
-import com.netflix.simianarmy.aws.AWSClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-
-import com.netflix.simianarmy.chaos.ChaosCrawler;
+import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosCrawler;
 
 /**
  * The Class ASGChaosCrawler. This will crawl for all available AutoScalingGroups associated with the AWS account.

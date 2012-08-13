@@ -61,6 +61,8 @@ public class BasicContext extends BasicContextShell {
         }
     }
 
+	protected AWSClient awsClient;
+
     /**
      * Instantiates a new basic context.
      */
@@ -68,18 +70,43 @@ public class BasicContext extends BasicContextShell {
         BasicConfiguration config = new BasicConfiguration(PROPS);
         setConfiguration(config);
         setCalendar(new BasicCalendar(config));
-        String account = config.getStr("simianarmy.aws.accountKey");
-        String secret = config.getStr("simianarmy.aws.secretKey");
-        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
-        AWSClient client = new AWSClient(account, secret, region);
-        setCloudClient(client);
-        int freq = (int) config.getNumOrElse("simianarmy.scheduler.frequency", 1);
+        
+        createClient(config);
+
+        createScheduler(config);
+
+        setChaosCrawler(new ASGChaosCrawler(this.awsClient));
+        setChaosInstanceSelector(new BasicChaosInstanceSelector());
+
+        createRecorder(config);
+    }
+
+    private void createScheduler(BasicConfiguration config) {
+		int freq = (int) config.getNumOrElse("simianarmy.scheduler.frequency", 1);
         TimeUnit freqUnit = TimeUnit.valueOf(config.getStrOrElse("simianarmy.scheduler.frequencyUnit", "HOURS"));
         int threads = (int) config.getNumOrElse("simianarmy.scheduler.threads", MONKEY_THREADS);
         setScheduler(new BasicScheduler(freq, freqUnit, threads));
-        setChaosCrawler(new ASGChaosCrawler(client));
-        setChaosInstanceSelector(new BasicChaosInstanceSelector());
+	}
+
+	private void createRecorder(BasicConfiguration config) {
+        String account = config.getStr("simianarmy.aws.accountKey");
+        String secret = config.getStr("simianarmy.aws.secretKey");
+        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
         String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");
-        setRecorder(new SimpleDBRecorder(account, secret, region, domain));
-    }
+        setRecorder(new SimpleDBRecorder(account, secret, region, domain));		
+	}
+
+	private void createClient(BasicConfiguration config) {
+        String account = config.getStr("simianarmy.aws.accountKey");
+        String secret = config.getStr("simianarmy.aws.secretKey");
+        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
+        createspecificClient(account, secret, region);
+        
+        setCloudClient(this.awsClient);
+	}
+
+	protected void createspecificClient(String account, String secret, String region) {
+		LOGGER.info("BasicContext.createspecificClient()");
+		this.awsClient = new AWSClient(account, secret, region);
+	}
 }

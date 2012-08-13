@@ -17,8 +17,8 @@
  */
 package com.netflix.simianarmy.basic;
 
-import javax.servlet.http.HttpServlet;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,9 +41,22 @@ public class BasicMonkeyServer extends HttpServlet {
     /**
      * Add monkeys to run.
      */
-    public void addMonkeys() {
-        RUNNER.replaceMonkey(BasicChaosMonkey.class, BasicContext.class);
+    @SuppressWarnings("unchecked")
+	public void addMonkeys() {
+        RUNNER.replaceMonkey(getMonkeyClass(), getContextClass());
     }
+
+	@SuppressWarnings("rawtypes")
+	protected Class getContextClass() {
+		LOGGER.info("########## BasicMonkeyServer.getContextClass()");
+		return BasicContext.class;
+	}
+
+	@SuppressWarnings("rawtypes")
+	protected Class getMonkeyClass() {
+		LOGGER.info("########## BasicMonkeyServer.getMonkeyClass()");
+		return BasicChaosMonkey.class;
+	}
 
     /**
      * Inits the server.
@@ -61,10 +74,11 @@ public class BasicMonkeyServer extends HttpServlet {
     /**
      * Destroy.
      */
-    @Override
+    @SuppressWarnings("unchecked")
+	@Override
     public void destroy() {
         RUNNER.stop();
-        RUNNER.removeMonkey(BasicChaosMonkey.class);
+        RUNNER.removeMonkey(getMonkeyClass());
         super.destroy();
     }
 }
