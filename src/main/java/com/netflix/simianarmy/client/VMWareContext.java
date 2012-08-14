@@ -1,10 +1,13 @@
-package com.netflix.simianarmy.basic;
+package com.netflix.simianarmy.client;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class IS24DatacenterContext extends BasicContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(IS24DatacenterContext.class);
+import com.netflix.simianarmy.basic.BasicContext;
+import com.netflix.simianarmy.basic.IS24Client;
+
+public class VMWareContext extends BasicContext {
+    private static final Logger LOGGER = LoggerFactory.getLogger(VMWareContext.class);
 
     @Override
     protected void createspecificClient(String account, String secret, String region) {

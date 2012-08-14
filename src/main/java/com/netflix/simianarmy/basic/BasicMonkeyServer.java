@@ -75,6 +75,10 @@ public class BasicMonkeyServer extends HttpServlet {
     	ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
         try {
 			String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
+			if (clientContextClassName == null || clientContextClassName.isEmpty() ) {
+				LOGGER.info("using standard client " + this.clientContextClass.getCanonicalName());
+				return;
+			}
 			this.clientContextClass = classLoader.loadClass(clientContextClassName );
             LOGGER.info("as "+clientContextClassKey+" loaded "+clientContextClass.getCanonicalName());
         } catch (ClassNotFoundException e) {
@@ -85,8 +89,8 @@ public class BasicMonkeyServer extends HttpServlet {
     /**
      * Load the client config properties file
      *  
-     * @return Properties The contents of the client config dile
-     * @throws ServletException if file cannot be read
+     * @return Properties The contents of the client config file
+     * @throws ServletException if the file cannot be read
      */
 	private Properties loadClientConfigProperties() throws ServletException {
 		String clientConfigFileName = "/client.properties"; //TODO IK read as servlet attribute //(String) getServletContext().getInitParameter("CLIENT_PROPERTIES");
