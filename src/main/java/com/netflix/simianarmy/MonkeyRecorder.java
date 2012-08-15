@@ -17,9 +17,9 @@
  */
 package com.netflix.simianarmy;
 
-import java.util.Map;
-import java.util.List;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The Interface MonkeyRecorder. This is use to store and find events in some datastore.
@@ -102,7 +102,7 @@ public interface MonkeyRecorder {
      * @param eventType
      *            the event type
      * @param region
-     *            the region the event occured
+     *            the region the event occurred
      * @param id
      *            the id
      * @return the event

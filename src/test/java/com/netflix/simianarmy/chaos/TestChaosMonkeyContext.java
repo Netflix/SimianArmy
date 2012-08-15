@@ -18,27 +18,26 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import com.netflix.simianarmy.TestMonkeyContext;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.basic.BasicConfiguration;
-import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
-
-import java.util.Properties;
 import java.io.InputStream;
-
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.TestMonkeyContext;
+import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+
 public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMonkey.Context {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyContext.class);
-    private BasicConfiguration cfg;
+    private final BasicConfiguration cfg;
 
     public TestChaosMonkeyContext() {
         super(ChaosMonkey.Type.CHAOS);
@@ -61,6 +60,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         cfg = new BasicConfiguration(props);
     }
 
+    @Override
     public MonkeyConfiguration configuration() {
         return cfg;
     }
@@ -69,63 +69,74 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final Enum type;
         private final String name;
         private final String region;
-        private final String instance;
+        private final String[] instances;
 
-        public TestInstanceGroup(Enum type, String name, String region, String instance) {
+        public TestInstanceGroup(Enum type, String name, String region, String... instances) {
             this.type = type;
             this.name = name;
             this.region = region;
-            this.instance = instance;
+            this.instances = instances;
         }
 
+        @Override
         public Enum type() {
             return type;
         }
 
+        @Override
         public String name() {
             return name;
         }
 
+        @Override
         public String region() {
             return region;
         }
 
+        @Override
         public List<String> instances() {
-            return Arrays.asList(instance);
+            return Arrays.asList(instances);
         }
 
+        @Override
         public void addInstance(String ignored) {
         }
     }
 
     public enum CrawlerTypes {
-        TYPE_A, TYPE_B
+        TYPE_A, TYPE_B, TYPE_C
     };
 
+    @Override
     public ChaosCrawler chaosCrawler() {
         return new ChaosCrawler() {
+            @Override
             public EnumSet<?> groupTypes() {
                 return EnumSet.allOf(CrawlerTypes.class);
             }
 
+            @Override
             public List<InstanceGroup> groups() {
                 InstanceGroup gA0 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name0", "reg1", "0:i-123456780");
                 InstanceGroup gA1 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name1", "reg1", "1:i-123456781");
                 InstanceGroup gB2 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name2", "reg1", "2:i-123456782");
                 InstanceGroup gB3 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name3", "reg1", "3:i-123456783");
-                return Arrays.asList(gA0, gA1, gB2, gB3);
+                InstanceGroup gC1 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name4", "reg1", "3:i-123456784", "3:i-123456785");
+                return Arrays.asList(gA0, gA1, gB2, gB3, gC1);
             }
         };
     }
 
-    private List<InstanceGroup> selectedOn = new LinkedList<InstanceGroup>();
+    private final List<InstanceGroup> selectedOn = new LinkedList<InstanceGroup>();
 
     public List<InstanceGroup> selectedOn() {
         return selectedOn;
     }
 
+    @Override
     public ChaosInstanceSelector chaosInstanceSelector() {
         return new BasicChaosInstanceSelector() {
+            @Override
             public String select(InstanceGroup group, double probability) {
                 selectedOn.add(group);
                 return super.select(group, probability);
@@ -133,14 +144,16 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         };
     }
 
-    private List<String> terminated = new LinkedList<String>();
+    private final List<String> terminated = new LinkedList<String>();
 
     public List<String> terminated() {
         return terminated;
     }
 
+    @Override
     public CloudClient cloudClient() {
         return new CloudClient() {
+            @Override
             public void terminateInstance(String instanceId) {
                 terminated.add(instanceId);
             }
