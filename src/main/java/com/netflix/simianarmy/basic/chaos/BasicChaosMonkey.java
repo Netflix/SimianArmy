@@ -72,7 +72,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     public void doMonkeyBusiness() {
-    	LOGGER.info("BasicChaosMonkey.doMonkeyBusiness()");
+        LOGGER.info("BasicChaosMonkey.doMonkeyBusiness()");
         cfg.reload();
         String prop = NS + "enabled";
         if (!cfg.getBoolOrElse(prop, true)) {

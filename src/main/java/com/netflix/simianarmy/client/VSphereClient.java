@@ -31,7 +31,7 @@ public class VSphereClient extends AWSClient {
         this.vsphereUrl = config.getStr("client.vsphere.url");
         this.username = config.getStr("client.vsphere.username");
         this.password = config.getStr("client.vsphere.password");
-	}
+    }
     
     private String username = null;
     private String password = null;
@@ -40,54 +40,54 @@ public class VSphereClient extends AWSClient {
     @Override
     public List<AutoScalingGroup> describeAutoScalingGroups() {
 
-		Map<String, AutoScalingGroup> groups = new HashMap<String, AutoScalingGroup>();
-		try {
-			ServiceInstance vmwareService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
+        Map<String, AutoScalingGroup> groups = new HashMap<String, AutoScalingGroup>();
+        try {
+            ServiceInstance vmwareService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
 
-			Folder rootFolder = vmwareService.getRootFolder();
-			ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
-			if(mes==null || mes.length ==0)
-			{
-				LOGGER.info("### nichts von vmware gefunden");
-				return new LinkedList<AutoScalingGroup>();
-			}
+            Folder rootFolder = vmwareService.getRootFolder();
+            ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
+            if(mes==null || mes.length ==0)
+            {
+                LOGGER.info("### nichts von vmware gefunden");
+                return new LinkedList<AutoScalingGroup>();
+            }
 
-			for (int i = 0; i < mes.length; i++) {
-				VirtualMachine vm = (VirtualMachine) mes[i]; 
+            for (int i = 0; i < mes.length; i++) {
+                VirtualMachine vm = (VirtualMachine) mes[i]; 
 
-				String folderName = vm.getParent().getName();
-				String instanceId = vm.getName();
-				//String loctyp = instanceId.substring(0,6);
-				
-				LOGGER.debug("adding <"+instanceId+"> to group <"+folderName+">");
-				addInstanceToGroup(groups, folderName, instanceId);
-			}
-			vmwareService.getServerConnection().logout();
-		} catch (RemoteException e) {
-			throw new AmazonServiceException("cannot connect to VMWare",e);
-		} catch (MalformedURLException e) {
-			throw new AmazonServiceException("cannot connect to VMWare",e);
-		}
-		
-		return new ArrayList<AutoScalingGroup>(groups.values());
+                String folderName = vm.getParent().getName();
+                String instanceId = vm.getName();
+                //String loctyp = instanceId.substring(0,6);
+                
+                LOGGER.debug("adding <"+instanceId+"> to group <"+folderName+">");
+                addInstanceToGroup(groups, folderName, instanceId);
+            }
+            vmwareService.getServerConnection().logout();
+        } catch (RemoteException e) {
+            throw new AmazonServiceException("cannot connect to VMWare",e);
+        } catch (MalformedURLException e) {
+            throw new AmazonServiceException("cannot connect to VMWare",e);
+        }
+        
+        return new ArrayList<AutoScalingGroup>(groups.values());
   }
 
-	protected void addInstanceToGroup(Map<String, AutoScalingGroup> groups, String groupName, String instanceId) {
-		AutoScalingGroup asg = groups.get(groupName);
-		if (asg == null) {
-			asg = new AutoScalingGroup();
-			asg.setAutoScalingGroupName(groupName);
-			groups.put(groupName, asg);
-		}
-		List<Instance> instances = asg.getInstances();
-		Instance instance = new Instance();
-		instance.setInstanceId(instanceId);
-		instances.add(instance);
-	}
-	
-	@Override
-	public void terminateInstance(String instanceId) {
-		LOGGER.info("IS24Client.terminateInstance() recreating "+instanceId);
+    protected void addInstanceToGroup(Map<String, AutoScalingGroup> groups, String groupName, String instanceId) {
+        AutoScalingGroup asg = groups.get(groupName);
+        if (asg == null) {
+            asg = new AutoScalingGroup();
+            asg.setAutoScalingGroupName(groupName);
+            groups.put(groupName, asg);
+        }
+        List<Instance> instances = asg.getInstances();
+        Instance instance = new Instance();
+        instance.setInstanceId(instanceId);
+        instances.add(instance);
+    }
+    
+    @Override
+    public void terminateInstance(String instanceId) {
+        LOGGER.info("IS24Client.terminateInstance() recreating "+instanceId);
 
-	}
+    }
 }
