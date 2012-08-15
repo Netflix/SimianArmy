@@ -40,14 +40,19 @@ public class BasicContext extends BasicContextShell {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicContext.class);
 
-    /** The Constant PROPS. */
-    private static final Properties PROPS;
+    /** The client configuration properties. */
+    protected Properties PROPS = new Properties();
 
     /** The Constant MONKEY_THREADS. */
     private static final int MONKEY_THREADS = 1;
-    static {
-        String propFile = System.getProperty("simianarmy.properties", "/simianarmy.properties");
-        PROPS = new Properties();
+
+    protected void addClientConfigurationProperties() {
+    	loadClientConfigurationProperties("simianarmy.properties");
+    	loadClientConfigurationProperties("client.properties");
+    }
+
+    protected void loadClientConfigurationProperties(String propertyFileName) {
+        String propFile = System.getProperty(propertyFileName, "/"+propertyFileName);
         try {
             InputStream is = BasicContext.class.getResourceAsStream(propFile);
             try {
@@ -57,7 +62,7 @@ public class BasicContext extends BasicContextShell {
             }
         } catch (Exception e) {
             LOGGER.error("Unable to load properties file " + propFile
-                    + " set System property \"simianarmy.properties\" to valid file");
+                    + " set System property \""+propertyFileName+"\" to valid file");
         }
     }
 
@@ -67,8 +72,8 @@ public class BasicContext extends BasicContextShell {
      * Instantiates a new basic context.
      */
     public BasicContext() {
-        BasicConfiguration config = new BasicConfiguration(PROPS);
-        setConfiguration(config);
+        BasicConfiguration config = loadClientConfig();
+
         setCalendar(new BasicCalendar(config));
         
         createClient(config);
@@ -80,6 +85,13 @@ public class BasicContext extends BasicContextShell {
 
         createRecorder(config);
     }
+
+	protected BasicConfiguration loadClientConfig() {
+		addClientConfigurationProperties();
+		BasicConfiguration config = new BasicConfiguration(PROPS);
+        setConfiguration(config);
+		return config;
+	}
 
     private void createScheduler(BasicConfiguration config) {
 		int freq = (int) config.getNumOrElse("simianarmy.scheduler.frequency", 1);
@@ -96,17 +108,13 @@ public class BasicContext extends BasicContextShell {
         setRecorder(new SimpleDBRecorder(account, secret, region, domain));		
 	}
 
-	private void createClient(BasicConfiguration config) {
+	protected void createClient(BasicConfiguration config) {
         String account = config.getStr("simianarmy.aws.accountKey");
         String secret = config.getStr("simianarmy.aws.secretKey");
         String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
-        createspecificClient(account, secret, region);
+        this.awsClient = new AWSClient(account, secret, region);
         
         setCloudClient(this.awsClient);
 	}
 
-	protected void createspecificClient(String account, String secret, String region) {
-		LOGGER.info("BasicContext.createspecificClient()");
-		this.awsClient = new AWSClient(account, secret, region);
-	}
 }

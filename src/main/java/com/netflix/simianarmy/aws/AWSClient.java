@@ -61,7 +61,7 @@ public class AWSClient implements CloudClient {
      *            the region
      */
     public AWSClient(String accessKey, String secretKey, String region) {
-        this.cred = new BasicAWSCredentials(accessKey, secretKey);
+		this.cred = new BasicAWSCredentials(accessKey, secretKey);
         this.region = region;
     }
 
