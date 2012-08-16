@@ -286,7 +286,7 @@ public class TestBasicChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayGroupLevel.properties");
         ChaosMonkey chaos = new BasicChaosMonkey(ctx);
 
-        for (int i=1; i<=3; i++) {
+        for (int i = 1; i <= 3; i++) {
             chaos.start();
             chaos.stop();
             Assert.assertEquals(ctx.selectedOn().size(), i);

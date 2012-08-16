@@ -121,8 +121,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                 InstanceGroup gA1 = new TestInstanceGroup(CrawlerTypes.TYPE_A, "name1", "reg1", "1:i-123456781");
                 InstanceGroup gB2 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name2", "reg1", "2:i-123456782");
                 InstanceGroup gB3 = new TestInstanceGroup(CrawlerTypes.TYPE_B, "name3", "reg1", "3:i-123456783");
-                InstanceGroup gC1 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name4", "reg1", "3:i-123456784", "3:i-123456785");
-                InstanceGroup gC2 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name5", "reg1", "3:i-123456786", "3:i-123456787");
+                InstanceGroup gC1 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name4", "reg1", "3:i-123456784",
+                        "3:i-123456785");
+                InstanceGroup gC2 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name5", "reg1", "3:i-123456786",
+                        "3:i-123456787");
                 return Arrays.asList(gA0, gA1, gB2, gB3, gC1, gC2);
             }
         };

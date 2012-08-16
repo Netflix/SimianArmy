@@ -160,8 +160,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         double maxTerminationsPerDay = cfg.getNumOrElse(prop, cfg.getNumOrElse(defaultProp, 1.0));
         if (maxTerminationsPerDay <= MIN_MAX_TERMINATION_COUNT_PER_DAY) {
             LOGGER.info("ChaosMonkey is configured to not allow any killing from group {} [{}] "
-                    + "with max daily count set as {}",
-                    new Object[] {group.name(), group.type(), prop});
+                    + "with max daily count set as {}", new Object[] {group.name(), group.type(), prop});
             return true;
         } else {
             int daysBack = 1;
@@ -176,8 +175,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             int terminationCount = getPreviousTerminationCount(group, after.getTime());
             if (terminationCount >= maxCount) {
                 LOGGER.info("The count of terminations in the last {} days is {}, equal or greater than"
-                        + " the max count threshold {}",
-                        new Object[] {daysBack, terminationCount, maxCount});
+                        + " the max count threshold {}", new Object[] {daysBack, terminationCount, maxCount});
                 return true;
             }
         }

@@ -103,8 +103,8 @@ public abstract class ChaosMonkey extends Monkey {
     public abstract void doMonkeyBusiness();
 
     /**
-     * Gets the count of terminations since a specific time. Chaos should probably not continue to beat up an
-     * instance group if the count exceeds a threshold.
+     * Gets the count of terminations since a specific time. Chaos should probably not continue to beat up an instance
+     * group if the count exceeds a threshold.
      *
      * @param group
      *            the group
