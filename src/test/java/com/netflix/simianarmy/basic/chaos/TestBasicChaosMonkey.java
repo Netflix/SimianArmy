@@ -19,13 +19,13 @@
 package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
-import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
-
-import org.testng.annotations.Test;
 import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestBasicChaosMonkey {
@@ -202,4 +202,101 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(3).name(), "name3");
         Assert.assertEquals(terminated.size(), 0);
     }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsZero() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsZero.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsBiggerThanOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsBiggerThanOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 2);
+        Assert.assertEquals(ctx.terminated().size(), 2);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsSmallerThanOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsSmallerThanOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsNegative() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsNegative.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsVerySmall() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsVerySmall.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayGroupLevel() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayGroupLevel.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+
+        for (int i=1; i<=3; i++) {
+            chaos.start();
+            chaos.stop();
+            Assert.assertEquals(ctx.selectedOn().size(), i);
+            Assert.assertEquals(ctx.terminated().size(), i);
+        }
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 3);
+        Assert.assertEquals(ctx.terminated().size(), 3);
+    }
+
 }

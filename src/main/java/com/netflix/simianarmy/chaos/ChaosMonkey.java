@@ -17,6 +17,8 @@
  */
 package com.netflix.simianarmy.chaos;
 
+import java.util.Date;
+
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
@@ -53,7 +55,7 @@ public abstract class ChaosMonkey extends Monkey {
     }
 
     /** The context. */
-    private Context ctx;
+    private final Context ctx;
 
     /**
      * Instantiates a new chaos monkey.
@@ -85,27 +87,30 @@ public abstract class ChaosMonkey extends Monkey {
     }
 
     /** {@inheritDoc} */
+    @Override
     public final Enum type() {
         return Type.CHAOS;
     }
 
     /** {@inheritDoc} */
+    @Override
     public Context context() {
         return ctx;
     }
 
     /** {@inheritDoc} */
+    @Override
     public abstract void doMonkeyBusiness();
 
     /**
-     * Checks for previous terminations. Chaos should probably not continue to beat up an instance group if it has
-     * already been thrashed today.
+     * Gets the count of terminations since a specific time. Chaos should probably not continue to beat up an
+     * instance group if the count exceeds a threshold.
      *
      * @param group
      *            the group
      * @return true, if successful
      */
-    public abstract boolean hasPreviousTerminations(ChaosCrawler.InstanceGroup group);
+    public abstract int getPreviousTerminationCount(ChaosCrawler.InstanceGroup group, Date after);
 
     /**
      * Record termination. This is used to notify system owners of terminations and to record terminations so that Chaos
