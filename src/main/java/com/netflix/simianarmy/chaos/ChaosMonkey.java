@@ -103,18 +103,6 @@ public abstract class ChaosMonkey extends Monkey {
     public abstract void doMonkeyBusiness();
 
     /**
-     * Checks for previous terminations for today from the midnight. Chaos should probably not continue to beat
-     * up an instance group if it has already been thrashed today.
-     *
-     * @param group
-     *            the group
-     * @return true, if successful
-     * @deprecated Should use getPreviousTerminationCount
-     */
-    @Deprecated
-    public abstract boolean hasPreviousTerminations(ChaosCrawler.InstanceGroup group);
-
-    /**
      * Gets the count of terminations since a specific time. Chaos should probably not continue to beat up an
      * instance group if the count exceeds a threshold.
      *

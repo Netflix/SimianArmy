@@ -136,19 +136,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     @Override
-    @Deprecated
-    public boolean hasPreviousTerminations(InstanceGroup group) {
-        Calendar today = Calendar.getInstance();
-        // set to midnight
-        today.set(Calendar.HOUR_OF_DAY, 0);
-        today.set(Calendar.MINUTE, 0);
-        today.set(Calendar.SECOND, 0);
-        today.set(Calendar.MILLISECOND, 0);
-        return getPreviousTerminationCount(group, today.getTime()) != 0;
-    }
-
-    /** {@inheritDoc} */
-    @Override
     public void recordTermination(InstanceGroup group, String instance) {
         Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, group.region(), instance);
         evt.addField("groupType", group.type().name());
