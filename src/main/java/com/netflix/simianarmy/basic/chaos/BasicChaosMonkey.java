@@ -154,8 +154,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     private boolean isMaxTerminationCountExceeded(InstanceGroup group) {
-        String prop = NS + group.type() + "." + group.name() + ".maxTerminationsPerDay";
-        double maxTerminationsPerDay = cfg.getNumOrElse(prop, 1.0);
+        String propName = "maxTerminationsPerDay";
+        String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
+        String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
+        double maxTerminationsPerDay = cfg.getNumOrElse(prop, cfg.getNumOrElse(defaultProp, 1.0));
         if (maxTerminationsPerDay <= MIN_MAX_TERMINATION_COUNT_PER_DAY) {
             LOGGER.info("ChaosMonkey is configured to not allow any killing from group {} [{}] "
                     + "with max daily count set as {}",

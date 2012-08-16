@@ -281,4 +281,22 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(ctx.terminated().size(), 0);
     }
 
+    @Test
+    public void testMaxTerminationCountPerDayGroupLevel() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayGroupLevel.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+
+        for (int i=1; i<=3; i++) {
+            chaos.start();
+            chaos.stop();
+            Assert.assertEquals(ctx.selectedOn().size(), i);
+            Assert.assertEquals(ctx.terminated().size(), i);
+        }
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 3);
+        Assert.assertEquals(ctx.terminated().size(), 3);
+    }
+
 }
