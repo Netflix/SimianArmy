@@ -17,17 +17,13 @@
  */
 package com.netflix.simianarmy.resources.chaos;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Date;
-import java.util.Calendar;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -37,6 +33,10 @@ import javax.ws.rs.core.UriInfo;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
+
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
  * The Class ChaosMonkeyResource for json REST apis.

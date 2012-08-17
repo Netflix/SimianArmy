@@ -17,20 +17,20 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.NotFoundException;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-
-import java.util.Map;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Calendar;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.NotFoundException;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
  * The Class BasicChaosMonkey.

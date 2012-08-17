@@ -17,13 +17,13 @@
  */
 package com.netflix.simianarmy;
 
+import java.lang.reflect.Constructor;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.lang.reflect.Constructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

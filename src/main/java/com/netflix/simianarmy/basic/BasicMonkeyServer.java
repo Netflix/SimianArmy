@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {

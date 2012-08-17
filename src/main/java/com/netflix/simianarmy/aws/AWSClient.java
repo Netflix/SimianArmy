@@ -18,26 +18,22 @@
 package com.netflix.simianarmy.aws;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.LinkedList;
-
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.NotFoundException;
+import java.util.List;
 
 import com.amazonaws.AmazonServiceException;
-
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.NotFoundException;
 
 /**
  * The Class AWSClient. Simple Amazon EC2 and Amazon ASG client interface.

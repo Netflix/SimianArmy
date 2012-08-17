@@ -22,8 +22,8 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 
 /**
  * The Class BasicChaosInstanceSelector.

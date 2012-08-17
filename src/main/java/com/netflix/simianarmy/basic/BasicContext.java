@@ -17,21 +17,20 @@
  */
 package com.netflix.simianarmy.basic;
 
+import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.io.InputStream;
-
-import com.netflix.simianarmy.aws.AWSClient;
-import com.netflix.simianarmy.aws.SimpleDBRecorder;
-import com.netflix.simianarmy.aws.chaos.ASGChaosCrawler;
-
-import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.aws.AWSClient;
+import com.netflix.simianarmy.aws.SimpleDBRecorder;
+import com.netflix.simianarmy.aws.chaos.ASGChaosCrawler;
+import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
+
 /**
- * The Class BasicContext. This provde the basix context needed for the monkeys to run. It will confiugre the monkeys
+ * The Class BasicContext. This provide the basic context needed for the monkeys to run. It will configure the monkeys
  * based on a simianarmy.properties file. The properties file can be override with
  * -Dsimianarmy.properties=/path/to/my.properties
  */
@@ -47,11 +46,11 @@ public class BasicContext extends BasicContextShell {
     private static final int MONKEY_THREADS = 1;
 
     protected void addClientConfigurationProperties() {
-        loadClientConfigurationProperties("simianarmy.properties");
-        loadClientConfigurationProperties("client.properties");
+        loadClientConfigurationIntoProperties("simianarmy.properties");
+        loadClientConfigurationIntoProperties("client.properties");
     }
 
-    protected void loadClientConfigurationProperties(String propertyFileName) {
+    protected void loadClientConfigurationIntoProperties(String propertyFileName) {
         String propFile = System.getProperty(propertyFileName, "/"+propertyFileName);
         try {
             InputStream is = BasicContext.class.getResourceAsStream(propFile);

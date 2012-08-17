@@ -17,8 +17,8 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.util.List;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * The Interface ChaosCrawler.

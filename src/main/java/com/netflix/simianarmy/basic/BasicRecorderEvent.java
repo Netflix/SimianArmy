@@ -17,12 +17,12 @@
  */
 package com.netflix.simianarmy.basic;
 
-import com.netflix.simianarmy.MonkeyRecorder;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import com.netflix.simianarmy.MonkeyRecorder;
 
 /**
  * The Class BasicRecorderEvent.
