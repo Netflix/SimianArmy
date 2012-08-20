@@ -16,7 +16,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.aws.chaos;
+package com.netflix.simianarmy.client.aws.chaos;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
@@ -32,7 +32,8 @@ import java.util.List;
 import java.util.LinkedList;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.aws.AWSClient;
+import com.netflix.simianarmy.client.aws.AWSClient;
+import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
 

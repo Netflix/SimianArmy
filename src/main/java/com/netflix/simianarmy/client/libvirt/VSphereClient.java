@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client;
+package com.netflix.simianarmy.client.libvirt;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,8 +15,8 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;

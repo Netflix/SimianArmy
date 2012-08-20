@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client;
+package com.netflix.simianarmy.client.libvirt;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

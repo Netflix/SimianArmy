@@ -16,7 +16,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.aws;
+package com.netflix.simianarmy.client.aws;
 
 import org.testng.annotations.Test;
 import org.testng.Assert;
@@ -42,6 +42,7 @@ import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
+import com.netflix.simianarmy.client.aws.AWSClient;
 
 public class TestAWSClient extends AWSClient {
     public TestAWSClient() {

@@ -24,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
-import com.netflix.simianarmy.aws.chaos.ASGChaosCrawler;
 import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
+import com.netflix.simianarmy.client.aws.AWSClient;
+import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
 
 /**
  * The Class BasicContext. This provide the basic context needed for the monkeys to run. It will configure the monkeys
