@@ -3,18 +3,14 @@ package com.netflix.simianarmy.client.libvirt;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
-import com.amazonaws.services.autoscaling.model.Instance;
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.mo.Folder;
@@ -40,15 +36,14 @@ public class VSphereClient extends AWSClient {
     @Override
     public List<AutoScalingGroup> describeAutoScalingGroups() {
 
-        Map<String, AutoScalingGroup> groups = new HashMap<String, AutoScalingGroup>();
+        final VSphereGroups groups = new VSphereGroups();
         try {
             ServiceInstance vsphereService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
 
             Folder rootFolder = vsphereService.getRootFolder();
             ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
-            if(mes==null || mes.length ==0)
-            {
-                LOGGER.info("### vsphere returned zero Entities of type \"VirtualMachine\"");
+            if(mes==null || mes.length ==0) {
+                LOGGER.info("vsphere returned zero entities of type \"VirtualMachine\"");
                 return new LinkedList<AutoScalingGroup>();
             }
 
@@ -57,10 +52,8 @@ public class VSphereClient extends AWSClient {
 
                 String folderName = vm.getParent().getName();
                 String instanceId = vm.getName();
-                //String loctyp = instanceId.substring(0,6);
                 
-                LOGGER.debug("adding <"+instanceId+"> to group <"+folderName+">");
-                addInstanceToGroup(groups, folderName, instanceId);
+                groups.addInstance(instanceId, folderName);
             }
             vsphereService.getServerConnection().logout();
         } catch (RemoteException e) {
@@ -69,25 +62,12 @@ public class VSphereClient extends AWSClient {
             throw new AmazonServiceException("cannot connect to VSphere",e);
         }
         
-        return new ArrayList<AutoScalingGroup>(groups.values());
-  }
-
-    protected void addInstanceToGroup(Map<String, AutoScalingGroup> groups, String groupName, String instanceId) {
-        AutoScalingGroup asg = groups.get(groupName);
-        if (asg == null) {
-            asg = new AutoScalingGroup();
-            asg.setAutoScalingGroupName(groupName);
-            groups.put(groupName, asg);
-        }
-        List<Instance> instances = asg.getInstances();
-        Instance instance = new Instance();
-        instance.setInstanceId(instanceId);
-        instances.add(instance);
+        return groups.asList();
     }
-    
+        
     @Override
     public void terminateInstance(String instanceId) {
         LOGGER.info("VSphereClient.terminateInstance() recreating "+instanceId);
-
+        // TODO IK
     }
 }
