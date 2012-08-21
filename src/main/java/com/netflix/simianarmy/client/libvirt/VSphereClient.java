@@ -37,32 +37,38 @@ public class VSphereClient extends AWSClient {
     public List<AutoScalingGroup> describeAutoScalingGroups() {
 
         final VSphereGroups groups = new VSphereGroups();
+        ManagedEntity[] mes = describeVirtualMachines();
+        
+        if(mes==null || mes.length ==0) {
+            LOGGER.info("vsphere returned zero entities of type \"VirtualMachine\"");
+            return groups.emptyList();
+        }
+
+        for (int i = 0; i < mes.length; i++) {
+            VirtualMachine vm = (VirtualMachine) mes[i]; 
+
+            String folderName = vm.getParent().getName();
+            String instanceId = vm.getName();
+            
+            groups.addInstance(instanceId, folderName);
+        }
+        return groups.asList();
+    }
+
+    protected ManagedEntity[] describeVirtualMachines() {
+        ManagedEntity[] mes = null;
         try {
             ServiceInstance vsphereService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
 
             Folder rootFolder = vsphereService.getRootFolder();
-            ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
-            if(mes==null || mes.length ==0) {
-                LOGGER.info("vsphere returned zero entities of type \"VirtualMachine\"");
-                return new LinkedList<AutoScalingGroup>();
-            }
-
-            for (int i = 0; i < mes.length; i++) {
-                VirtualMachine vm = (VirtualMachine) mes[i]; 
-
-                String folderName = vm.getParent().getName();
-                String instanceId = vm.getName();
-                
-                groups.addInstance(instanceId, folderName);
-            }
+            mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
             vsphereService.getServerConnection().logout();
         } catch (RemoteException e) {
             throw new AmazonServiceException("cannot connect to VSphere",e);
         } catch (MalformedURLException e) {
             throw new AmazonServiceException("cannot connect to VSphere",e);
         }
-        
-        return groups.asList();
+        return mes;
     }
         
     @Override

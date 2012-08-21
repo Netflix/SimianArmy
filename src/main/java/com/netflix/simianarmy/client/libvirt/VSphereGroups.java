@@ -2,6 +2,7 @@ package com.netflix.simianarmy.client.libvirt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -22,6 +23,10 @@ class VSphereGroups {
     
     public List<AutoScalingGroup> asList() {
         return new ArrayList<AutoScalingGroup>(map.values());
+    }
+    
+    public List<AutoScalingGroup> emptyList() {
+        return new LinkedList<AutoScalingGroup>();
     }
     
     public void addInstance(final String instanceId, final String groupName) {
