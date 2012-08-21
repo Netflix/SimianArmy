@@ -42,13 +42,13 @@ public class VSphereClient extends AWSClient {
 
         Map<String, AutoScalingGroup> groups = new HashMap<String, AutoScalingGroup>();
         try {
-            ServiceInstance vmwareService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
+            ServiceInstance vsphereService = new ServiceInstance(new URL(vsphereUrl), username, password, true);
 
-            Folder rootFolder = vmwareService.getRootFolder();
+            Folder rootFolder = vsphereService.getRootFolder();
             ManagedEntity[] mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
             if(mes==null || mes.length ==0)
             {
-                LOGGER.info("### nichts von vmware gefunden");
+                LOGGER.info("### vsphere returned zero Entities of type \"VirtualMachine\"");
                 return new LinkedList<AutoScalingGroup>();
             }
 
@@ -62,11 +62,11 @@ public class VSphereClient extends AWSClient {
                 LOGGER.debug("adding <"+instanceId+"> to group <"+folderName+">");
                 addInstanceToGroup(groups, folderName, instanceId);
             }
-            vmwareService.getServerConnection().logout();
+            vsphereService.getServerConnection().logout();
         } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot connect to VMWare",e);
+            throw new AmazonServiceException("cannot connect to VSphere",e);
         } catch (MalformedURLException e) {
-            throw new AmazonServiceException("cannot connect to VMWare",e);
+            throw new AmazonServiceException("cannot connect to VSphere",e);
         }
         
         return new ArrayList<AutoScalingGroup>(groups.values());
@@ -87,7 +87,7 @@ public class VSphereClient extends AWSClient {
     
     @Override
     public void terminateInstance(String instanceId) {
-        LOGGER.info("IS24Client.terminateInstance() recreating "+instanceId);
+        LOGGER.info("VSphereClient.terminateInstance() recreating "+instanceId);
 
     }
 }
