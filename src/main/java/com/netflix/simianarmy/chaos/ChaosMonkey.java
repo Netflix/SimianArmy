@@ -122,4 +122,13 @@ public abstract class ChaosMonkey extends Monkey {
      *            the instance
      */
     public abstract void recordTermination(ChaosCrawler.InstanceGroup group, String instance);
+
+    /**
+     * Terminates one instance right away from an instance group when there are available instances.
+     * @param type
+     *            the type of the instance group
+     * @param name
+     *            the name of the instance group
+     */
+    public abstract void terminateNow(String type, String name);
 }

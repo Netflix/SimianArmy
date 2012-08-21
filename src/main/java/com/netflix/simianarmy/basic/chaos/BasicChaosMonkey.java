@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,12 +79,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
     @Override
     public void doMonkeyBusiness() {
         cfg.reload();
-        String prop = NS + "enabled";
-        if (!cfg.getBoolOrElse(prop, true)) {
-            LOGGER.info("ChaosMonkey disabled, set {}=true", prop);
+        if (!isEnabled()) {
             return;
         }
-
+        String prop;
         for (InstanceGroup group : context().chaosCrawler().groups()) {
             prop = NS + group.type() + "." + group.name() + ".enabled";
             String defaultProp = NS + group.type();
@@ -93,36 +92,44 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 }
                 String probProp = NS + group.type() + "." + group.name() + ".probability";
                 double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(), prob});
+                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[]{group.name(), group.type(), prob});
                 String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 if (inst != null) {
-                    prop = NS + "leashed";
-                    if (cfg.getBoolOrElse(prop, true)) {
-                        LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
-                                new Object[] {inst, group.name(), group.type(), prop});
-                    } else {
-                        try {
-                            recordTermination(group, inst);
-                            context().cloudClient().terminateInstance(inst);
-                            LOGGER.info("Terminated {} from group {} [{}]",
-                                    new Object[] {inst, group.name(), group.type()});
-                        } catch (NotFoundException e) {
-                            LOGGER.warn("Failed to terminate " + inst
-                                    + ", it does not exist. Perhaps it was already terminated");
-                        } catch (Exception e) {
-                            handleTerminationError(inst, e);
-                        }
-                    }
+                    terminateInstance(group, inst);
                 }
             } else {
                 LOGGER.info("Group {} [type {}] disabled, set {}=true or {}=true",
-                        new Object[] {group.name(), group.type(), prop, defaultProp + ".enabled"});
+                        new Object[]{group.name(), group.type(), prop, defaultProp + ".enabled"});
             }
         }
     }
 
+    @Override
+    public void terminateNow(String type, String name) {
+        Validate.notNull(type);
+        Validate.notNull(name);
+        cfg.reload();
+        if (!isEnabled()) {
+            return;
+        }
+        String prop = NS + "terminateOndemand.enabled";
+        if (cfg.getBool(prop)) {
+            InstanceGroup group = findInstanceGroup(type, name);
+            if (group == null) {
+                return;
+            }
+            String inst = context().chaosInstanceSelector().select(group, 1.0);
+            if (inst != null) {
+                terminateInstance(group, inst);
+            }
+        } else {
+            LOGGER.info("Group {} [type {}] does not allow ondemand termination, set {}=true",
+                    new Object[]{name, type, prop});
+        }
+    }
+
     /**
-     * Handle termination error. This has been abstracted so subclasses can decide to conitue causing chaos if desired.
+     * Handle termination error. This has been abstracted so subclasses can decide to continue causing chaos if desired.
      *
      * @param instance
      *            the instance
@@ -153,14 +160,56 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return evts.size();
     }
 
+    private boolean isEnabled() {
+        String prop = NS + "enabled";
+        if (cfg.getBoolOrElse(prop, true)) {
+            return true;
+        }
+        LOGGER.info("ChaosMonkey disabled, set {}=true", prop);
+        return false;
+    }
+
+    private InstanceGroup findInstanceGroup(String type, String name) {
+        // Calling context().chaosCrawler().groups(name) causes a new crawl to get
+        // the up to date information for the group name.
+        for (InstanceGroup group : context().chaosCrawler().groups(name)) {
+            if (group.type().toString().equals(type) && group.name().equals(name)) {
+                return group;
+            }
+        }
+        LOGGER.error("Failed to find instance group for type {} and name {}", type, name);
+        return null;
+    }
+
+    private void terminateInstance(InstanceGroup group, String inst) {
+        Validate.notNull(group);
+        Validate.notEmpty(inst);
+        String prop = NS + "leashed";
+        if (cfg.getBoolOrElse(prop, true)) {
+            LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
+                    new Object[]{inst, group.name(), group.type(), prop});
+        } else {
+            try {
+                recordTermination(group, inst);
+                context().cloudClient().terminateInstance(inst);
+                LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
+            } catch (NotFoundException e) {
+                LOGGER.warn("Failed to terminate " + inst + ", it does not exist. Perhaps it was already terminated");
+            } catch (Exception e) {
+                handleTerminationError(inst, e);
+            }
+        }
+    }
+
     private boolean isMaxTerminationCountExceeded(InstanceGroup group) {
+        Validate.notNull(group);
         String propName = "maxTerminationsPerDay";
         String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
         String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
         double maxTerminationsPerDay = cfg.getNumOrElse(prop, cfg.getNumOrElse(defaultProp, 1.0));
         if (maxTerminationsPerDay <= MIN_MAX_TERMINATION_COUNT_PER_DAY) {
             LOGGER.info("ChaosMonkey is configured to not allow any killing from group {} [{}] "
-                    + "with max daily count set as {}", new Object[] {group.name(), group.type(), prop});
+                    + "with max daily count set as {}", new Object[]{group.name(), group.type(), prop});
             return true;
         } else {
             int daysBack = 1;
@@ -175,7 +224,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             int terminationCount = getPreviousTerminationCount(group, after.getTime());
             if (terminationCount >= maxCount) {
                 LOGGER.info("The count of terminations in the last {} days is {}, equal or greater than"
-                        + " the max count threshold {}", new Object[] {daysBack, terminationCount, maxCount});
+                        + " the max count threshold {}", new Object[]{daysBack, terminationCount, maxCount});
                 return true;
             }
         }

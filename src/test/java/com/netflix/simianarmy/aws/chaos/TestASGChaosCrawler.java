@@ -18,9 +18,6 @@
  */
 package com.netflix.simianarmy.aws.chaos;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -28,16 +25,19 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.aws.AWSClient;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.netflix.simianarmy.aws.AWSClient;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 public class TestASGChaosCrawler {
-    private ASGChaosCrawler crawler;
+    private final ASGChaosCrawler crawler;
 
     private AutoScalingGroup mkAsg(String asgName, String instanceId) {
         AutoScalingGroup asg = new AutoScalingGroup();
@@ -48,7 +48,7 @@ public class TestASGChaosCrawler {
         return asg;
     }
 
-    private AWSClient awsMock;
+    private final AWSClient awsMock;
 
     public TestASGChaosCrawler() {
         awsMock = mock(AWSClient.class);
@@ -68,11 +68,11 @@ public class TestASGChaosCrawler {
         asgList.add(mkAsg("asg1", "i-123456780"));
         asgList.add(mkAsg("asg2", "i-123456781"));
 
-        when(awsMock.describeAutoScalingGroups()).thenReturn(asgList);
+        when(awsMock.describeAutoScalingGroups((String[]) null)).thenReturn(asgList);
 
         List<InstanceGroup> groups = crawler.groups();
 
-        verify(awsMock, times(1)).describeAutoScalingGroups();
+        verify(awsMock, times(1)).describeAutoScalingGroups((String[]) null);
 
         Assert.assertEquals(groups.size(), 2);
 

@@ -17,39 +17,64 @@
  */
 package com.netflix.simianarmy.resources.chaos;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Date;
-import java.util.Calendar;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.apache.commons.lang3.Validate;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.MappingJsonFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
  * The Class ChaosMonkeyResource for json REST apis.
  */
 @Path("/v1/chaos")
-@SuppressWarnings("serial")
 public class ChaosMonkeyResource {
 
     /** The Constant JSON_FACTORY. */
     private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory();
 
     /** The monkey. */
-    private ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+    private final ChaosMonkey monkey;
+
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosMonkeyResource.class);
+
+    /**
+     * Instantiates a chaos monkey resource with a specific chaos monkey.
+     *
+     * @param monkey
+     *          the chaos monkey
+     */
+    public ChaosMonkeyResource(ChaosMonkey monkey) {
+        this.monkey = monkey;
+    }
+
+    /**
+     * Instantiates a chaos monkey resource using a registered chaos monkey from factory.
+     */
+    public ChaosMonkeyResource() {
+        this.monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+    }
 
     /**
      * Gets the chaos events. Creates GET /api/v1/chaos api which outputs the chaos events in json. Users can specify
@@ -63,7 +88,7 @@ public class ChaosMonkeyResource {
      *             Signals that an I/O exception has occurred.
      */
     @GET
-    public Response getChaosEvents(@javax.ws.rs.core.Context UriInfo uriInfo) throws IOException {
+    public Response getChaosEvents(@Context UriInfo uriInfo) throws IOException {
         Map<String, String> query = new HashMap<String, String>();
         Date date = null;
         for (Map.Entry<String, List<String>> pair : uriInfo.getQueryParameters().entrySet()) {
@@ -103,5 +128,28 @@ public class ChaosMonkeyResource {
         gen.writeEndArray();
         gen.close();
         return Response.status(Response.Status.OK).entity(baos.toString("UTF-8")).build();
+    }
+
+    /**
+     * Terminates one instance immediately, ignoring the monkey probability and max termination
+     * configurations, for a specific instance group.
+     * @param type
+     *          the instance group type
+     * @param name
+     *          the instance group name
+     * @return the response
+     * @throws IOException
+     */
+    @POST
+    @Path("/terminiateNow/{type}/{name}")
+    public Response terminateNow(
+            @PathParam("type") String type,
+            @PathParam("name") String name) throws IOException {
+        Validate.notEmpty(type);
+        Validate.notEmpty(name);
+        LOGGER.info("Tterminate ondemand for instance group type '{}' and name '{}'", type, name);
+        monkey.terminateNow(type, name);
+        LOGGER.info("Ondemand termination completed.");
+        return Response.status(Response.Status.OK).build();
     }
 }

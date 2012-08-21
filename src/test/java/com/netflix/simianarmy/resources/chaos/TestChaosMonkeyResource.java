@@ -19,40 +19,39 @@
  */
 package com.netflix.simianarmy.resources.chaos;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyMap;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.Scanner;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import org.mockito.Mock;
-import org.mockito.Captor;
-import org.mockito.MockitoAnnotations;
 import org.mockito.ArgumentCaptor;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyMap;
-
-import org.testng.annotations.BeforeTest;
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.basic.BasicRecorderEvent;
-import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
-
-import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
-
+import org.mockito.Captor;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Test;
 
+import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.basic.BasicRecorderEvent;
+import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
+import com.sun.jersey.core.util.MultivaluedMapImpl;
+
+//CHECKSTYLE IGNORE MagicNumber
 public class TestChaosMonkeyResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyResource.class);
 
@@ -73,6 +72,77 @@ public class TestChaosMonkeyResource {
     @BeforeTest
     public void init() {
         MockitoAnnotations.initMocks(this);
+    }
+
+    @Test void testTerminateNow() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTermination.properties");
+
+
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        try {
+            Response resp = resource.terminateNow("TYPE_C", "name4");
+            Assert.assertEquals(resp.getStatus(), 200);
+        } catch (Exception e) {
+            LOGGER.error("exception from terminateNow", e);
+            Assert.fail("getChaosEvents throws exception");
+        }
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        try {
+            Response resp = resource.terminateNow("TYPE_C", "name4");
+            Assert.assertEquals(resp.getStatus(), 200);
+        } catch (Exception e) {
+            LOGGER.error("exception from terminateNow", e);
+            Assert.fail("getChaosEvents throws exception");
+        }
+        Assert.assertEquals(ctx.selectedOn().size(), 2);
+        Assert.assertEquals(ctx.terminated().size(), 2);
+
+        // TYPE_C.name4 only has two instances, so the 3rd ondemand termination
+        // will not terminate anything.
+        try {
+            Response resp = resource.terminateNow("TYPE_C", "name4");
+            Assert.assertEquals(resp.getStatus(), 200);
+        } catch (Exception e) {
+            LOGGER.error("exception from terminateNow", e);
+            Assert.fail("getChaosEvents throws exception");
+        }
+        Assert.assertEquals(ctx.selectedOn().size(), 3);
+        Assert.assertEquals(ctx.terminated().size(), 2);
+
+        // Try a different type will work
+        try {
+            Response resp = resource.terminateNow("TYPE_B", "name2");
+            Assert.assertEquals(resp.getStatus(), 200);
+        } catch (Exception e) {
+            LOGGER.error("exception from terminateNow", e);
+            Assert.fail("getChaosEvents throws exception");
+        }
+        Assert.assertEquals(ctx.selectedOn().size(), 4);
+        Assert.assertEquals(ctx.terminated().size(), 3);
+    }
+
+    @Test void testTerminateNowDisabled() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTerminationDisabled.properties");
+
+
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        try {
+            Response resp = resource.terminateNow("TYPE_C", "name4");
+            Assert.assertEquals(resp.getStatus(), 200);
+        } catch (Exception e) {
+            LOGGER.error("exception from terminateNow", e);
+            Assert.fail("getChaosEvents throws exception");
+        }
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
     }
 
     @Test
@@ -119,10 +189,11 @@ public class TestChaosMonkeyResource {
         final Enum eventType = ChaosMonkey.EventTypes.CHAOS_TERMINATION;
         // SUPPRESS CHECKSTYLE MagicNumber
         return new BasicRecorderEvent(monkeyType, eventType, "region", "id", 1330538400000L)
-                .addField("instanceId", instance).addField("groupType", "ASG").addField("groupName", "testGroup");
+        .addField("instanceId", instance).addField("groupType", "ASG").addField("groupName", "testGroup");
     }
 
     public static class MockTestChaosMonkeyContext extends TestChaosMonkeyContext {
+        @Override
         public MonkeyRecorder recorder() {
             return mockRecorder;
         }
