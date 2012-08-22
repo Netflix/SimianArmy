@@ -94,13 +94,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
                                 new Object[] {inst, group.name(), group.type(), prop});
-                        context().eventReport(createEvent(EventTypes.CHAOS_SKIPPED, group, inst));
+                        context().eventReport(createEvent(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst));
 
                     } else {
                         if (hasPreviousTerminations(group)) {
                             LOGGER.info("ChaosMonkey takes pity on group {} [{}] since it was attacked ealier today",
                                     group.name(), group.type());
-                            context().eventReport(createEvent(EventTypes.CHAOS_SKIPPED, group, inst));
+                            context().eventReport(createEvent(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst));
                             continue;
                         }
                         try {

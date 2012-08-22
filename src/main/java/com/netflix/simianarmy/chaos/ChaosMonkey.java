@@ -83,7 +83,7 @@ public abstract class ChaosMonkey extends Monkey {
 
         /** The chaos termination. */
         CHAOS_TERMINATION,
-        CHAOS_SKIPPED
+        CHAOS_TERMINATION_SKIPPED
     }
 
     /** {@inheritDoc} */
