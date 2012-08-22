@@ -74,75 +74,87 @@ public class TestChaosMonkeyResource {
         MockitoAnnotations.initMocks(this);
     }
 
-    @Test void testTerminateNow() {
+    @Test
+    void testTerminateNow() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTermination.properties");
 
+        createMockUriInfo("CHAOS_TERMINATION", "TYPE_C", "name4");
 
         Assert.assertEquals(ctx.selectedOn().size(), 0);
         Assert.assertEquals(ctx.terminated().size(), 0);
 
         ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
-        try {
-            Response resp = resource.terminateNow("TYPE_C", "name4");
-            Assert.assertEquals(resp.getStatus(), 200);
-        } catch (Exception e) {
-            LOGGER.error("exception from terminateNow", e);
-            Assert.fail("getChaosEvents throws exception");
-        }
+        validateAddEventResult(resource, Response.Status.OK);
         Assert.assertEquals(ctx.selectedOn().size(), 1);
         Assert.assertEquals(ctx.terminated().size(), 1);
 
-        try {
-            Response resp = resource.terminateNow("TYPE_C", "name4");
-            Assert.assertEquals(resp.getStatus(), 200);
-        } catch (Exception e) {
-            LOGGER.error("exception from terminateNow", e);
-            Assert.fail("getChaosEvents throws exception");
-        }
+        validateAddEventResult(resource, Response.Status.OK);
         Assert.assertEquals(ctx.selectedOn().size(), 2);
         Assert.assertEquals(ctx.terminated().size(), 2);
 
         // TYPE_C.name4 only has two instances, so the 3rd ondemand termination
         // will not terminate anything.
-        try {
-            Response resp = resource.terminateNow("TYPE_C", "name4");
-            Assert.assertEquals(resp.getStatus(), 200);
-        } catch (Exception e) {
-            LOGGER.error("exception from terminateNow", e);
-            Assert.fail("getChaosEvents throws exception");
-        }
+        validateAddEventResult(resource, Response.Status.GONE);
         Assert.assertEquals(ctx.selectedOn().size(), 3);
         Assert.assertEquals(ctx.terminated().size(), 2);
 
         // Try a different type will work
-        try {
-            Response resp = resource.terminateNow("TYPE_B", "name2");
-            Assert.assertEquals(resp.getStatus(), 200);
-        } catch (Exception e) {
-            LOGGER.error("exception from terminateNow", e);
-            Assert.fail("getChaosEvents throws exception");
-        }
+        createMockUriInfo("CHAOS_TERMINATION", "TYPE_C", "name5");
+        validateAddEventResult(resource, Response.Status.OK);
         Assert.assertEquals(ctx.selectedOn().size(), 4);
         Assert.assertEquals(ctx.terminated().size(), 3);
     }
 
-    @Test void testTerminateNowDisabled() {
+    @Test
+    void testTerminateNowDisabled() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTerminationDisabled.properties");
-
+        createMockUriInfo("CHAOS_TERMINATION", "TYPE_C", "name4");
 
         Assert.assertEquals(ctx.selectedOn().size(), 0);
         Assert.assertEquals(ctx.terminated().size(), 0);
 
         ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
-        try {
-            Response resp = resource.terminateNow("TYPE_C", "name4");
-            Assert.assertEquals(resp.getStatus(), 200);
-        } catch (Exception e) {
-            LOGGER.error("exception from terminateNow", e);
-            Assert.fail("getChaosEvents throws exception");
-        }
+        validateAddEventResult(resource, Response.Status.FORBIDDEN);
         Assert.assertEquals(ctx.selectedOn().size(), 0);
         Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    void testTerminateNowBadInput() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTermination.properties");
+        createMockUriInfo(null, "TYPE_C", "name4");
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.BAD_REQUEST);
+
+        createMockUriInfo("CHAOS_TERMINATION", null, "name4");
+        resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.BAD_REQUEST);
+
+        createMockUriInfo("CHAOS_TERMINATION", "TYPE_C", null);
+        resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.BAD_REQUEST);
+    }
+
+    @Test
+    void testTerminateNowBadGroupNotExist() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTermination.properties");
+
+        createMockUriInfo("CHAOS_TERMINATION", "INVALID", "name4");
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.NOT_FOUND);
+
+        createMockUriInfo("CHAOS_TERMINATION", "TYPE_C", "INVALID");
+        resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.NOT_FOUND);
+    }
+
+    @Test
+    void testTerminateNowBadEventType() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("ondemandTermination.properties");
+
+        createMockUriInfo("INVALID", "TYPE_C", "name4");
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, Response.Status.BAD_REQUEST);
     }
 
     @Test
@@ -202,5 +214,23 @@ public class TestChaosMonkeyResource {
     String getResource(String name) {
         // get resource as stream, use Scanner to read stream as one token
         return new Scanner(TestChaosMonkeyResource.class.getResourceAsStream(name), "UTF-8").useDelimiter("\\A").next();
+    }
+
+    private void validateAddEventResult(ChaosMonkeyResource resource, Response.Status responseStatus) {
+        try {
+            Response resp = resource.addEvent(mockUriInfo);
+            Assert.assertEquals(resp.getStatus(), responseStatus.getStatusCode());
+        } catch (Exception e) {
+            LOGGER.error("exception from addEvent", e);
+            Assert.fail("addEvent throws exception");
+        }
+    }
+
+    private void createMockUriInfo(String eventType, String groupType, String groupName) {
+        MultivaluedMap<String, String> queryParams = new MultivaluedMapImpl();
+        queryParams.add("eventType", eventType);
+        queryParams.add("groupType", groupType);
+        queryParams.add("groupName", groupName);
+        when(mockUriInfo.getQueryParameters()).thenReturn(queryParams);
     }
 }

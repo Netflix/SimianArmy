@@ -28,6 +28,8 @@ import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.FeatureNotEnabledException;
+import com.netflix.simianarmy.InstanceGroupNotFoundException;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.NotFoundException;
@@ -105,26 +107,35 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     @Override
-    public void terminateNow(String type, String name) {
+    public Event terminateNow(String type, String name)
+            throws FeatureNotEnabledException, InstanceGroupNotFoundException {
         Validate.notNull(type);
         Validate.notNull(name);
         cfg.reload();
         if (!isEnabled()) {
-            return;
+            String msg = String.format("Chaos monkey is not enabled for group %s [type %s]",
+                    name, type);
+            LOGGER.info(msg);
+            throw new FeatureNotEnabledException(msg);
         }
         String prop = NS + "terminateOndemand.enabled";
         if (cfg.getBool(prop)) {
             InstanceGroup group = findInstanceGroup(type, name);
             if (group == null) {
-                return;
+                throw new InstanceGroupNotFoundException(type, name);
             }
             String inst = context().chaosInstanceSelector().select(group, 1.0);
             if (inst != null) {
-                terminateInstance(group, inst);
+                return terminateInstance(group, inst);
+            } else {
+                throw new NotFoundException(String.format("No instance is found in group %s [type %s]",
+                        name, type));
             }
         } else {
-            LOGGER.info("Group {} [type {}] does not allow ondemand termination, set {}=true",
-                    new Object[]{name, type, prop});
+            String msg = String.format("Group %s [type %s] does not allow on-demand termination, set %s=true",
+                    name, type, prop);
+            LOGGER.info(msg);
+            throw new FeatureNotEnabledException(msg);
         }
     }
 
@@ -143,11 +154,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     @Override
-    public void recordTermination(InstanceGroup group, String instance) {
+    public Event recordTermination(InstanceGroup group, String instance) {
         Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, group.region(), instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
         context().recorder().recordEvent(evt);
+        return evt;
     }
 
     /** {@inheritDoc} */
@@ -177,26 +189,30 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 return group;
             }
         }
-        LOGGER.error("Failed to find instance group for type {} and name {}", type, name);
+        LOGGER.warn("Failed to find instance group for type {} and name {}", type, name);
         return null;
     }
 
-    private void terminateInstance(InstanceGroup group, String inst) {
+    private Event terminateInstance(InstanceGroup group, String inst) {
         Validate.notNull(group);
         Validate.notEmpty(inst);
         String prop = NS + "leashed";
         if (cfg.getBoolOrElse(prop, true)) {
             LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
                     new Object[]{inst, group.name(), group.type(), prop});
+            return null;
         } else {
             try {
-                recordTermination(group, inst);
+                Event evt = recordTermination(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
+                return evt;
             } catch (NotFoundException e) {
                 LOGGER.warn("Failed to terminate " + inst + ", it does not exist. Perhaps it was already terminated");
+                return null;
             } catch (Exception e) {
                 handleTerminationError(inst, e);
+                return null;
             }
         }
     }
