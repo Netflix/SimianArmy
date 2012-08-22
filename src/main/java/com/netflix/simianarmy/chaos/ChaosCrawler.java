@@ -17,8 +17,8 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.util.List;
 import java.util.EnumSet;
+import java.util.List;
 
 /**
  * The Interface ChaosCrawler.
@@ -80,4 +80,13 @@ public interface ChaosCrawler {
      * @return the list
      */
     List<InstanceGroup> groups();
+
+    /**
+     * Gets the up to date information for a collection of group names.
+     *
+     * @param names
+     *          the group names
+     * @return the list of instance groups
+     */
+    List<InstanceGroup> groups(String... names);
 }
