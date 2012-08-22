@@ -25,13 +25,15 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Date;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
 import org.testng.Assert;
 
 public class TestMonkeyContext implements Monkey.Context {
     private Enum monkeyType;
-
+    private LinkedList<Event> eventReport = new LinkedList<Event>();
+    
     public TestMonkeyContext(Enum monkeyType) {
         this.monkeyType = monkeyType;
     }
@@ -120,5 +122,20 @@ public class TestMonkeyContext implements Monkey.Context {
 
     public MonkeyRecorder recorder() {
         return recorder;
+    }
+
+    @Override
+    public void eventReport(Event evt) {
+        return;
+    }
+
+    @Override
+    public void resetEventReport() {
+        return;
+    }
+
+    @Override
+    public String getEventReport() {
+        return "";
     }
 }

@@ -73,6 +73,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
     /** {@inheritDoc} */
     public void doMonkeyBusiness() {
         LOGGER.info("BasicChaosMonkey.doMonkeyBusiness()");
+        context().resetEventReport();
         cfg.reload();
         String prop = NS + "enabled";
         if (!cfg.getBoolOrElse(prop, true)) {
@@ -93,10 +94,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
                                 new Object[] {inst, group.name(), group.type(), prop});
+                        context().eventReport(createEvent(EventTypes.CHAOS_SKIPPED, group, inst));
+
                     } else {
                         if (hasPreviousTerminations(group)) {
                             LOGGER.info("ChaosMonkey takes pity on group {} [{}] since it was attacked ealier today",
                                     group.name(), group.type());
+                            context().eventReport(createEvent(EventTypes.CHAOS_SKIPPED, group, inst));
                             continue;
                         }
                         try {
@@ -120,7 +124,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     /**
-     * Handle termination error. This has been abstracted so subclasses can decide to conitue causing chaos if desired.
+     * Handle termination error. This has been abstracted so subclasses can decide to continue causing chaos if desired.
      *
      * @param instance
      *            the instance
@@ -150,9 +154,15 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     public void recordTermination(InstanceGroup group, String instance) {
-        Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, group.region(), instance);
+        Event evt = createEvent(EventTypes.CHAOS_TERMINATION, group, instance);
+        context().recorder().recordEvent(evt);
+        context().eventReport(evt);
+    }
+
+    private Event createEvent(EventTypes chaosTermination, InstanceGroup group, String instance) {
+        Event evt = context().recorder().newEvent(Type.CHAOS, chaosTermination, group.region(), instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
-        context().recorder().recordEvent(evt);
+        return evt;
     }
 }

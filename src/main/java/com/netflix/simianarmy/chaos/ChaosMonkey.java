@@ -19,6 +19,7 @@ package com.netflix.simianarmy.chaos;
 
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 
 /**
  * The Class ChaosMonkey.
@@ -81,7 +82,8 @@ public abstract class ChaosMonkey extends Monkey {
     public enum EventTypes {
 
         /** The chaos termination. */
-        CHAOS_TERMINATION
+        CHAOS_TERMINATION,
+        CHAOS_SKIPPED
     }
 
     /** {@inheritDoc} */

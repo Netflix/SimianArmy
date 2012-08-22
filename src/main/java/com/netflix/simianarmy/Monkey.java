@@ -20,6 +20,8 @@ package com.netflix.simianarmy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+
 /**
  * The abstract Monkey class, it provides a minimal interface from which all monkeys must be derived.
  */
@@ -60,6 +62,13 @@ public abstract class Monkey {
          * @return the monkey recorder
          */
         MonkeyRecorder recorder();
+
+        void eventReport(Event evt);
+
+        void resetEventReport();
+        
+        String getEventReport();
+
     }
 
     /** The context. */
@@ -105,7 +114,12 @@ public abstract class Monkey {
     public void run() throws Exception {
         if (ctx.calendar().isMonkeyTime(this)) {
             LOGGER.info(this.type().name() + " Monkey Running ...");
-            this.doMonkeyBusiness();
+            try {
+                this.doMonkeyBusiness();
+            } 
+            finally {
+                LOGGER.info("Reporting what I did...\n"+context().getEventReport());
+            }
         } else {
             LOGGER.info("Not Time for " + this.type().name() + " Monkey");
         }
