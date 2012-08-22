@@ -29,14 +29,15 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingJsonFactory;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -137,17 +138,19 @@ public class ChaosMonkeyResource {
      * POST /api/v1/chaos will try a add a new event with the information in the url context,
      * ignoring the monkey probability and max termination configurations, for a specific instance group.
      *
-     * @param uriInfo
-     *            the uri info
+     * @param content
+     *            the Json content passed to the http POST request
      * @return the response
      * @throws IOException
      */
     @POST
-    public Response addEvent(@Context UriInfo uriInfo) throws IOException {
-        MultivaluedMap<String, String> queryParams = uriInfo.getQueryParameters();
-        String eventType = queryParams.getFirst("eventType");
-        String groupType = queryParams.getFirst("groupType");
-        String groupName = queryParams.getFirst("groupName");
+    public Response addEvent(String content) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        JsonNode input = mapper.readTree(content);
+
+        String eventType = getStringField(input, "eventType");
+        String groupType = getStringField(input, "groupType");
+        String groupName = getStringField(input, "groupName");
 
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -155,7 +158,7 @@ public class ChaosMonkeyResource {
         gen.writeStartObject();
         gen.writeStringField("eventType", eventType);
         gen.writeStringField("groupType", groupType);
-        gen.writeStringField("eventName", groupName);
+        gen.writeStringField("groupName", groupName);
 
         if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(groupType) || StringUtils.isEmpty(groupName)) {
             responseStatus = Response.Status.BAD_REQUEST;
@@ -208,6 +211,14 @@ public class ChaosMonkeyResource {
         }
         LOGGER.info("On-demand termination completed.");
         return responseStatus;
+    }
+
+    private String getStringField(JsonNode input, String field) {
+        JsonNode node = input.get(field);
+        if (node == null) {
+            return null;
+        }
+        return node.getTextValue();
     }
 
 }
