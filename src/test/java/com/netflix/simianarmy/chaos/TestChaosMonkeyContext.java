@@ -19,10 +19,14 @@
 package com.netflix.simianarmy.chaos;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -69,13 +73,15 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final Enum type;
         private final String name;
         private final String region;
-        private final String[] instances;
+        private final List<String> instances = new ArrayList<String>();
 
         public TestInstanceGroup(Enum type, String name, String region, String... instances) {
             this.type = type;
             this.name = name;
             this.region = region;
-            this.instances = instances;
+            for (String i : instances) {
+                this.instances.add(i);
+            }
         }
 
         @Override
@@ -95,11 +101,15 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
         @Override
         public List<String> instances() {
-            return Arrays.asList(instances);
+            return Collections.unmodifiableList(instances);
         }
 
         @Override
         public void addInstance(String ignored) {
+        }
+
+        public void deleteInstance(String id) {
+            instances.remove(id);
         }
     }
 
@@ -127,9 +137,30 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                         "3:i-123456787");
                 return Arrays.asList(gA0, gA1, gB2, gB3, gC1, gC2);
             }
+
+            @Override
+            public List<InstanceGroup> groups(String... names) {
+                Map<String, InstanceGroup> nameToGroup = new HashMap<String, InstanceGroup>();
+                for (InstanceGroup ig : groups()) {
+                    nameToGroup.put(ig.name(), ig);
+                }
+                List<InstanceGroup> list = new LinkedList<InstanceGroup>();
+                for (String name : names) {
+                    InstanceGroup ig = nameToGroup.get(name);
+                    if (ig == null) {
+                        continue;
+                    }
+                    for (String instanceId : terminated) {
+                        // Remove terminated instances from crawler list
+                        TestInstanceGroup testIg = (TestInstanceGroup) ig;
+                        testIg.deleteInstance(instanceId);
+                    }
+                    list.add(ig);
+                }
+                return list;
+            }
         };
     }
-
     private final List<InstanceGroup> selectedOn = new LinkedList<InstanceGroup>();
 
     public List<InstanceGroup> selectedOn() {

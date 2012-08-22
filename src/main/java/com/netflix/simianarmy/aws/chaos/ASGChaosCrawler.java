@@ -17,16 +17,15 @@
  */
 package com.netflix.simianarmy.aws.chaos;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.util.EnumSet;
+import java.util.LinkedList;
+import java.util.List;
 
-import com.netflix.simianarmy.aws.AWSClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-
-import com.netflix.simianarmy.chaos.ChaosCrawler;
+import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosCrawler;
 
 /**
  * The Class ASGChaosCrawler. This will crawl for all available AutoScalingGroups associated with the AWS account.
@@ -43,7 +42,7 @@ public class ASGChaosCrawler implements ChaosCrawler {
     }
 
     /** The aws client. */
-    private AWSClient awsClient;
+    private final AWSClient awsClient;
 
     /**
      * Instantiates a new basic chaos crawler.
@@ -64,8 +63,13 @@ public class ASGChaosCrawler implements ChaosCrawler {
     /** {@inheritDoc} */
     @Override
     public List<InstanceGroup> groups() {
+        return groups((String[]) null);
+    }
+
+    @Override
+    public List<InstanceGroup> groups(String... names) {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
-        for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups()) {
+        for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(names)) {
             InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
             for (Instance inst : asg.getInstances()) {
                 ig.addInstance(inst.getInstanceId());

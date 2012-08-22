@@ -18,26 +18,22 @@
 package com.netflix.simianarmy.aws;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.LinkedList;
-
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.NotFoundException;
+import java.util.List;
 
 import com.amazonaws.AmazonServiceException;
-
-import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
+import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.NotFoundException;
 
 /**
  * The Class AWSClient. Simple Amazon EC2 and Amazon ASG client interface.
@@ -45,10 +41,10 @@ import com.amazonaws.auth.AWSCredentials;
 public class AWSClient implements CloudClient {
 
     /** The credential. */
-    private AWSCredentials cred;
+    private final AWSCredentials cred;
 
     /** The region. */
-    private String region;
+    private final String region;
 
     /**
      * Instantiates a new AWS client.
@@ -125,11 +121,24 @@ public class AWSClient implements CloudClient {
      * @return the list
      */
     public List<AutoScalingGroup> describeAutoScalingGroups() {
+        return describeAutoScalingGroups((String[]) null);
+    }
+
+    /**
+     * Describe a set of specific auto scaling groups.
+     *
+     * @return the auto scaling groups
+     */
+    public List<AutoScalingGroup> describeAutoScalingGroups(String... names) {
         List<AutoScalingGroup> asgs = new LinkedList<AutoScalingGroup>();
 
         AmazonAutoScalingClient asgClient = asgClient();
         DescribeAutoScalingGroupsRequest request = new DescribeAutoScalingGroupsRequest();
+        if (names != null) {
+            request.withAutoScalingGroupNames(Arrays.asList(names));
+        }
         DescribeAutoScalingGroupsResult result = asgClient.describeAutoScalingGroups(request);
+
         asgs.addAll(result.getAutoScalingGroups());
         while (result.getNextToken() != null) {
             request = request.withNextToken(result.getNextToken());
@@ -141,6 +150,7 @@ public class AWSClient implements CloudClient {
     }
 
     /** {@inheritDoc} */
+    @Override
     public void terminateInstance(String instanceId) {
         try {
             ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
