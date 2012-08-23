@@ -323,6 +323,16 @@ public class TestBasicChaosMonkey {
     }
 
     @Test
+    public void testMandatoryTerminationNoOptInTime() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationNoOptInTime.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
     public void testMandatoryTerminationInsideWindow() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationInsideWindow.properties");
         ChaosMonkey chaos = new BasicChaosMonkey(ctx);
