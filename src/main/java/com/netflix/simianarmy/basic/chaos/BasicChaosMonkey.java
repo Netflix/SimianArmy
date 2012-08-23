@@ -199,7 +199,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 double mandatoryProb = cfg.getNumOrElse(NS + "mandatoryTermination.defaultProbability",
                         DEFAULT_MANDATORY_TERMINATION_PROBABILITY);
                 LOGGER.info("There has been no terminations for group {} [type {}] in the last {} days,"
-                        + "set the probability to {} for mandatory termination.",
+                        + "setting the probability to {} for mandatory termination.",
                         new Object[]{group.name(), group.type(), mandatoryTerminationWindowInDays, mandatoryProb});
                 return mandatoryProb;
             }
