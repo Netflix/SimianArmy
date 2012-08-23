@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
+import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.NotFoundException;
@@ -56,6 +57,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
     /** The minimum value of the maxTerminationCountPerday property to be considered non-zero. **/
     private static final double MIN_MAX_TERMINATION_COUNT_PER_DAY = 0.001;
 
+    private final MonkeyCalendar monkeyCalendar;
+
+    // When a mandatory termination is triggered due to the minimum termination limit is breached,
+    // the value below is used as the termination probability.
+    private static final double DEFAULT_MANDATORY_TERMINATION_PROBABILITY = 0.5;
+
     /**
      * Instantiates a new basic chaos monkey.
      *
@@ -66,11 +73,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
         super(ctx);
 
         this.cfg = ctx.configuration();
+        this.monkeyCalendar = ctx.calendar();
 
-        Calendar open = ctx.calendar().now();
-        Calendar close = ctx.calendar().now();
-        open.set(Calendar.HOUR, ctx.calendar().openHour());
-        close.set(Calendar.HOUR, ctx.calendar().closeHour());
+        Calendar open = monkeyCalendar.now();
+        Calendar close = monkeyCalendar.now();
+        open.set(Calendar.HOUR, monkeyCalendar.openHour());
+        close.set(Calendar.HOUR, monkeyCalendar.closeHour());
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
@@ -81,27 +89,19 @@ public class BasicChaosMonkey extends ChaosMonkey {
     @Override
     public void doMonkeyBusiness() {
         cfg.reload();
-        if (!isEnabled()) {
+        if (!isChaosMonkeyEnabled()) {
             return;
         }
-        String prop;
         for (InstanceGroup group : context().chaosCrawler().groups()) {
-            prop = NS + group.type() + "." + group.name() + ".enabled";
-            String defaultProp = NS + group.type();
-            if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp + ".enabled"))) {
+            if (isGroupEnabled(group)) {
                 if (isMaxTerminationCountExceeded(group)) {
                     continue;
                 }
-                String probProp = NS + group.type() + "." + group.name() + ".probability";
-                double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[]{group.name(), group.type(), prob});
+                double prob = getEffectiveProbability(group);
                 String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 if (inst != null) {
                     terminateInstance(group, inst);
                 }
-            } else {
-                LOGGER.info("Group {} [type {}] disabled, set {}=true or {}=true",
-                        new Object[]{group.name(), group.type(), prop, defaultProp + ".enabled"});
             }
         }
     }
@@ -112,7 +112,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         Validate.notNull(type);
         Validate.notNull(name);
         cfg.reload();
-        if (!isEnabled()) {
+        if (!isChaosMonkeyEnabled()) {
             String msg = String.format("Chaos monkey is not enabled for group %s [type %s]",
                     name, type);
             LOGGER.info(msg);
@@ -172,7 +172,80 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return evts.size();
     }
 
-    private boolean isEnabled() {
+    /**
+     * Gets the effective probability value when the monkey processes an instance group, it uses the following
+     * logic in the order as listed below.
+     *
+     * 1) When minimum mandatory termination is enabled, a default non-zero probability is used for opted-in
+     * groups, if a) the application has been opted in for the last mandatory termination window
+     *        and b) there was no terminations in the last mandatory termination window
+     * 2) Use the probability configured for the group type and name
+     * 3) Use the probability configured for the group
+     * 4) Use 1.0
+     * @param group
+     * @return
+     */
+    private double getEffectiveProbability(InstanceGroup group) {
+        if (!isGroupEnabled(group)) {
+            return 0;
+        }
+
+        String propName;
+        if (cfg.getBool(NS + "mandatoryTermination.enabled")) {
+            String mtwProp = NS + "mandatoryTermination.windowInDays";
+            int mandatoryTerminationWindowInDays = (int) cfg.getNumOrElse(mtwProp, 0);
+            if (mandatoryTerminationWindowInDays > 0
+                    && noTerminationInLastWindow(group, mandatoryTerminationWindowInDays)) {
+                double mandatoryProb = cfg.getNumOrElse(NS + "mandatoryTermination.defaultProbability",
+                        DEFAULT_MANDATORY_TERMINATION_PROBABILITY);
+                LOGGER.info("There has been no terminations for group {} [type {}] in the last {} days,"
+                        + "set the probability to {} for mandatory termination.",
+                        new Object[]{group.name(), group.type(), mandatoryTerminationWindowInDays, mandatoryProb});
+                return mandatoryProb;
+            }
+        }
+        propName = "probability";
+        String defaultProp = NS + group.type();
+        String probProp = NS + group.type() + "." + group.name() + "." + propName;
+        double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + "." + propName, 1.0));
+        LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[]{group.name(), group.type(), prob});
+        return prob;
+    }
+
+    private boolean noTerminationInLastWindow(InstanceGroup group, int mandatoryTerminationWindowInDays) {
+        String prop = NS + group.type() + "." + group.name() + ".lastOptInTimeInMilliseconds";
+        long lastOptInTimeInMilliseconds = (long) cfg.getNumOrElse(prop, -1);
+
+        if (lastOptInTimeInMilliseconds < 0) {
+            return false;
+        }
+
+        Calendar windowStart = monkeyCalendar.now();
+        windowStart.add(Calendar.DATE, -1 * mandatoryTerminationWindowInDays);
+
+        // return true if the window start is after the last opt-in time and
+        // there has been no termination since the window start
+        if (windowStart.getTimeInMillis() > lastOptInTimeInMilliseconds
+                && getPreviousTerminationCount(group, windowStart.getTime()) <= 0) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isGroupEnabled(InstanceGroup group) {
+        String prop = NS + group.type() + "." + group.name() + ".enabled";
+        String defaultProp = NS + group.type() + ".enabled";
+        if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp))) {
+            return true;
+        } else {
+            LOGGER.info("Group {} [type {}] disabled, set {}=true or {}=true",
+                    new Object[]{group.name(), group.type(), prop, defaultProp});
+            return false;
+        }
+    }
+
+    private boolean isChaosMonkeyEnabled() {
         String prop = NS + "enabled";
         if (cfg.getBoolOrElse(prop, true)) {
             return true;
@@ -234,7 +307,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 daysBack = (int) Math.ceil(1 / maxTerminationsPerDay);
                 maxCount = 1;
             }
-            Calendar after = Calendar.getInstance();
+            Calendar after = monkeyCalendar.now();
             after.add(Calendar.DATE, -1 * daysBack);
             // Check if the group has exceeded the maximum terminations for the last period
             int terminationCount = getPreviousTerminationCount(group, after.getTime());
