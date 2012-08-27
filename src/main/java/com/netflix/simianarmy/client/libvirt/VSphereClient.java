@@ -39,8 +39,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  *     limitations under the License.
  */
 /**
- * This client describes the AutoScalingGroup's and can terminate Instance's that
- * are hosted in a VSphere Center.
+ * This client describes the AutoScalingGroup's and can terminate Instance's that are hosted in a VSphere Center.
  * 
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -49,12 +48,13 @@ public class VSphereClient extends AWSClient {
     private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
 
     public VSphereClient(BasicConfiguration config) {
-        super(config.getStr("simianarmy.aws.accountKey"), config.getStr("simianarmy.aws.secretKey"), config.getStrOrElse("simianarmy.aws.region", "us-east-1"));
+        super(config.getStr("simianarmy.aws.accountKey"), config.getStr("simianarmy.aws.secretKey"), config
+                .getStrOrElse("simianarmy.aws.region", "us-east-1"));
         this.url = config.getStr("client.vsphere.url");
         this.username = config.getStr("client.vsphere.username");
         this.password = config.getStr("client.vsphere.password");
     }
-    
+
     private String username = null;
     private String password = null;
     private String url = null;
@@ -67,23 +67,22 @@ public class VSphereClient extends AWSClient {
         try {
             connectService();
             ManagedEntity[] mes = describeVirtualMachines();
-            
+
             for (int i = 0; i < mes.length; i++) {
-                VirtualMachine virtualMachine = (VirtualMachine) mes[i]; 
+                VirtualMachine virtualMachine = (VirtualMachine) mes[i];
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();
-                
+
                 Boolean optIn = getOptInByAttribute(virtualMachine);
                 if (optIn == null || optIn) {
                     groups.addInstance(instanceId, groupName);
-                    LOGGER.debug("VirtualMachine "+instanceId+" from group "+groupName+" added");
-                }
-                else {
-                    LOGGER.debug("VirtualMachine "+instanceId+" from group "+groupName+" opted out by VM-Attribute");
+                    LOGGER.debug("VirtualMachine " + instanceId + " from group " + groupName + " added");
+                } else {
+                    LOGGER.debug("VirtualMachine " + instanceId + " from group " + groupName
+                            + " opted out by VM-Attribute");
                 }
             }
-        } 
-        finally {
+        } finally {
             disconnectService();
         }
 
@@ -92,7 +91,7 @@ public class VSphereClient extends AWSClient {
 
     private Boolean getOptInByAttribute(VirtualMachine virtualMachine) {
         String optInAttribute = getChaosMonkeyAttributeValue(virtualMachine);
-        boolean optInAttributeIsSet = (optInAttribute != null && ! "".equals(optInAttribute.trim()));
+        boolean optInAttributeIsSet = (optInAttribute != null && !"".equals(optInAttribute.trim()));
         Boolean optIn = null;
         if (optInAttributeIsSet) {
             optIn = Boolean.valueOf(optInAttribute);
@@ -103,29 +102,28 @@ public class VSphereClient extends AWSClient {
     private String getChaosMonkeyAttributeValue(VirtualMachine virtualMachine) throws AmazonServiceException {
         try {
             for (CustomFieldDef fieldDef : virtualMachine.getAvailableField()) {
-              if (ATTRIBUTE_CHAOS_MONKEY.equals(fieldDef.getName())) {
-                CustomFieldValue[] customFieldValues = virtualMachine.getCustomValue();
-                if (customFieldValues == null) {
-                    continue;
-                }
-                for (CustomFieldValue customFieldValue : customFieldValues) {
-                  if (customFieldValue.getKey() == fieldDef.getKey()) {
-                    CustomFieldStringValue stringValue = (CustomFieldStringValue) customFieldValue;
-                    return stringValue.getValue();
-                  }
-                }
+                if (ATTRIBUTE_CHAOS_MONKEY.equals(fieldDef.getName())) {
+                    CustomFieldValue[] customFieldValues = virtualMachine.getCustomValue();
+                    if (customFieldValues == null) {
+                        continue;
+                    }
+                    for (CustomFieldValue customFieldValue : customFieldValues) {
+                        if (customFieldValue.getKey() == fieldDef.getKey()) {
+                            CustomFieldStringValue stringValue = (CustomFieldStringValue) customFieldValue;
+                            return stringValue.getValue();
+                        }
+                    }
 
-                break;
-              }
+                    break;
+                }
             }
         } catch (Exception e) {
-            throw new AmazonServiceException("cannot read property from virtual machine " +virtualMachine.getName(),e);
+            throw new AmazonServiceException("cannot read property from virtual machine " + virtualMachine.getName(), e);
         }
 
         return null;
-      }
-    
-    
+    }
+
     private ManagedEntity[] describeVirtualMachines() {
         ManagedEntity[] mes = null;
 
@@ -133,17 +131,16 @@ public class VSphereClient extends AWSClient {
         try {
             mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
         } catch (InvalidProperty e) {
-            throw new AmazonServiceException("cannot query VSphere",e);
+            throw new AmazonServiceException("cannot query VSphere", e);
         } catch (RuntimeFault e) {
-            throw new AmazonServiceException("cannot query VSphere",e);
+            throw new AmazonServiceException("cannot query VSphere", e);
         } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot query VSphere",e);
+            throw new AmazonServiceException("cannot query VSphere", e);
         }
 
-        if(mes == null || mes.length == 0) {
+        if (mes == null || mes.length == 0) {
             throw new AmazonServiceException("vsphere returned zero entities of type \"VirtualMachine\"");
-        }
-        else {
+        } else {
             return mes;
         }
     }
@@ -161,26 +158,26 @@ public class VSphereClient extends AWSClient {
                 service = new ServiceInstance(new URL(url), username, password, true);
             }
         } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot connect to VSphere",e);
+            throw new AmazonServiceException("cannot connect to VSphere", e);
         } catch (MalformedURLException e) {
-            throw new AmazonServiceException("cannot connect to VSphere",e);
+            throw new AmazonServiceException("cannot connect to VSphere", e);
         }
     }
-        
+
     @Override
     public void terminateInstance(String instanceId) {
-        LOGGER.info("VSphereClient.terminateInstance() recreating "+instanceId);
+        LOGGER.info("VSphereClient.terminateInstance() recreating " + instanceId);
         // TODO IK
 
-//        try {
-//            connectService();
-//            
-//            this.service.getOptionManager().getPropertyByPath("TODO IK");
-//            
-            return;
-//        } 
-//        finally {
-//            disconnectService();
-//        }
+        // try {
+        // connectService();
+        //
+        // this.service.getOptionManager().getPropertyByPath("TODO IK");
+        //
+        return;
+        // }
+        // finally {
+        // disconnectService();
+        // }
     }
 }
