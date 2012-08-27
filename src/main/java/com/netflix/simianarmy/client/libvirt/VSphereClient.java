@@ -80,7 +80,9 @@ public class VSphereClient extends AWSClient {
                 if (optIn == null || optIn) {
                     groups.addInstance(instanceId, groupName);
                 }
-                LOGGER.info("#### optIn for " + instanceId +" is " + optIn);
+                else {
+                    LOGGER.debug("VirtualMachine opted out by VM-Attribute: " + instanceId);
+                }
             }
         } 
         finally {
@@ -105,6 +107,9 @@ public class VSphereClient extends AWSClient {
             for (CustomFieldDef fieldDef : virtualMachine.getAvailableField()) {
               if (ATTRIBUTE_CHAOS_MONKEY.equals(fieldDef.getName())) {
                 CustomFieldValue[] customFieldValues = virtualMachine.getCustomValue();
+                if (customFieldValues == null) {
+                    continue;
+                }
                 for (CustomFieldValue customFieldValue : customFieldValues) {
                   if (customFieldValue.getKey() == fieldDef.getKey()) {
                     CustomFieldStringValue stringValue = (CustomFieldStringValue) customFieldValue;
@@ -116,7 +121,7 @@ public class VSphereClient extends AWSClient {
               }
             }
         } catch (Exception e) {
-            throw new AmazonServiceException("cannot read property ffrom virtual machine " +virtualMachine.getName(),e);
+            throw new AmazonServiceException("cannot read property from virtual machine " +virtualMachine.getName(),e);
         }
 
         return null;
