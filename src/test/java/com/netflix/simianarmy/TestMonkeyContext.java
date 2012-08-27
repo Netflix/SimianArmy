@@ -18,22 +18,22 @@
  */
 package com.netflix.simianarmy;
 
-import java.util.concurrent.TimeUnit;
 import java.util.Calendar;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.Map;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
+import org.testng.Assert;
 
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
-import org.testng.Assert;
-
 public class TestMonkeyContext implements Monkey.Context {
     private Enum monkeyType;
     private LinkedList<Event> eventReport = new LinkedList<Event>();
-    
+
     public TestMonkeyContext(Enum monkeyType) {
         this.monkeyType = monkeyType;
     }
@@ -125,7 +125,7 @@ public class TestMonkeyContext implements Monkey.Context {
     }
 
     @Override
-    public void eventReport(Event evt) {
+    public void reportEvent(Event evt) {
         return;
     }
 
@@ -138,4 +138,4 @@ public class TestMonkeyContext implements Monkey.Context {
     public String getEventReport() {
         return "";
     }
-}
+ }

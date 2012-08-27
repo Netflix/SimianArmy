@@ -63,7 +63,7 @@ public class BasicContextShell implements ChaosMonkey.Context {
     }
     
     @Override
-    public void eventReport(Event evt) {
+    public void reportEvent(Event evt) {
         this.eventReport.add(evt);
     }
     

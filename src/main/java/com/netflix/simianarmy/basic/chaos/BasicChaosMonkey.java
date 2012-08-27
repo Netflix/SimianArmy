@@ -72,7 +72,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     public void doMonkeyBusiness() {
-        LOGGER.info("BasicChaosMonkey.doMonkeyBusiness()");
         context().resetEventReport();
         cfg.reload();
         String prop = NS + "enabled";
@@ -84,35 +83,39 @@ public class BasicChaosMonkey extends ChaosMonkey {
         for (InstanceGroup group : context().chaosCrawler().groups()) {
             prop = NS + group.type() + "." + group.name() + ".enabled";
             String defaultProp = NS + group.type();
-            if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp + ".enabled"))) {
-                String probProp = NS + group.type() + "." + group.name() + ".probability";
-                double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(), prob});
-                String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
-                if (inst != null) {
+            boolean isGroupTypeEnabled = cfg.getBool(defaultProp + ".enabled");
+            boolean isGroupNameEnabled = cfg.getBoolOrElse(prop, isGroupTypeEnabled);
+            if (isGroupNameEnabled) {
+                String probPropability = NS + group.type() + "." + group.name() + ".probability";
+                double probability = cfg.getNumOrElse(probPropability, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
+                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(), probability});
+                String instanceId = context().chaosInstanceSelector().select(group, probability / runsPerDay);
+                if (instanceId != null) {
                     prop = NS + "leashed";
                     if (cfg.getBoolOrElse(prop, true)) {
                         LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
-                                new Object[] {inst, group.name(), group.type(), prop});
-                        context().eventReport(createEvent(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst));
-
+                                new Object[] {instanceId, group.name(), group.type(), prop});
+                        reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, instanceId);
                     } else {
                         if (hasPreviousTerminations(group)) {
                             LOGGER.info("ChaosMonkey takes pity on group {} [{}] since it was attacked ealier today",
                                     group.name(), group.type());
-                            context().eventReport(createEvent(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst));
+                            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, instanceId);
                             continue;
                         }
                         try {
-                            recordTermination(group, inst);
-                            context().cloudClient().terminateInstance(inst);
+                            context().cloudClient().terminateInstance(instanceId);
+                            recordTermination(group, instanceId);
+                            reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, instanceId);
                             LOGGER.info("Terminated {} from group {} [{}]",
-                                    new Object[] {inst, group.name(), group.type()});
+                                    new Object[] {instanceId, group.name(), group.type()});
                         } catch (NotFoundException e) {
-                            LOGGER.warn("Failed to terminate " + inst
+                            LOGGER.warn("Failed to terminate " + instanceId
                                     + ", it does not exist. Perhaps it was already terminated");
+                            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, instanceId);
                         } catch (Exception e) {
-                            handleTerminationError(inst, e);
+                            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, instanceId);
+                            handleTerminationError(instanceId, e);
                         }
                     }
                 }
@@ -121,6 +124,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
                         new Object[] {group.name(), group.type(), prop, defaultProp + ".enabled"});
             }
         }
+    }
+
+    private void reportEventForSummary(EventTypes eventType, InstanceGroup group, String instanceId) {
+        context().reportEvent(createEvent(eventType, group, instanceId));        
     }
 
     /**
@@ -156,7 +163,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
     public void recordTermination(InstanceGroup group, String instance) {
         Event evt = createEvent(EventTypes.CHAOS_TERMINATION, group, instance);
         context().recorder().recordEvent(evt);
-        context().eventReport(evt);
     }
 
     private Event createEvent(EventTypes chaosTermination, InstanceGroup group, String instance) {

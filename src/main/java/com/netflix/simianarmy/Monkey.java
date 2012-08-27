@@ -62,11 +62,24 @@ public abstract class Monkey {
          * @return the monkey recorder
          */
         MonkeyRecorder recorder();
+        
+        
+        /**
+         * Add a event to the summary report. The ChaosMonkey uses this to print
+         * a summary after the chaos run is complete.
+         * 
+         * @param evt The Event to be reported
+         */
+        void reportEvent(Event evt);
 
-        void eventReport(Event evt);
-
+        /**
+         * Used to clear the event summary on the start of a chaos run
+         */
         void resetEventReport();
         
+        /**
+         * @return String a summary of what the chaos run did
+         */
         String getEventReport();
 
     }
