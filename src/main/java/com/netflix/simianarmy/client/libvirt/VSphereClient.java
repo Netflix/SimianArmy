@@ -73,15 +73,13 @@ public class VSphereClient extends AWSClient {
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();
                 
-//                if (! instanceId.equals("devmnk001"))
-//                    continue;
-
                 Boolean optIn = getOptInByAttribute(virtualMachine);
                 if (optIn == null || optIn) {
                     groups.addInstance(instanceId, groupName);
+                    LOGGER.debug("VirtualMachine "+instanceId+" from group "+groupName+" added");
                 }
                 else {
-                    LOGGER.debug("VirtualMachine opted out by VM-Attribute: " + instanceId);
+                    LOGGER.debug("VirtualMachine "+instanceId+" from group "+groupName+" opted out by VM-Attribute");
                 }
             }
         } 

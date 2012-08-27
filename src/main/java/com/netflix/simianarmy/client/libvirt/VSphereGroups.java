@@ -5,16 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-import com.vmware.vim25.CustomFieldDef;
-import com.vmware.vim25.CustomFieldStringValue;
-import com.vmware.vim25.CustomFieldValue;
-import com.vmware.vim25.mo.VirtualMachine;
 
 /*
  *  Copyright 2012 Immobilienscout GmbH
@@ -37,8 +29,6 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 class VSphereGroups {
-    private static final Logger LOGGER = LoggerFactory.getLogger(VSphereGroups.class);
-
     final private Map<String, AutoScalingGroup> map;
 
     public VSphereGroups() {
@@ -50,8 +40,6 @@ class VSphereGroups {
     }
 
     public void addInstance(final String instanceId, final String groupName) {
-        LOGGER.debug("adding <{0}> to group <{1}>", instanceId, groupName);
-
         AutoScalingGroup asg = map.get(groupName);
         if (asg == null) {
             asg = new AutoScalingGroup();
