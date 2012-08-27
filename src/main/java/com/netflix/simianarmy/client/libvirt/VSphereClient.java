@@ -55,9 +55,13 @@ public class VSphereClient extends AWSClient {
         this.password = config.getStr("client.vsphere.password");
     }
 
+    /** The username that is used to connect to VSpehere Center */
     private String username = null;
+    /** The password that is used to connect to VSpehere Center */
     private String password = null;
+    /** The url that is used to connect to VSpehere Center */
     private String url = null;
+    /** The ServiceInstance that is used to issue multiple requests to VSpehere Center */
     private ServiceInstance service = null;
 
     @Override
@@ -89,6 +93,11 @@ public class VSphereClient extends AWSClient {
         return groups.asList();
     }
 
+    /**
+     * Reads the Opt-In Attribute from the given VirtualMachine.
+     * @return null when not specified, else true or false as the attribute "ChaosMonkey"
+     * is set in the custom fields of the VM 
+     */
     private Boolean getOptInByAttribute(VirtualMachine virtualMachine) {
         String optInAttribute = getChaosMonkeyAttributeValue(virtualMachine);
         boolean optInAttributeIsSet = (optInAttribute != null && !"".equals(optInAttribute.trim()));
@@ -99,6 +108,7 @@ public class VSphereClient extends AWSClient {
         return optIn;
     }
 
+    /** Reads the custom field "ChaosMonkey" from the VM */ 
     private String getChaosMonkeyAttributeValue(VirtualMachine virtualMachine) throws AmazonServiceException {
         try {
             for (CustomFieldDef fieldDef : virtualMachine.getAvailableField()) {
@@ -124,7 +134,13 @@ public class VSphereClient extends AWSClient {
         return null;
     }
 
-    private ManagedEntity[] describeVirtualMachines() {
+    /** 
+     * return all VirtualMachines from the VSpehere Center 
+     * 
+     * @throws AmazonServiceException If there is any communication Error or if no 
+     *         VirtualMachine's are found
+     */
+    private ManagedEntity[] describeVirtualMachines() throws AmazonServiceException {
         ManagedEntity[] mes = null;
 
         Folder rootFolder = service.getRootFolder();
@@ -145,6 +161,7 @@ public class VSphereClient extends AWSClient {
         }
     }
 
+    /** disconnect from the service if not already disconnected */
     private void disconnectService() {
         if (service != null) {
             service.getServerConnection().logout();
@@ -152,6 +169,7 @@ public class VSphereClient extends AWSClient {
         }
     }
 
+    /** connect to the service if not already connected */
     private void connectService() throws AmazonServiceException {
         try {
             if (service == null) {

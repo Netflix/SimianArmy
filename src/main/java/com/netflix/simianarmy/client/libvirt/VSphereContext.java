@@ -19,7 +19,8 @@ import com.netflix.simianarmy.basic.BasicContext;
  *     limitations under the License.
  */
 /**
- * This Context provides the VSphereClient
+ * This Context extends the BasicContext in order to provide
+ * a different client: the VSphereClient
  * 
  * @author ingmar.krusch@immobilienscout24.de
  */
