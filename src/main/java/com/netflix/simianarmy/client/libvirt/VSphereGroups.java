@@ -24,21 +24,30 @@ import com.amazonaws.services.autoscaling.model.Instance;
  *     limitations under the License.
  */
 /**
- * Wraps the creation and grouping of Instance's in AutoScalingGroup's
- * 
+ * Wraps the creation and grouping of Instance's in AutoScalingGroup's.
+ *
  * @author ingmar.krusch@immobilienscout24.de
  */
 class VSphereGroups {
-    final private Map<String, AutoScalingGroup> map;
+    private final Map<String, AutoScalingGroup> map;
 
+    /**
+     * Create a empty group.
+     */
     public VSphereGroups() {
         map = new HashMap<String, AutoScalingGroup>();
     }
 
+    /**
+     * Get all AutoScalingGroup's that have been added.
+     */
     public List<AutoScalingGroup> asList() {
         return new ArrayList<AutoScalingGroup>(map.values());
     }
 
+    /**
+     * Add the given instance to the named group.
+     */
     public void addInstance(final String instanceId, final String groupName) {
         AutoScalingGroup asg = map.get(groupName);
         if (asg == null) {

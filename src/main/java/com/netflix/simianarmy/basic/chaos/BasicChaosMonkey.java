@@ -51,7 +51,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /**
      * Instantiates a new basic chaos monkey.
-     *
      * @param ctx
      *            the ctx
      */
@@ -87,8 +86,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
             boolean isGroupNameEnabled = cfg.getBoolOrElse(prop, isGroupTypeEnabled);
             if (isGroupNameEnabled) {
                 String probPropability = NS + group.type() + "." + group.name() + ".probability";
-                double probability = cfg.getNumOrElse(probPropability, cfg.getNumOrElse(defaultProp + ".probability", 1.0));
-                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(), probability});
+                double probability = cfg.getNumOrElse(probPropability,
+                        cfg.getNumOrElse(defaultProp + ".probability", 1.0));
+                LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[] {group.name(), group.type(),
+                        probability });
                 String instanceId = context().chaosInstanceSelector().select(group, probability / runsPerDay);
                 if (instanceId != null) {
                     prop = NS + "leashed";
@@ -107,8 +108,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
                             context().cloudClient().terminateInstance(instanceId);
                             recordTermination(group, instanceId);
                             reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, instanceId);
-                            LOGGER.info("Terminated {} from group {} [{}]",
-                                    new Object[] {instanceId, group.name(), group.type()});
+                            LOGGER.info("Terminated {} from group {} [{}]", new Object[] {instanceId, group.name(),
+                                    group.type() });
                         } catch (NotFoundException e) {
                             LOGGER.warn("Failed to terminate " + instanceId
                                     + ", it does not exist. Perhaps it was already terminated");
@@ -127,12 +128,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     private void reportEventForSummary(EventTypes eventType, InstanceGroup group, String instanceId) {
-        context().reportEvent(createEvent(eventType, group, instanceId));        
+        context().reportEvent(createEvent(eventType, group, instanceId));
     }
 
     /**
      * Handle termination error. This has been abstracted so subclasses can decide to continue causing chaos if desired.
-     *
      * @param instance
      *            the instance
      * @param e

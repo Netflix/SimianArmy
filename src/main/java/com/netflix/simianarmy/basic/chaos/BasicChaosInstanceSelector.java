@@ -38,7 +38,6 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
 
     /**
      * Logger, this is abstracted so subclasses (for testing) can reset logger to make it less verbose.
-     *
      * @return the logger
      */
     protected Logger logger() {

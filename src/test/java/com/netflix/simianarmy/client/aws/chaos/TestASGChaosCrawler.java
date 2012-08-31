@@ -18,9 +18,6 @@
  */
 package com.netflix.simianarmy.client.aws.chaos;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -28,14 +25,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
 
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.client.aws.AWSClient;
-import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.client.aws.AWSClient;
 
 public class TestASGChaosCrawler {
     private ASGChaosCrawler crawler;

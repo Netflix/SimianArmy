@@ -19,15 +19,14 @@ import com.netflix.simianarmy.basic.BasicContext;
  *     limitations under the License.
  */
 /**
- * This Context extends the BasicContext in order to provide
- * a different client: the VSphereClient
- * 
+ * This Context extends the BasicContext in order to provide a different client: the VSphereClient.
+ *
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereContext extends BasicContext {
     @Override
     protected void createClient(BasicConfiguration config) {
-        this.awsClient = new VSphereClient(config);
-        setCloudClient(this.awsClient);
+        setAwsClient(new VSphereClient(config));
+        setCloudClient(getAwsClient());
     }
 }

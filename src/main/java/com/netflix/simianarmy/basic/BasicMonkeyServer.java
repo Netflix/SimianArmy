@@ -30,20 +30,29 @@ import org.slf4j.LoggerFactory;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 
+/**
+ * Will periodically run the configured monkeys.
+ */
 @SuppressWarnings("serial")
 public class BasicMonkeyServer extends HttpServlet {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicMonkeyServer.class);
 
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
+    /**
+     * Add the monkeys that will be run.
+     */
     @SuppressWarnings("unchecked")
     public void addMonkeysToRun() {
         RUNNER.replaceMonkey(getMonkeyClass(), this.clientContextClass);
     }
 
+    /**
+     * make the class of the client object configurable.
+     */
     @SuppressWarnings("rawtypes")
-    public Class clientContextClass = com.netflix.simianarmy.basic.BasicContext.class; 
-    
+    private Class clientContextClass = com.netflix.simianarmy.basic.BasicContext.class;
+
     @SuppressWarnings("rawtypes")
     protected Class getMonkeyClass() {
         return BasicChaosMonkey.class;
@@ -58,9 +67,9 @@ public class BasicMonkeyServer extends HttpServlet {
     }
 
     /**
-     * Loads the client that is configured
-     * 
-     * @throws ServletException if the configured client cannot be loaded properly 
+     * Loads the client that is configured.
+     * @throws ServletException
+     *             if the configured client cannot be loaded properly
      */
     private void configureClient() throws ServletException {
         Properties clientConfig = loadClientConfigProperties();
@@ -74,27 +83,28 @@ public class BasicMonkeyServer extends HttpServlet {
         ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
         try {
             String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
-            if (clientContextClassName == null || clientContextClassName.isEmpty() ) {
+            if (clientContextClassName == null || clientContextClassName.isEmpty()) {
                 LOGGER.info("using standard client " + this.clientContextClass.getCanonicalName());
                 return;
             }
-            this.clientContextClass = classLoader.loadClass(clientContextClassName );
-            LOGGER.info("as "+clientContextClassKey+" loaded "+clientContextClass.getCanonicalName());
+            this.clientContextClass = classLoader.loadClass(clientContextClassName);
+            LOGGER.info("as " + clientContextClassKey + " loaded " + clientContextClass.getCanonicalName());
         } catch (ClassNotFoundException e) {
-            throw new ServletException("Could not load " +clientContextClassKey,e);
+            throw new ServletException("Could not load " + clientContextClassKey, e);
         }
     }
 
     /**
-     * Load the client config properties file
-     *  
+     * Load the client config properties file.
+     *
      * @return Properties The contents of the client config file
-     * @throws ServletException if the file cannot be read
+     * @throws ServletException
+     *             if the file cannot be read
      */
     private Properties loadClientConfigProperties() throws ServletException {
-        String clientConfigFileName = "/client.properties"; //TODO IK read as servlet attribute //(String) getServletContext().getInitParameter("CLIENT_PROPERTIES");
-        LOGGER.info("using client properties "+clientConfigFileName);
-        
+        String clientConfigFileName = "/client.properties";
+        LOGGER.info("using client properties " + clientConfigFileName);
+
         InputStream input = null;
         Properties p = new Properties();
         try {
@@ -102,11 +112,13 @@ public class BasicMonkeyServer extends HttpServlet {
                 input = BasicMonkeyServer.class.getResourceAsStream(clientConfigFileName);
                 p.load(input);
                 return p;
-            }finally {
-                if (input != null) input.close();
+            } finally {
+                if (input != null) {
+                    input.close();
+                }
             }
         } catch (IOException e) {
-            throw new ServletException("Could not load "+clientConfigFileName,e);
+            throw new ServletException("Could not load " + clientConfigFileName, e);
         }
     }
 

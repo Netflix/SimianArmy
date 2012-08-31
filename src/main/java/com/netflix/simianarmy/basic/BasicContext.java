@@ -40,32 +40,43 @@ public class BasicContext extends BasicContextShell {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicContext.class);
 
     /** The client configuration properties. */
-    protected Properties PROPS = new Properties();
+    private Properties props = new Properties();
 
     /** The Constant MONKEY_THREADS. */
     private static final int MONKEY_THREADS = 1;
 
+    /** The client used to interact with the target machines. */
+    private AWSClient awsClient;
+
+    public AWSClient getAwsClient() {
+        return awsClient;
+    }
+
+    public void setAwsClient(AWSClient awsClient) {
+        this.awsClient = awsClient;
+    }
+
+    /** loads all relevant configuration files to configure the client. */
     protected void addClientConfigurationProperties() {
         loadClientConfigurationIntoProperties("simianarmy.properties");
         loadClientConfigurationIntoProperties("client.properties");
     }
 
+    /** loads the given config ontop of the config read by previous calls. */
     protected void loadClientConfigurationIntoProperties(String propertyFileName) {
-        String propFile = System.getProperty(propertyFileName, "/"+propertyFileName);
+        String propFile = System.getProperty(propertyFileName, "/" + propertyFileName);
         try {
             InputStream is = BasicContext.class.getResourceAsStream(propFile);
             try {
-                PROPS.load(is);
+                props.load(is);
             } finally {
                 is.close();
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to load properties file " + propFile
-                    + " set System property \""+propertyFileName+"\" to valid file");
+            LOGGER.error("Unable to load properties file " + propFile + " set System property \"" + propertyFileName
+                    + "\" to valid file");
         }
     }
-
-    protected AWSClient awsClient;
 
     /**
      * Instantiates a new basic context.
@@ -74,7 +85,7 @@ public class BasicContext extends BasicContextShell {
         BasicConfiguration config = loadClientConfig();
 
         setCalendar(new BasicCalendar(config));
-        
+
         createClient(config);
 
         createScheduler(config);
@@ -85,9 +96,9 @@ public class BasicContext extends BasicContextShell {
         createRecorder(config);
     }
 
-    protected BasicConfiguration loadClientConfig() {
+    private BasicConfiguration loadClientConfig() {
         addClientConfigurationProperties();
-        BasicConfiguration config = new BasicConfiguration(PROPS);
+        BasicConfiguration config = new BasicConfiguration(props);
         setConfiguration(config);
         return config;
     }
@@ -104,15 +115,18 @@ public class BasicContext extends BasicContextShell {
         String secret = config.getStr("simianarmy.aws.secretKey");
         String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
         String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");
-        setRecorder(new SimpleDBRecorder(account, secret, region, domain));        
+        setRecorder(new SimpleDBRecorder(account, secret, region, domain));
     }
 
+    /**
+     * Create the specific client. Override to provide your own client.
+     */
     protected void createClient(BasicConfiguration config) {
         String account = config.getStr("simianarmy.aws.accountKey");
         String secret = config.getStr("simianarmy.aws.secretKey");
         String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
         this.awsClient = new AWSClient(account, secret, region);
-        
+
         setCloudClient(this.awsClient);
     }
 

@@ -15,19 +15,12 @@ import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.CustomFieldDef;
 import com.vmware.vim25.CustomFieldStringValue;
 import com.vmware.vim25.CustomFieldValue;
-import com.vmware.vim25.DynamicProperty;
-import com.vmware.vim25.InvalidPowerState;
 import com.vmware.vim25.InvalidProperty;
-import com.vmware.vim25.LocalizedMethodFault;
 import com.vmware.vim25.RuntimeFault;
-import com.vmware.vim25.TaskInfo;
-import com.vmware.vim25.TaskInfoState;
-import com.vmware.vim25.TaskReason;
 import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
-import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /*
@@ -47,7 +40,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  */
 /**
  * This client describes the AutoScalingGroup's and can terminate Instance's that are hosted in a VSphere Center.
- * 
+ *
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereClient extends AWSClient {
@@ -57,6 +50,11 @@ public class VSphereClient extends AWSClient {
     private static final String ATTRIBUTE_FORCE_BOOT = "Force Boot";
     private static final String ATTRIBUTE_FORCE_BOOT_VALUE_FOR_REINSTALL = "server";
 
+    /**
+     * Create the specific Client from the given config.
+     *
+     * @param config The config that was loaded for this client.
+     */
     public VSphereClient(BasicConfiguration config) {
         super(config.getStr("simianarmy.aws.accountKey"), config.getStr("simianarmy.aws.secretKey"), config
                 .getStrOrElse("simianarmy.aws.region", "us-east-1"));
@@ -65,13 +63,13 @@ public class VSphereClient extends AWSClient {
         this.password = config.getStr("client.vsphere.password");
     }
 
-    /** The username that is used to connect to VSpehere Center */
+    /** The username that is used to connect to VSpehere Center. */
     private String username = null;
-    /** The password that is used to connect to VSpehere Center */
+    /** The password that is used to connect to VSpehere Center. */
     private String password = null;
-    /** The url that is used to connect to VSpehere Center */
+    /** The url that is used to connect to VSpehere Center. */
     private String url = null;
-    /** The ServiceInstance that is used to issue multiple requests to VSpehere Center */
+    /** The ServiceInstance that is used to issue multiple requests to VSpehere Center. */
     private ServiceInstance service = null;
 
     @Override
@@ -105,8 +103,9 @@ public class VSphereClient extends AWSClient {
 
     /**
      * Reads the Opt-In Attribute from the given VirtualMachine.
-     * @return null when not specified, else true or false as the attribute "ChaosMonkey"
-     * is set in the custom fields of the VM 
+     *
+     * @return null when not specified, else true or false as the attribute "ChaosMonkey" is set in the custom fields of
+     *         the VM
      */
     private Boolean getOptInByAttribute(VirtualMachine virtualMachine) {
         String optInAttribute = getChaosMonkeyAttributeValue(virtualMachine);
@@ -118,7 +117,7 @@ public class VSphereClient extends AWSClient {
         return optIn;
     }
 
-    /** Reads the custom field "ChaosMonkey" from the VM */ 
+    /** Reads the custom field "ChaosMonkey" from the VM. */
     private String getChaosMonkeyAttributeValue(VirtualMachine virtualMachine) throws AmazonServiceException {
         try {
             for (CustomFieldDef fieldDef : virtualMachine.getAvailableField()) {
@@ -138,17 +137,21 @@ public class VSphereClient extends AWSClient {
                 }
             }
         } catch (Exception e) {
-            throw new AmazonServiceException("cannot read property from virtual machine " + virtualMachine.getName(), e);
+            throw new AmazonServiceException(
+                          "cannot read property from virtual machine "
+                          + virtualMachine.getName()
+                          , e
+                      );
         }
 
         return null;
     }
 
-    /** 
-     * return all VirtualMachines from the VSpehere Center 
-     * 
-     * @throws AmazonServiceException If there is any communication Error or if no 
-     *         VirtualMachine's are found
+    /**
+     * return all VirtualMachines from the VSpehere Center.
+     *
+     * @throws AmazonServiceException
+     *             If there is any communication Error or if no VirtualMachine's are found
      */
     private ManagedEntity[] describeVirtualMachines() throws AmazonServiceException {
         ManagedEntity[] mes = null;
@@ -171,7 +174,7 @@ public class VSphereClient extends AWSClient {
         }
     }
 
-    /** disconnect from the service if not already disconnected */
+    /** disconnect from the service if not already disconnected. */
     private void disconnectService() {
         if (service != null) {
             service.getServerConnection().logout();
@@ -179,7 +182,7 @@ public class VSphereClient extends AWSClient {
         }
     }
 
-    /** connect to the service if not already connected */
+    /** connect to the service if not already connected. */
     private void connectService() throws AmazonServiceException {
         try {
             if (service == null) {
@@ -204,32 +207,32 @@ public class VSphereClient extends AWSClient {
             virtualMachine.resetVM_Task();
             LOGGER.info("##### hat geklappt");
 
-            // TODO IK was mache ich wenn die VM powerOff ist?            
-//            String guestState = virtualMachine.getGuest().getGuestState();
-//            TaskInfo taskInfo = resetVM_Task.getTaskInfo();
-//            TaskInfoState state = taskInfo.getState();
-//            if (TaskInfoState.success.compareTo(state) != 0) {
-//                // hat nicht geklappt
-//                LocalizedMethodFault error = taskInfo.getError();
-//                
-//                taskInfo
-//            }
+            // TO-DO IK: was mache ich wenn die VM powerOff ist?
+            // String guestState = virtualMachine.getGuest().getGuestState();
+            // TaskInfo taskInfo = resetVM_Task.getTaskInfo();
+            // TaskInfoState state = taskInfo.getState();
+            // if (TaskInfoState.success.compareTo(state) != 0) {
+            // // hat nicht geklappt
+            // LocalizedMethodFault error = taskInfo.getError();
+            //
+            // taskInfo
+            // }
         } catch (RuntimeFault e) {
-            throw new AmazonServiceException("cannot destory & recreate "+instanceId, e);
+            throw new AmazonServiceException("cannot destory & recreate " + instanceId, e);
         } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot destory & recreate "+instanceId, e);
-        }
-        finally {
+            throw new AmazonServiceException("cannot destory & recreate " + instanceId, e);
+        } finally {
             disconnectService();
         }
     }
 
-    private VirtualMachine getVirtualMachineFor(String instanceId) throws InvalidProperty, RuntimeFault, RemoteException {
-        //this.service.getV
+    private VirtualMachine getVirtualMachineFor(String instanceId) throws RemoteException {
+        // this.service.getV
         Folder rootFolder = service.getRootFolder();
         InventoryNavigator inventoryNavigator = new InventoryNavigator(rootFolder);
-        VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator.searchManagedEntity(VIRTUAL_MACHINE_TYPE_NAME, instanceId);
-        
+        VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator.searchManagedEntity(
+                VIRTUAL_MACHINE_TYPE_NAME, instanceId);
+
         return virtualMachine;
     }
 }
