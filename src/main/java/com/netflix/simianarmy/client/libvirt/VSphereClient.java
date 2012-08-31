@@ -15,12 +15,19 @@ import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.CustomFieldDef;
 import com.vmware.vim25.CustomFieldStringValue;
 import com.vmware.vim25.CustomFieldValue;
+import com.vmware.vim25.DynamicProperty;
+import com.vmware.vim25.InvalidPowerState;
 import com.vmware.vim25.InvalidProperty;
+import com.vmware.vim25.LocalizedMethodFault;
 import com.vmware.vim25.RuntimeFault;
+import com.vmware.vim25.TaskInfo;
+import com.vmware.vim25.TaskInfoState;
+import com.vmware.vim25.TaskReason;
 import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
+import com.vmware.vim25.mo.Task;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /*
@@ -44,8 +51,11 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereClient extends AWSClient {
+    private static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
     private static final Logger LOGGER = LoggerFactory.getLogger(VSphereClient.class);
     private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
+    private static final String ATTRIBUTE_FORCE_BOOT = "Force Boot";
+    private static final String ATTRIBUTE_FORCE_BOOT_VALUE_FOR_REINSTALL = "server";
 
     public VSphereClient(BasicConfiguration config) {
         super(config.getStr("simianarmy.aws.accountKey"), config.getStr("simianarmy.aws.secretKey"), config
@@ -145,7 +155,7 @@ public class VSphereClient extends AWSClient {
 
         Folder rootFolder = service.getRootFolder();
         try {
-            mes = new InventoryNavigator(rootFolder).searchManagedEntities("VirtualMachine");
+            mes = new InventoryNavigator(rootFolder).searchManagedEntities(VIRTUAL_MACHINE_TYPE_NAME);
         } catch (InvalidProperty e) {
             throw new AmazonServiceException("cannot query VSphere", e);
         } catch (RuntimeFault e) {
@@ -185,17 +195,41 @@ public class VSphereClient extends AWSClient {
     @Override
     public void terminateInstance(String instanceId) {
         LOGGER.info("VSphereClient.terminateInstance() recreating " + instanceId);
-        // TODO IK
 
-        // try {
-        // connectService();
-        //
-        // this.service.getOptionManager().getPropertyByPath("TODO IK");
-        //
-        return;
-        // }
-        // finally {
-        // disconnectService();
-        // }
+        try {
+            connectService();
+
+            VirtualMachine virtualMachine = getVirtualMachineFor(instanceId);
+            virtualMachine.setCustomValue(ATTRIBUTE_FORCE_BOOT, ATTRIBUTE_FORCE_BOOT_VALUE_FOR_REINSTALL);
+            virtualMachine.resetVM_Task();
+            LOGGER.info("##### hat geklappt");
+
+            // TODO IK was mache ich wenn die VM powerOff ist?            
+//            String guestState = virtualMachine.getGuest().getGuestState();
+//            TaskInfo taskInfo = resetVM_Task.getTaskInfo();
+//            TaskInfoState state = taskInfo.getState();
+//            if (TaskInfoState.success.compareTo(state) != 0) {
+//                // hat nicht geklappt
+//                LocalizedMethodFault error = taskInfo.getError();
+//                
+//                taskInfo
+//            }
+        } catch (RuntimeFault e) {
+            throw new AmazonServiceException("cannot destory & recreate "+instanceId, e);
+        } catch (RemoteException e) {
+            throw new AmazonServiceException("cannot destory & recreate "+instanceId, e);
+        }
+        finally {
+            disconnectService();
+        }
+    }
+
+    private VirtualMachine getVirtualMachineFor(String instanceId) throws InvalidProperty, RuntimeFault, RemoteException {
+        //this.service.getV
+        Folder rootFolder = service.getRootFolder();
+        InventoryNavigator inventoryNavigator = new InventoryNavigator(rootFolder);
+        VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator.searchManagedEntity(VIRTUAL_MACHINE_TYPE_NAME, instanceId);
+        
+        return virtualMachine;
     }
 }
