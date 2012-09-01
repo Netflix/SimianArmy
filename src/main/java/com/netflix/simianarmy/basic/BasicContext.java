@@ -73,8 +73,10 @@ public class BasicContext extends BasicContextShell {
                 is.close();
             }
         } catch (Exception e) {
-            LOGGER.error("Unable to load properties file " + propFile + " set System property \"" + propertyFileName
-                    + "\" to valid file");
+            String msg = "Unable to load properties file " + propFile + " set System property \"" + propertyFileName
+                    + "\" to valid file";
+            LOGGER.error(msg);
+            throw new RuntimeException(msg, e);
         }
     }
 

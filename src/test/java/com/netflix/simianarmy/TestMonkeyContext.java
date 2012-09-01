@@ -126,16 +126,22 @@ public class TestMonkeyContext implements Monkey.Context {
 
     @Override
     public void reportEvent(Event evt) {
-        return;
+        eventReport.add(evt);
     }
 
     @Override
     public void resetEventReport() {
-        return;
+        eventReport.clear();
     }
 
     @Override
     public String getEventReport() {
-        return "";
+        StringBuilder report = new StringBuilder();
+        for (Event event : eventReport) {
+            report.append(event.eventType());
+            report.append(" ");
+            report.append(event.id());
+        }
+        return report.toString();
     }
  }

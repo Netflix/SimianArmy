@@ -61,7 +61,7 @@ public class VSphereClient extends AWSClient {
 
     private static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
     private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
-    private Class<? extends TerminationStrategy> 
+    private Class<? extends TerminationStrategy>
         terminationStrategyClass = PropertyBasedTerminationStrategy.class;
 
     /** The username that is used to connect to VSpehere Center. */
