@@ -120,11 +120,8 @@ public abstract class Monkey {
 
     /**
      * Run. This is run on the schedule set by the MonkeyScheduler
-     *
-     * @throws Exception
-     *             the exception
      */
-    public void run() throws Exception {
+    public void run() {
         if (ctx.calendar().isMonkeyTime(this)) {
             LOGGER.info(this.type().name() + " Monkey Running ...");
             try {
