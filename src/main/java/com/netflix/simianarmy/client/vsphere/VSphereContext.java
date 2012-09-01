@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client.libvirt;
+package com.netflix.simianarmy.client.vsphere;
 
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.basic.BasicContext;

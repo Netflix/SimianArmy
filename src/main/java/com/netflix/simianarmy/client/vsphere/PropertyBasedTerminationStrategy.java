@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client.libvirt;
+package com.netflix.simianarmy.client.vsphere;
 
 import java.rmi.RemoteException;
 
@@ -8,7 +8,7 @@ import com.vmware.vim25.mo.VirtualMachine;
 /**
  * Terminates a VirtualMachine by setting the named property and resetting it.
  */
-public class PropertyBasedTerminationStrategy implements VirtualMachineTerminationStrategy {
+public class PropertyBasedTerminationStrategy implements TerminationStrategy {
 
     private String propertyName;
     private String propertyValue;

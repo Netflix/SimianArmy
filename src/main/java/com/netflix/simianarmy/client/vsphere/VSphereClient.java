@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client.libvirt;
+package com.netflix.simianarmy.client.vsphere;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -46,11 +46,13 @@ import com.vmware.vim25.mo.VirtualMachine;
  * that folder. The hierarchy is flattend this way. And it can can terminate these VMs with the configured
  * TerminationStrategy.
  *
- * The following properties can be overridden in the client.properties client.vsphere.url =
- * https://YOUR_VSPHERE_SERVER/sdk client.vsphere.username = YOUR_SERVICE_ACCOUNT_USERNAME client.vsphere.password =
- * YOUR_SERVICE_ACCOUNT_PASSWORD client.vsphere.terminationStrategy.class = FULL_QUALIFIED_CLASS_NAME
- * client.vsphere.terminationStrategy.property.name = PROPETY_NAME client.vsphere.terminationStrategy.property.value =
- * PROPERTY_VALUE
+ * The following properties can be overridden in the client.properties
+ * client.vsphere.url                                = https://YOUR_VSPHERE_SERVER/sdk
+ * client.vsphere.username                           = YOUR_SERVICE_ACCOUNT_USERNAME
+ * client.vsphere.password                           = YOUR_SERVICE_ACCOUNT_PASSWORD
+ * client.vsphere.terminationStrategy.class          = FULL_QUALIFIED_CLASS_NAME
+ * client.vsphere.terminationStrategy.property.name  = PROPETY_NAME
+ * client.vsphere.terminationStrategy.property.value = PROPERTY_VALUE
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -59,7 +61,7 @@ public class VSphereClient extends AWSClient {
 
     private static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
     private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
-    private Class<? extends VirtualMachineTerminationStrategy> 
+    private Class<? extends TerminationStrategy> 
         terminationStrategyClass = PropertyBasedTerminationStrategy.class;
 
     /** The username that is used to connect to VSpehere Center. */
@@ -70,7 +72,7 @@ public class VSphereClient extends AWSClient {
     private String url = null;
     /** The ServiceInstance that is used to issue multiple requests to VSpehere Center. */
     private ServiceInstance service = null;
-    private VirtualMachineTerminationStrategy terminationStrategy;
+    private TerminationStrategy terminationStrategy;
 
     /**
      * Create the specific Client from the given config.
@@ -96,7 +98,7 @@ public class VSphereClient extends AWSClient {
         }
     }
 
-    private <T extends VirtualMachineTerminationStrategy> T factory(Class<T> strategyClass, MonkeyConfiguration config)
+    private <T extends TerminationStrategy> T factory(Class<T> strategyClass, MonkeyConfiguration config)
             throws IllegalArgumentException, InstantiationException, IllegalAccessException, InvocationTargetException {
         // then find corresponding ctor
         for (Constructor<?> ctor : strategyClass.getDeclaredConstructors()) {
@@ -121,11 +123,11 @@ public class VSphereClient extends AWSClient {
         try {
             String className = config.getStr(key);
             if (className == null || className.isEmpty()) {
-                LOGGER.info("using standard VirtualMachineTerminationStrategy "
+                LOGGER.info("using standard TerminationStrategy "
                         + this.terminationStrategyClass.getCanonicalName());
                 return;
             }
-            this.terminationStrategyClass = (Class<? extends VirtualMachineTerminationStrategy>) classLoader
+            this.terminationStrategyClass = (Class<? extends TerminationStrategy>) classLoader
                     .loadClass(className);
             LOGGER.info("as " + key + " loaded " + terminationStrategyClass.getCanonicalName());
         } catch (ClassNotFoundException e) {

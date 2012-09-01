@@ -1,4 +1,4 @@
-package com.netflix.simianarmy.client.libvirt;
+package com.netflix.simianarmy.client.vsphere;
 
 import java.util.ArrayList;
 import java.util.HashMap;
