@@ -1,6 +1,8 @@
 package com.netflix.simianarmy.client.vsphere;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,35 +31,36 @@ import com.amazonaws.services.autoscaling.model.Instance;
  * @author ingmar.krusch@immobilienscout24.de
  */
 class VSphereGroups {
-    private final Map<String, AutoScalingGroup> map;
-
-    /**
-     * Create a empty group.
-     */
-    public VSphereGroups() {
-        map = new HashMap<String, AutoScalingGroup>();
-    }
+    private final Map<String, AutoScalingGroup> map = new HashMap<String, AutoScalingGroup>();
 
     /**
      * Get all AutoScalingGroup's that have been added.
      */
     public List<AutoScalingGroup> asList() {
-        return new ArrayList<AutoScalingGroup>(map.values());
+        ArrayList<AutoScalingGroup> list = new ArrayList<AutoScalingGroup>(map.values());
+        Collections.sort(list, new Comparator<AutoScalingGroup>() {
+            @Override
+            public int compare(AutoScalingGroup o1, AutoScalingGroup o2) {
+                return o1.getAutoScalingGroupName().compareTo(o2.getAutoScalingGroupName());
+            }
+        });
+        return list;
     }
 
     /**
      * Add the given instance to the named group.
      */
     public void addInstance(final String instanceId, final String groupName) {
-        AutoScalingGroup asg = map.get(groupName);
-        if (asg == null) {
-            asg = new AutoScalingGroup();
+        if (!map.containsKey(groupName)) {
+            final AutoScalingGroup asg = new AutoScalingGroup();
             asg.setAutoScalingGroupName(groupName);
             map.put(groupName, asg);
         }
-        List<Instance> instances = asg.getInstances();
+        
+        final AutoScalingGroup asg = map.get(groupName);
         Instance instance = new Instance();
         instance.setInstanceId(instanceId);
-        instances.add(instance);
+        
+        asg.getInstances().add(instance);
     }
 }
