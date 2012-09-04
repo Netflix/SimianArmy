@@ -72,6 +72,8 @@ public class BasicScheduler implements MonkeyScheduler {
      *            the concurrent number of threads
      */
     public BasicScheduler(int freq, TimeUnit freqUnit, int concurrent) {
+        frequency = freq;
+        frequencyUnit = freqUnit;
         scheduler = Executors.newScheduledThreadPool(concurrent);
     }
 
