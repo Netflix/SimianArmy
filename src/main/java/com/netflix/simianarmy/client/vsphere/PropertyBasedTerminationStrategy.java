@@ -26,7 +26,6 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class PropertyBasedTerminationStrategy implements TerminationStrategy {
-
     private String propertyName;
     private String propertyValue;
 
@@ -41,7 +40,15 @@ public class PropertyBasedTerminationStrategy implements TerminationStrategy {
 
     @Override
     public void terminate(VirtualMachine virtualMachine) throws RemoteException {
-        virtualMachine.setCustomValue(this.propertyName, this.propertyValue);
+        virtualMachine.setCustomValue(getPropertyName(), getPropertyValue());
         virtualMachine.resetVM_Task();
+    }
+
+    public String getPropertyName() {
+        return propertyName;
+    }
+
+    public String getPropertyValue() {
+        return propertyValue;
     }
 }
