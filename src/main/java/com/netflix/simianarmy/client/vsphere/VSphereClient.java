@@ -52,7 +52,6 @@ import com.vmware.vim25.mo.VirtualMachine;
 public class VSphereClient extends AWSClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(VSphereClient.class);
 
-    private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
     private Class<? extends TerminationStrategy>
         terminationStrategyClass = PropertyBasedTerminationStrategy.class;
 
@@ -125,10 +124,7 @@ public class VSphereClient extends AWSClient {
         try {
             service.connect();
             
-            ManagedEntity[] mes = service.describeVirtualMachines();
-
-            for (int i = 0; i < mes.length; i++) {
-                VirtualMachine virtualMachine = (VirtualMachine) mes[i];
+            for (VirtualMachine virtualMachine : service.describeVirtualMachines()) {
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();
 

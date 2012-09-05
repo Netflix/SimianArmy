@@ -3,6 +3,7 @@ package com.netflix.simianarmy.client.vsphere;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.Arrays;
 
 import com.amazonaws.AmazonServiceException;
 import com.netflix.simianarmy.basic.BasicConfiguration;
@@ -30,7 +31,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  *     limitations under the License.
  */
 /**
- * Wraps the connection to VSphere.
+ * Wraps the connection to VSphere and handles the raw service calls.
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -94,7 +95,7 @@ public class VSphereServiceConnection {
      * @throws AmazonServiceException
      *             If there is any communication error or if no VirtualMachine's are found
      */
-    public ManagedEntity[] describeVirtualMachines() throws AmazonServiceException {
+    public VirtualMachine[] describeVirtualMachines() throws AmazonServiceException {
         ManagedEntity[] mes = null;
 
         Folder rootFolder = service.getRootFolder();
@@ -109,9 +110,9 @@ public class VSphereServiceConnection {
         }
 
         if (mes == null || mes.length == 0) {
-            throw new AmazonServiceException("vsphere returned zero entities of type \"VirtualMachine\"");
+            throw new AmazonServiceException("vsphere returned zero entities of type \"" + VIRTUAL_MACHINE_TYPE_NAME + "\"");
         } else {
-            return mes;
+            return Arrays.copyOf(mes, mes.length, VirtualMachine[].class);
         }
     }
 }
