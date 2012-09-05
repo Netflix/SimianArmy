@@ -132,64 +132,13 @@ public class VSphereClient extends AWSClient {
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();
 
-                Boolean optIn = getOptInByAttribute(virtualMachine);
-                if (optIn == null || optIn) {
-                    groups.addInstance(instanceId, groupName);
-                    LOGGER.debug("VirtualMachine " + instanceId + " from group " + groupName + " added");
-                } else {
-                    LOGGER.debug("VirtualMachine " + instanceId + " from group " + groupName
-                            + " opted out by VM-Attribute");
-                }
+                groups.addInstance(instanceId, groupName);
             }
         } finally {
             service.disconnect();
         }
 
         return groups.asList();
-    }
-
-    /**
-     * Reads the Opt-In Attribute from the given VirtualMachine.
-     *
-     * @return null when not specified, else true or false as the attribute "ChaosMonkey" is set in the custom fields of
-     *         the VM
-     */
-    private Boolean getOptInByAttribute(VirtualMachine virtualMachine) {
-        String optInAttribute = getChaosMonkeyAttributeValue(virtualMachine);
-        boolean optInAttributeIsSet = (optInAttribute != null && !"".equals(optInAttribute.trim()));
-        Boolean optIn = null;
-        if (optInAttributeIsSet) {
-            optIn = Boolean.valueOf(optInAttribute);
-        }
-        return optIn;
-    }
-
-    /** Reads the custom field "ChaosMonkey" from the VM. */
-    private String getChaosMonkeyAttributeValue(VirtualMachine virtualMachine) throws AmazonServiceException {
-        try {
-            for (CustomFieldDef fieldDef : virtualMachine.getAvailableField()) {
-                if (ATTRIBUTE_CHAOS_MONKEY.equals(fieldDef.getName())) {
-                    CustomFieldValue[] customFieldValues = virtualMachine.getCustomValue();
-                    if (customFieldValues == null) {
-                        continue;
-                    }
-                    for (CustomFieldValue customFieldValue : customFieldValues) {
-                        if (customFieldValue.getKey() == fieldDef.getKey()) {
-                            CustomFieldStringValue stringValue = (CustomFieldStringValue) customFieldValue;
-                            return stringValue.getValue();
-                        }
-                    }
-
-                    break;
-                }
-            }
-        } catch (Exception e) {
-            throw new AmazonServiceException(
-                    "cannot read property from virtual machine "
-                    + virtualMachine.getName(), e);
-        }
-
-        return null;
     }
 
     @Override
