@@ -28,7 +28,7 @@ import com.amazonaws.services.autoscaling.model.Instance;
 /**
  * @author ingmar.krusch@immobilienscout24.de
  */
-public class VSphereGroupsTest {
+public class TestVSphereGroups {
     @Test
     public void shouldReturnListContainigSingleASGWhenAddInstanceIsCalledOnce() {
         VSphereGroups groups = new VSphereGroups();

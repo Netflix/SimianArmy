@@ -33,7 +33,7 @@ import com.vmware.vim25.mo.VirtualMachine;
 /**
  * @author ingmar.krusch@immobilienscout24.de
  */
-public class PropertyBasedTerminationStrategyTest {
+public class TestPropertyBasedTerminationStrategy {
 
     private BasicConfiguration configMock = mock(BasicConfiguration.class);
     private VirtualMachine virtualMachineMock = mock(VirtualMachine.class);

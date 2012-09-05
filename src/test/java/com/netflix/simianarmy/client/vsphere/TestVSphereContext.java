@@ -26,7 +26,7 @@ import com.netflix.simianarmy.client.aws.AWSClient;
 /**
  * @author ingmar.krusch@immobilienscout24.de
  */
-public class VSphereContextTest {
+public class TestVSphereContext {
     @Test
     public void shouldSetClientOfCorrectType() {
         VSphereContext context = new VSphereContext();
