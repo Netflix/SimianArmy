@@ -13,10 +13,6 @@ import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.client.aws.AWSClient;
-import com.vmware.vim25.CustomFieldDef;
-import com.vmware.vim25.CustomFieldStringValue;
-import com.vmware.vim25.CustomFieldValue;
-import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /*
@@ -56,7 +52,7 @@ public class VSphereClient extends AWSClient {
         terminationStrategyClass = PropertyBasedTerminationStrategy.class;
 
     private TerminationStrategy terminationStrategy;
-    private VSphereServiceConnection service; 
+    private VSphereServiceConnection service;
 
     /**
      * Create the specific Client from the given config.
@@ -123,7 +119,7 @@ public class VSphereClient extends AWSClient {
 
         try {
             service.connect();
-            
+
             for (VirtualMachine virtualMachine : service.describeVirtualMachines()) {
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();

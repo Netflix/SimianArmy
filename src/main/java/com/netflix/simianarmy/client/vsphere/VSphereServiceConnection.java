@@ -50,10 +50,13 @@ public class VSphereServiceConnection {
     /** The ServiceInstance that is used to issue multiple requests to VSpehere Center. */
     private ServiceInstance service = null;
 
+    /**
+     * Constructor.
+     */
     public VSphereServiceConnection(BasicConfiguration config) {
         this.url = config.getStr("client.vsphere.url");
         this.username = config.getStr("client.vsphere.username");
-        this.password = config.getStr("client.vsphere.password");        
+        this.password = config.getStr("client.vsphere.password");
     }
 
     /** disconnect from the service if not already disconnected. */
@@ -78,7 +81,7 @@ public class VSphereServiceConnection {
     }
 
     /**
-     * Gets the named VirtualMachine.  
+     * Gets the named VirtualMachine.
      */
     public VirtualMachine getVirtualMachineById(String instanceId) throws RemoteException {
         Folder rootFolder = service.getRootFolder();
@@ -110,7 +113,10 @@ public class VSphereServiceConnection {
         }
 
         if (mes == null || mes.length == 0) {
-            throw new AmazonServiceException("vsphere returned zero entities of type \"" + VIRTUAL_MACHINE_TYPE_NAME + "\"");
+            throw new AmazonServiceException(
+                      "vsphere returned zero entities of type \""
+                      + VIRTUAL_MACHINE_TYPE_NAME + "\""
+                  );
         } else {
             return Arrays.copyOf(mes, mes.length, VirtualMachine[].class);
         }
