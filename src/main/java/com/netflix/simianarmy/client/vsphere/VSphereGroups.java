@@ -56,11 +56,11 @@ class VSphereGroups {
             asg.setAutoScalingGroupName(groupName);
             map.put(groupName, asg);
         }
-        
+       
         final AutoScalingGroup asg = map.get(groupName);
         Instance instance = new Instance();
         instance.setInstanceId(instanceId);
-        
+
         asg.getInstances().add(instance);
     }
 }
