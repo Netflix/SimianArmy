@@ -2,8 +2,6 @@ package com.netflix.simianarmy.client.vsphere;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.rmi.RemoteException;
 import java.util.List;
 
@@ -18,12 +16,7 @@ import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.CustomFieldDef;
 import com.vmware.vim25.CustomFieldStringValue;
 import com.vmware.vim25.CustomFieldValue;
-import com.vmware.vim25.InvalidProperty;
-import com.vmware.vim25.RuntimeFault;
-import com.vmware.vim25.mo.Folder;
-import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
-import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /*
@@ -59,20 +52,12 @@ import com.vmware.vim25.mo.VirtualMachine;
 public class VSphereClient extends AWSClient {
     private static final Logger LOGGER = LoggerFactory.getLogger(VSphereClient.class);
 
-    private static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
     private static final String ATTRIBUTE_CHAOS_MONKEY = "ChaosMonkey";
     private Class<? extends TerminationStrategy>
         terminationStrategyClass = PropertyBasedTerminationStrategy.class;
 
-    /** The username that is used to connect to VSpehere Center. */
-    private String username = null;
-    /** The password that is used to connect to VSpehere Center. */
-    private String password = null;
-    /** The url that is used to connect to VSpehere Center. */
-    private String url = null;
-    /** The ServiceInstance that is used to issue multiple requests to VSpehere Center. */
-    private ServiceInstance service = null;
     private TerminationStrategy terminationStrategy;
+    private VSphereServiceConnection service; 
 
     /**
      * Create the specific Client from the given config.
@@ -83,9 +68,7 @@ public class VSphereClient extends AWSClient {
     public VSphereClient(BasicConfiguration config) {
         super(config.getStr("simianarmy.aws.accountKey"), config.getStr("simianarmy.aws.secretKey"), config
                 .getStrOrElse("simianarmy.aws.region", "us-east-1"));
-        this.url = config.getStr("client.vsphere.url");
-        this.username = config.getStr("client.vsphere.username");
-        this.password = config.getStr("client.vsphere.password");
+        this.service = new VSphereServiceConnection(config);
         loadTerminationStrategy(config);
     }
 
@@ -140,8 +123,9 @@ public class VSphereClient extends AWSClient {
         final VSphereGroups groups = new VSphereGroups();
 
         try {
-            connectService();
-            ManagedEntity[] mes = describeVirtualMachines();
+            service.connect();
+            
+            ManagedEntity[] mes = service.describeVirtualMachines();
 
             for (int i = 0; i < mes.length; i++) {
                 VirtualMachine virtualMachine = (VirtualMachine) mes[i];
@@ -158,7 +142,7 @@ public class VSphereClient extends AWSClient {
                 }
             }
         } finally {
-            disconnectService();
+            service.disconnect();
         }
 
         return groups.asList();
@@ -208,54 +192,6 @@ public class VSphereClient extends AWSClient {
         return null;
     }
 
-    /**
-     * return all VirtualMachines from VSpehere Center.
-     *
-     * @throws AmazonServiceException
-     *             If there is any communication error or if no VirtualMachine's are found
-     */
-    private ManagedEntity[] describeVirtualMachines() throws AmazonServiceException {
-        ManagedEntity[] mes = null;
-
-        Folder rootFolder = service.getRootFolder();
-        try {
-            mes = new InventoryNavigator(rootFolder).searchManagedEntities(VIRTUAL_MACHINE_TYPE_NAME);
-        } catch (InvalidProperty e) {
-            throw new AmazonServiceException("cannot query VSphere", e);
-        } catch (RuntimeFault e) {
-            throw new AmazonServiceException("cannot query VSphere", e);
-        } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot query VSphere", e);
-        }
-
-        if (mes == null || mes.length == 0) {
-            throw new AmazonServiceException("vsphere returned zero entities of type \"VirtualMachine\"");
-        } else {
-            return mes;
-        }
-    }
-
-    /** disconnect from the service if not already disconnected. */
-    private void disconnectService() {
-        if (service != null) {
-            service.getServerConnection().logout();
-            service = null;
-        }
-    }
-
-    /** connect to the service if not already connected. */
-    private void connectService() throws AmazonServiceException {
-        try {
-            if (service == null) {
-                service = new ServiceInstance(new URL(url), username, password, true);
-            }
-        } catch (RemoteException e) {
-            throw new AmazonServiceException("cannot connect to VSphere", e);
-        } catch (MalformedURLException e) {
-            throw new AmazonServiceException("cannot connect to VSphere", e);
-        }
-    }
-
     @Override
     /**
      * reinstall the given instance. If it is powered down this will be ignored and the
@@ -263,25 +199,14 @@ public class VSphereClient extends AWSClient {
      */
     public void terminateInstance(String instanceId) {
         try {
-            connectService();
+            service.connect();
 
-            VirtualMachine virtualMachine = getVirtualMachineById(instanceId);
+            VirtualMachine virtualMachine = service.getVirtualMachineById(instanceId);
             this.terminationStrategy.terminate(virtualMachine);
-        } catch (RuntimeFault e) {
-            throw new AmazonServiceException("cannot destory & recreate " + instanceId, e);
         } catch (RemoteException e) {
             throw new AmazonServiceException("cannot destory & recreate " + instanceId, e);
         } finally {
-            disconnectService();
+            service.disconnect();
         }
-    }
-
-    private VirtualMachine getVirtualMachineById(String instanceId) throws RemoteException {
-        Folder rootFolder = service.getRootFolder();
-        InventoryNavigator inventoryNavigator = new InventoryNavigator(rootFolder);
-        VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator.searchManagedEntity(
-                VIRTUAL_MACHINE_TYPE_NAME, instanceId);
-
-        return virtualMachine;
     }
 }
