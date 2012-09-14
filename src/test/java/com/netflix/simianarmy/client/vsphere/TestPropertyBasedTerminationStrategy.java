@@ -34,29 +34,28 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class TestPropertyBasedTerminationStrategy {
-
     private BasicConfiguration configMock = mock(BasicConfiguration.class);
     private VirtualMachine virtualMachineMock = mock(VirtualMachine.class);
 
     @Test
     public void shouldReturnConfiguredPropertyNameAndValueAfterConstructedFromConfig() {
-        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.name", "Force Boot"))
-            .thenReturn("configured name");
-        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.value", "server"))
-            .thenReturn("configured value");
+        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.name", "Force Boot")).thenReturn(
+                        "configured name");
+        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.value", "server")).thenReturn(
+                        "configured value");
 
         PropertyBasedTerminationStrategy strategy = new PropertyBasedTerminationStrategy(configMock);
 
         assertEquals(strategy.getPropertyName(), "configured name");
-        assertEquals(strategy.getPropertyValue(), "configured value");        
+        assertEquals(strategy.getPropertyValue(), "configured value");
     }
 
     @Test
     public void shouldSetPropertyAndResetVirtualMachineAfterTermination() {
-        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.name", "Force Boot"))
-            .thenReturn("configured name");
-        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.value", "server"))
-            .thenReturn("configured value");
+        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.name", "Force Boot")).thenReturn(
+                        "configured name");
+        when(configMock.getStrOrElse("client.vsphere.terminationStrategy.property.value", "server")).thenReturn(
+                        "configured value");
 
         PropertyBasedTerminationStrategy strategy = new PropertyBasedTerminationStrategy(configMock);
 
