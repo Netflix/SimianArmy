@@ -40,7 +40,7 @@ public class VSphereClient extends AWSClient {
      * Create the specific Client from the given strategy and connection.
      */
     public VSphereClient(TerminationStrategy terminationStrategy, VSphereServiceConnection connection) {
-        super();
+        super(connection.getUrl());
         this.terminationStrategy = terminationStrategy;
         this.connection = connection;
     }
