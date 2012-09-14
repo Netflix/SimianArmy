@@ -47,6 +47,12 @@ public class AWSClient implements CloudClient {
     private String region;
 
     /**
+     * Only meant for VSphereClient subclasses. 
+     */
+    protected AWSClient() {
+    }
+
+    /**
      * Instantiates a new AWS client.
      *
      * @param accessKey

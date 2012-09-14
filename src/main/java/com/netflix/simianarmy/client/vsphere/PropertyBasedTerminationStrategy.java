@@ -23,6 +23,10 @@ import com.vmware.vim25.mo.VirtualMachine;
 /**
  * Terminates a VirtualMachine by setting the named property and resetting it.
  *
+ * The following properties can be overridden in the client.properties
+ * client.vsphere.terminationStrategy.property.name  = PROPETY_NAME
+ * client.vsphere.terminationStrategy.property.value = PROPERTY_VALUE
+ *
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class PropertyBasedTerminationStrategy implements TerminationStrategy {

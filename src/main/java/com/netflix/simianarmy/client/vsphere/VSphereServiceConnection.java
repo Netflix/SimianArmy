@@ -33,6 +33,11 @@ import com.vmware.vim25.mo.VirtualMachine;
 /**
  * Wraps the connection to VSphere and handles the raw service calls.
  *
+ * The following properties can be overridden in the client.properties
+ * client.vsphere.url                                = https://YOUR_VSPHERE_SERVER/sdk
+ * client.vsphere.username                           = YOUR_SERVICE_ACCOUNT_USERNAME
+ * client.vsphere.password                           = YOUR_SERVICE_ACCOUNT_PASSWORD
+ *
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereServiceConnection {
@@ -120,5 +125,17 @@ public class VSphereServiceConnection {
         } else {
             return Arrays.copyOf(mes, mes.length, VirtualMachine[].class);
         }
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUrl() {
+        return url;
     }
 }
