@@ -17,7 +17,7 @@ apply plugin: 'pmd'
 apply plugin: 'cobertura'
 cobertura {
     sourceDirs = sourceSets.main.java.srcDirs
-    format = 'html'
+    format = 'xml'
     includes = ['**/*.java', '**/*.groovy']
     excludes = []
 }
