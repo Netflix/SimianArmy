@@ -1,3 +1,0 @@
-buildscript {
-    apply from: 'https://github.com/valkolovos/gradle_cobertura/raw/master/repo/gradle_cobertura/gradle_cobertura/1.2/coberturainit.gradle'
-}
