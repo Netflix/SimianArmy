@@ -19,6 +19,7 @@ apply from: file('gradle/release.gradle')
 
 apply plugin: 'war'
 apply plugin: 'jetty'
+apply plugin: 'eclipse'
 
 dependencies {
     compile 'javax.ws.rs:jsr311-api:1.1.1'
