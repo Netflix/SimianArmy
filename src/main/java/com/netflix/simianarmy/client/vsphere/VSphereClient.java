@@ -25,7 +25,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  */
 /**
  * This client describes the VSphere folders as AutoScalingGroup's containing the virtual machines that are directly in
- * that folder. The hierarchy is flattend this way. And it can can terminate these VMs with the configured
+ * that folder. The hierarchy is flattend this way. And it can terminate these VMs with the configured
  * TerminationStrategy.
  *
  * @author ingmar.krusch@immobilienscout24.de
