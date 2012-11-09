@@ -4,7 +4,7 @@ import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.basic.BasicContext;
 
 /*
- *  Copyright 2012 Immobilienscout GmbH
+ *  Copyright 2012 Immobilien Scout GmbH
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.

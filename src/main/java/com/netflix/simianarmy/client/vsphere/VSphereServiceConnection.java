@@ -15,7 +15,7 @@ import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /*
- *  Copyright 2012 Immobilienscout GmbH
+ *  Copyright 2012 Immobilien Scout GmbH
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
