@@ -9,7 +9,6 @@ import com.amazonaws.AmazonServiceException;
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.vmware.vim25.InvalidProperty;
 import com.vmware.vim25.RuntimeFault;
-import com.vmware.vim25.mo.Folder;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
@@ -41,7 +40,8 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereServiceConnection {
-    private static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
+   /** The type of managedEntity we operate on are virtual machines. */
+    public static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
 
     /** The username that is used to connect to VSpehere Center. */
     private String username = null;
@@ -89,8 +89,7 @@ public class VSphereServiceConnection {
      * Gets the named VirtualMachine.
      */
     public VirtualMachine getVirtualMachineById(String instanceId) throws RemoteException {
-        Folder rootFolder = service.getRootFolder();
-        InventoryNavigator inventoryNavigator = new InventoryNavigator(rootFolder);
+        InventoryNavigator inventoryNavigator = getInventoryNavigator();
         VirtualMachine virtualMachine = (VirtualMachine) inventoryNavigator.searchManagedEntity(
                 VIRTUAL_MACHINE_TYPE_NAME, instanceId);
 
@@ -101,14 +100,12 @@ public class VSphereServiceConnection {
      * Return all VirtualMachines from VSpehere Center.
      *
      * @throws AmazonServiceException
-     *             If there is any communication error or if no VirtualMachine's are found
-     */
+     *             If there is any communication error or if no VirtualMachine's are found. */
     public VirtualMachine[] describeVirtualMachines() throws AmazonServiceException {
         ManagedEntity[] mes = null;
 
-        Folder rootFolder = service.getRootFolder();
         try {
-            mes = new InventoryNavigator(rootFolder).searchManagedEntities(VIRTUAL_MACHINE_TYPE_NAME);
+            mes = getInventoryNavigator().searchManagedEntities(VIRTUAL_MACHINE_TYPE_NAME);
         } catch (InvalidProperty e) {
             throw new AmazonServiceException("cannot query VSphere", e);
         } catch (RuntimeFault e) {
@@ -127,14 +124,16 @@ public class VSphereServiceConnection {
         }
     }
 
+    protected InventoryNavigator getInventoryNavigator() {
+        return new InventoryNavigator(service.getRootFolder());
+    }
+
     public String getUsername() {
         return username;
     }
-
     public String getPassword() {
         return password;
     }
-
     public String getUrl() {
         return url;
     }
