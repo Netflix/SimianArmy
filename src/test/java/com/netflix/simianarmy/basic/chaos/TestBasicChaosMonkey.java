@@ -19,13 +19,16 @@
 package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
-import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
+import javax.ws.rs.core.Response;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
+import com.netflix.simianarmy.resources.chaos.ChaosMonkeyResource;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestBasicChaosMonkey {
@@ -201,5 +204,203 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(3).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_B);
         Assert.assertEquals(selectedOn.get(3).name(), "name3");
         Assert.assertEquals(terminated.size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsZero() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsZero.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsBiggerThanOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsBiggerThanOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 2);
+        Assert.assertEquals(ctx.terminated().size(), 2);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsSmallerThanOne() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsSmallerThanOne.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsNegative() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsNegative.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayAsVerySmall() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayAsVerySmall.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 0);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMaxTerminationCountPerDayGroupLevel() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("terminationPerDayGroupLevel.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+
+        for (int i = 1; i <= 3; i++) {
+            chaos.start();
+            chaos.stop();
+            Assert.assertEquals(ctx.selectedOn().size(), i);
+            Assert.assertEquals(ctx.terminated().size(), i);
+        }
+        // Run the chaos the second time will NOT trigger another termination
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 3);
+        Assert.assertEquals(ctx.terminated().size(), 3);
+    }
+
+    @Test
+    public void testMandatoryTerminationDisabled() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationDisabled.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMandatoryTerminationNotDefined() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationNotDefined.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMandatoryTerminationNoOptInTime() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationNoOptInTime.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMandatoryTerminationInsideWindow() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationInsideWindow.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        // The last opt-in time is within the window, so no mandatory termination is triggered
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 0);
+    }
+
+    @Test
+    public void testMandatoryTerminationOutsideWindow() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationOutsideWindow.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        // There was no termination in the last window, so one mandatory termination is triggered
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMandatoryTerminationOutsideWindowWithPreviousTermination() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationOutsideWindow.properties");
+        terminateOnDemand(ctx, "TYPE_C", "name4");
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        // There was termination in the last window, so no mandatory termination is triggered
+        Assert.assertEquals(ctx.selectedOn().size(), 2);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    @Test
+    public void testMandatoryTerminationInsideWindowWithPreviousTermination() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("mandatoryTerminationInsideWindow.properties");
+        terminateOnDemand(ctx, "TYPE_C", "name4");
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        // There was termination in the last window, so no mandatory termination is triggered
+        Assert.assertEquals(ctx.selectedOn().size(), 2);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+    }
+
+    private void terminateOnDemand(TestChaosMonkeyContext ctx, String groupType, String groupName) {
+        String input = String.format("{\"eventType\":\"CHAOS_TERMINATION\",\"groupType\":\"%s\",\"groupName\":\"%s\"}",
+                groupType, groupName);
+
+        int currentSelectedOn = ctx.selectedOn().size();
+        int currentTerminated = ctx.terminated().size();
+
+        ChaosMonkeyResource resource = new ChaosMonkeyResource(new BasicChaosMonkey(ctx));
+        validateAddEventResult(resource, input, Response.Status.OK);
+        Assert.assertEquals(ctx.selectedOn().size(), currentSelectedOn + 1);
+        Assert.assertEquals(ctx.terminated().size(), currentTerminated + 1);
+    }
+
+    private void validateAddEventResult(ChaosMonkeyResource resource, String input, Response.Status responseStatus) {
+        try {
+            Response resp = resource.addEvent(input);
+            Assert.assertEquals(resp.getStatus(), responseStatus.getStatusCode());
+        } catch (Exception e) {
+            Assert.fail("addEvent throws exception");
+        }
     }
 }

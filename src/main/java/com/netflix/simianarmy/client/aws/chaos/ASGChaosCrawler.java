@@ -42,7 +42,7 @@ public class ASGChaosCrawler implements ChaosCrawler {
     }
 
     /** The aws client. */
-    private AWSClient awsClient;
+    private final AWSClient awsClient;
 
     /**
      * Instantiates a new basic chaos crawler.
@@ -63,8 +63,13 @@ public class ASGChaosCrawler implements ChaosCrawler {
     /** {@inheritDoc} */
     @Override
     public List<InstanceGroup> groups() {
+        return groups((String[]) null);
+    }
+
+    @Override
+    public List<InstanceGroup> groups(String... names) {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
-        for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups()) {
+        for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(names)) {
             InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
             for (Instance inst : asg.getInstances()) {
                 ig.addInstance(inst.getInstanceId());

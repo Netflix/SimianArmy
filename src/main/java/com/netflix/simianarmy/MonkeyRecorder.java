@@ -103,7 +103,7 @@ public interface MonkeyRecorder {
      * @param eventType
      *            the event type
      * @param region
-     *            the region the event occured
+     *            the region the event occurred
      * @param id
      *            the id
      * @return the event

@@ -37,7 +37,7 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
 public class TestASGChaosCrawler {
-    private ASGChaosCrawler crawler;
+    private final ASGChaosCrawler crawler;
 
     private AutoScalingGroup mkAsg(String asgName, String instanceId) {
         AutoScalingGroup asg = new AutoScalingGroup();
@@ -48,7 +48,7 @@ public class TestASGChaosCrawler {
         return asg;
     }
 
-    private AWSClient awsMock;
+    private final AWSClient awsMock;
 
     public TestASGChaosCrawler() {
         awsMock = mock(AWSClient.class);
@@ -68,11 +68,11 @@ public class TestASGChaosCrawler {
         asgList.add(mkAsg("asg1", "i-123456780"));
         asgList.add(mkAsg("asg2", "i-123456781"));
 
-        when(awsMock.describeAutoScalingGroups()).thenReturn(asgList);
+        when(awsMock.describeAutoScalingGroups((String[]) null)).thenReturn(asgList);
 
         List<InstanceGroup> groups = crawler.groups();
 
-        verify(awsMock, times(1)).describeAutoScalingGroups();
+        verify(awsMock, times(1)).describeAutoScalingGroups((String[]) null);
 
         Assert.assertEquals(groups.size(), 2);
 
