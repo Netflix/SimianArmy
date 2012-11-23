@@ -45,6 +45,7 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
     }
 
     /** {@inheritDoc} */
+    @Override
     public String select(InstanceGroup group, double probability) {
         if (probability <= 0) {
             logger().info("Group {} [type {}] has disabled probability: {}",
@@ -52,7 +53,7 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
             return null;
         }
         double rand = Math.random();
-        if (rand > probability) {
+        if (rand > probability || group.instances().isEmpty()) {
             logger().info("Group {} [type {}] got lucky: {} > {}",
                     new Object[] {group.name(), group.type(), rand, probability});
             return null;
