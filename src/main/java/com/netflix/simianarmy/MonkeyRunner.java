@@ -17,13 +17,13 @@
  */
 package com.netflix.simianarmy;
 
+import java.lang.reflect.Constructor;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.LinkedList;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
-import java.lang.reflect.Constructor;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -171,12 +171,12 @@ public enum MonkeyRunner {
      * Example:
      *
      * <pre>
-     *         {@code
-     *         MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
+     *          {@code
+     *          MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
      *
-     *         // This will actualy return a BasicChaosMonkey since that is the only subclass that was registered
-     *         ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
-     *}
+     *          // This will actualy return a BasicChaosMonkey since that is the only subclass that was registered
+     *          ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+     * }
      * </pre>
      *
      * @param <T>

@@ -17,9 +17,9 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
-import java.util.List;
-import java.util.LinkedList;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 

@@ -31,7 +31,6 @@ public class BasicConfiguration implements MonkeyConfiguration {
 
     /**
      * Instantiates a new basic configuration.
-     *
      * @param props
      *            the properties
      */

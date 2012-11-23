@@ -65,7 +65,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /**
      * Instantiates a new basic chaos monkey.
-     *
      * @param ctx
      *            the ctx
      */
@@ -88,6 +87,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
     /** {@inheritDoc} */
     @Override
     public void doMonkeyBusiness() {
+        context().resetEventReport();
         cfg.reload();
         if (!isChaosMonkeyEnabled()) {
             return;
@@ -139,6 +139,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
+    private void reportEventForSummary(EventTypes eventType, InstanceGroup group, String instanceId) {
+        context().reportEvent(createEvent(eventType, group, instanceId));
+    }
+
     /**
      * Handle termination error. This has been abstracted so subclasses can decide to continue causing chaos if desired.
      *
@@ -170,6 +174,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
         query.put("groupName", group.name());
         List<Event> evts = context().recorder().findEvents(Type.CHAOS, EventTypes.CHAOS_TERMINATION, query, after);
         return evts.size();
+    }
+
+    private Event createEvent(EventTypes chaosTermination, InstanceGroup group, String instance) {
+        Event evt = context().recorder().newEvent(Type.CHAOS, chaosTermination, group.region(), instance);
+        evt.addField("groupType", group.type().name());
+        evt.addField("groupName", group.name());
+        return evt;
     }
 
     /**
@@ -273,18 +284,22 @@ public class BasicChaosMonkey extends ChaosMonkey {
         if (cfg.getBoolOrElse(prop, true)) {
             LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
                     new Object[]{inst, group.name(), group.type(), prop});
+            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
             return null;
         } else {
             try {
                 Event evt = recordTermination(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, inst);
                 return evt;
             } catch (NotFoundException e) {
                 LOGGER.warn("Failed to terminate " + inst + ", it does not exist. Perhaps it was already terminated");
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
                 return null;
             } catch (Exception e) {
                 handleTerminationError(inst, e);
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
                 return null;
             }
         }

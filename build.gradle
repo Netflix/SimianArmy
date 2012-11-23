@@ -1,6 +1,7 @@
 // Establish version and status
 ext.githubProjectName = 'SimianArmy'
 group = "com.netflix.${project.name}"
+apply plugin:'eclipse-wtp'
 
 buildscript {
     repositories { mavenCentral() }
@@ -22,6 +23,10 @@ apply plugin: 'jetty'
 apply plugin: 'eclipse'
 
 dependencies {
+	// for the VMWareClient
+    compile 'com.cloudbees.thirdparty:vijava:5.0.0'
+    compile 'dom4j:dom4j:1.6.1'
+
     compile 'javax.ws.rs:jsr311-api:1.1.1'
     compile 'com.sun.jersey:jersey-core:1.11'
     compile 'com.sun.jersey:jersey-server:1.11'

@@ -20,6 +20,8 @@ package com.netflix.simianarmy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+
 /**
  * The abstract Monkey class, it provides a minimal interface from which all monkeys must be derived.
  */
@@ -60,6 +62,26 @@ public abstract class Monkey {
          * @return the monkey recorder
          */
         MonkeyRecorder recorder();
+
+        /**
+         * Add a event to the summary report. The ChaosMonkey uses this to print a summary after the chaos run is
+         * complete.
+         *
+         * @param evt
+         *            The Event to be reported
+         */
+        void reportEvent(Event evt);
+
+        /**
+         * Used to clear the event summary on the start of a chaos run.
+         */
+        void resetEventReport();
+
+        /**
+         * Returns a summary of what the chaos run did.
+         */
+        String getEventReport();
+
     }
 
     /** The context. */
@@ -98,14 +120,15 @@ public abstract class Monkey {
 
     /**
      * Run. This is run on the schedule set by the MonkeyScheduler
-     *
-     * @throws Exception
-     *             the exception
      */
-    public void run() throws Exception {
+    public void run() {
         if (ctx.calendar().isMonkeyTime(this)) {
             LOGGER.info(this.type().name() + " Monkey Running ...");
-            this.doMonkeyBusiness();
+            try {
+                this.doMonkeyBusiness();
+            } finally {
+                LOGGER.info("Reporting what I did...\n" + context().getEventReport());
+            }
         } else {
             LOGGER.info("Not Time for " + this.type().name() + " Monkey");
         }

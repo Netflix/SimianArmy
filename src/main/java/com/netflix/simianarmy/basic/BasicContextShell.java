@@ -17,15 +17,17 @@
  */
 package com.netflix.simianarmy.basic;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
+import java.util.LinkedList;
 
-import com.netflix.simianarmy.MonkeyScheduler;
+import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyScheduler;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
-import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
  * The Class BasicContextShell.
@@ -53,8 +55,32 @@ public class BasicContextShell implements ChaosMonkey.Context {
     /** The recorder. */
     private MonkeyRecorder recorder;
 
+    private LinkedList<Event> eventReport;
+
     /** protected constructor as the Shell is meant to be subclassed. */
     protected BasicContextShell() {
+        eventReport = new LinkedList<Event>();
+    }
+
+    @Override
+    public void reportEvent(Event evt) {
+        this.eventReport.add(evt);
+    }
+
+    @Override
+    public void resetEventReport() {
+        eventReport.clear();
+    }
+
+    @Override
+    public String getEventReport() {
+        StringBuilder report = new StringBuilder();
+
+        for (Event event : this.eventReport) {
+            report.append(event.eventType()).append(" ").append(event.id()).append(" (")
+                    .append(event.field("groupType")).append(", ").append(event.field("groupName")).append(")\n");
+        }
+        return report.toString();
     }
 
     /** {@inheritDoc} */

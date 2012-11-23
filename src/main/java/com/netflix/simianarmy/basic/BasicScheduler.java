@@ -17,15 +17,11 @@
  */
 package com.netflix.simianarmy.basic;
 
-import com.netflix.simianarmy.Monkey;
-import com.netflix.simianarmy.MonkeyScheduler;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -33,6 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyScheduler;
 
 /**
  * The Class BasicScheduler.

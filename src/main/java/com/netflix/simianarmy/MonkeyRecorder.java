@@ -69,6 +69,7 @@ public interface MonkeyRecorder {
         /**
          * Fields.
          *
+         *
          * @return the map of strings that may have been provided when the event was created
          */
         Map<String, String> fields();

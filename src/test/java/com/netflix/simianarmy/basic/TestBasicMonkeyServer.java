@@ -42,7 +42,7 @@ public class TestBasicMonkeyServer extends BasicMonkeyServer {
         }
     }
 
-    public void addMonkeys() {
+    public void addMonkeysToRun() {
         MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, TestChaosMonkeyContext.class);
         MonkeyRunner.getInstance().addMonkey(SillyMonkey.class);
     }

@@ -19,12 +19,12 @@ package com.netflix.simianarmy.basic;
 
 import java.util.Calendar;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.TimeZone;
+import java.util.TreeSet;
 
+import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.Monkey;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 /**
