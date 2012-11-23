@@ -48,10 +48,6 @@ import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-
 /**
  * The Class ChaosMonkeyResource for json REST apis.
  */

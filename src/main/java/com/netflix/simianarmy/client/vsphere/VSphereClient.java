@@ -46,7 +46,7 @@ public class VSphereClient extends AWSClient {
     }
 
     @Override
-    public List<AutoScalingGroup> describeAutoScalingGroups() {
+    public List<AutoScalingGroup> describeAutoScalingGroups(String... names) {
         final VSphereGroups groups = new VSphereGroups();
 
         try {
@@ -56,7 +56,13 @@ public class VSphereClient extends AWSClient {
                 String instanceId = virtualMachine.getName();
                 String groupName = virtualMachine.getParent().getName();
 
-                groups.addInstance(instanceId, groupName);
+                boolean shouldAddNamedGroup = true;
+//                if (names != null) {
+//                }
+
+                if (shouldAddNamedGroup) {
+                    groups.addInstance(instanceId, groupName);
+                }
             }
         } finally {
             connection.disconnect();

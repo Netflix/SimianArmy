@@ -176,17 +176,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return evts.size();
     }
 
-    /** {@inheritDoc} */
-    public void recordTermination(InstanceGroup group, String instance) {
-        Event evt = createEvent(EventTypes.CHAOS_TERMINATION, group, instance);
-        context().recorder().recordEvent(evt);
-    }
-
     private Event createEvent(EventTypes chaosTermination, InstanceGroup group, String instance) {
         Event evt = context().recorder().newEvent(Type.CHAOS, chaosTermination, group.region(), instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
         return evt;
+    }
 
     /**
      * Gets the effective probability value when the monkey processes an instance group, it uses the following
@@ -289,22 +284,22 @@ public class BasicChaosMonkey extends ChaosMonkey {
         if (cfg.getBoolOrElse(prop, true)) {
             LOGGER.info("leashed ChaosMonkey prevented from killing {} from group {} [{}], set {}=false",
                     new Object[]{inst, group.name(), group.type(), prop});
-            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group.name(), inst);
+            reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
             return null;
         } else {
             try {
                 Event evt = recordTermination(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
-                reportEventForSummary(EventTypes.CHAOS_TERMINATION, group.name(), inst);
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, inst);
                 return evt;
             } catch (NotFoundException e) {
                 LOGGER.warn("Failed to terminate " + inst + ", it does not exist. Perhaps it was already terminated");
-                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group.name(), inst);
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
                 return null;
             } catch (Exception e) {
                 handleTerminationError(inst, e);
-                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group.name(), inst);
+                reportEventForSummary(EventTypes.CHAOS_TERMINATION_SKIPPED, group, inst);
                 return null;
             }
         }
