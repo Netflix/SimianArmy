@@ -312,8 +312,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
             // Check if the group has exceeded the maximum terminations for the last period
             int terminationCount = getPreviousTerminationCount(group, after.getTime());
             if (terminationCount >= maxCount) {
-                LOGGER.info("The count of terminations in the last {} days is {}, equal or greater than"
-                        + " the max count threshold {}", new Object[]{daysBack, terminationCount, maxCount});
+                LOGGER.info("The count of terminations for group {} [{}] in the last {} days is {},"
+                        + " equal or greater than the max count threshold {}",
+                        new Object[]{group.name(), group.type(), daysBack, terminationCount, maxCount});
                 return true;
             }
         }
