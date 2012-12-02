@@ -180,11 +180,11 @@ public class BasicContextShell implements ChaosMonkey.Context {
     /**
      * Sets the chaos email notifier.
      *
-     * @param chaosEmailNotifier
+     * @param notifier
      *            the chaos email notifier
      */
-    protected void setRecorder(ChaosEmailNotifier chaosEmailNotifier) {
-        this.chaosEmailNotifier = chaosEmailNotifier;
+    protected void setChaosEmailNotifier(ChaosEmailNotifier notifier) {
+        this.chaosEmailNotifier = notifier;
     }
 
 }
