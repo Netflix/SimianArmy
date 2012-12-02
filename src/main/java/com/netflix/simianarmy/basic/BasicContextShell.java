@@ -17,15 +17,15 @@
  */
 package com.netflix.simianarmy.basic;
 
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-
-import com.netflix.simianarmy.MonkeyScheduler;
+import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.chaos.ChaosCrawler;
-import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyScheduler;
+import com.netflix.simianarmy.chaos.ChaosCrawler;
+import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
+import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
+import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
  * The Class BasicContextShell.
@@ -52,6 +52,9 @@ public class BasicContextShell implements ChaosMonkey.Context {
 
     /** The recorder. */
     private MonkeyRecorder recorder;
+
+    /** The chaos email notifier. */
+    private ChaosEmailNotifier chaosEmailNotifier;
 
     /** protected constructor as the Shell is meant to be subclassed. */
     protected BasicContextShell() {
@@ -168,4 +171,20 @@ public class BasicContextShell implements ChaosMonkey.Context {
     protected void setRecorder(MonkeyRecorder recorder) {
         this.recorder = recorder;
     }
+
+    @Override
+    public ChaosEmailNotifier chaosEmailNotifier() {
+        return chaosEmailNotifier;
+    }
+
+    /**
+     * Sets the chaos email notifier.
+     *
+     * @param chaosEmailNotifier
+     *            the chaos email notifier
+     */
+    protected void setRecorder(ChaosEmailNotifier chaosEmailNotifier) {
+        this.chaosEmailNotifier = chaosEmailNotifier;
+    }
+
 }
