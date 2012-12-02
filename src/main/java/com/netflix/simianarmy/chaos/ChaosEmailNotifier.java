@@ -11,7 +11,7 @@ public abstract class ChaosEmailNotifier extends AWSEmailNotifier {
 
     /** Constructor. Currently the notifier is fixed the email client to
      * Amazon Simple Email Service. We can release this restriction when
-     * we want to support different email client.
+     * we want to support different email clients.
      *
      * @param sesClient the AWS simple email service client.
      */

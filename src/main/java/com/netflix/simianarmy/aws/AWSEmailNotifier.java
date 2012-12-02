@@ -45,7 +45,6 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
 
     private final Pattern emailPattern;
 
-
     private final AmazonSimpleEmailServiceClient sesClient;
 
     /**
@@ -78,17 +77,11 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
         String sourceAddress = getSourceAddress(to);
         SendEmailRequest request = new SendEmailRequest(sourceAddress, destination, msg);
         request.setReturnPath(sourceAddress);
-        // zhefu change to debug
-        LOGGER.info(String.format("Sending email with subject '%s' to %s",
+        LOGGER.debug(String.format("Sending email with subject '%s' to %s",
                 subject, to));
-        // zhefu remove
-        if (to.startsWith("michaelf@")) {
-            SendEmailResult result = sesClient.sendEmail(request);
-            LOGGER.info(String.format("Email to %s, result id is %s, subject is %s",
-                    to, result.getMessageId(), subject));
-        } else {
-            LOGGER.info("No message is sent during testing.");
-        }
+        SendEmailResult result = sesClient.sendEmail(request);
+        LOGGER.info(String.format("Email to %s, result id is %s, subject is %s",
+                to, result.getMessageId(), subject));
     }
 
     @Override
