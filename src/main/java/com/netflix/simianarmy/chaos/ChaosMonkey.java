@@ -55,6 +55,13 @@ public abstract class ChaosMonkey extends Monkey {
          * @return the chaos instance selector
          */
         ChaosInstanceSelector chaosInstanceSelector();
+
+        /**
+         * Chaos email notifier.
+         *
+         * @return the chaos email notifier
+         */
+        ChaosEmailNotifier chaosEmailNotifier();
     }
 
     /** The context. */
@@ -139,4 +146,14 @@ public abstract class ChaosMonkey extends Monkey {
      */
     public abstract Event terminateNow(String type, String name)
             throws FeatureNotEnabledException, InstanceGroupNotFoundException;
+
+    /**
+     * Sends notification for the termination to the instance owners.
+     *
+     * @param group
+     *            the group
+     * @param instance
+     *            the instance
+     */
+    public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance);
 }

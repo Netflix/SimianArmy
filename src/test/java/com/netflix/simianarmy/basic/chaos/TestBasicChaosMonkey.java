@@ -382,6 +382,18 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(ctx.terminated().size(), 1);
     }
 
+    @Test
+    public void testNotificationEnabled() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("notificationEnabled.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 4);
+        Assert.assertEquals(ctx.terminated().size(), 4);
+        // Notification is enabled only for 2 terminations.
+        Assert.assertEquals(ctx.getNotified(), 2);
+    }
+
     private void terminateOnDemand(TestChaosMonkeyContext ctx, String groupType, String groupName) {
         String input = String.format("{\"eventType\":\"CHAOS_TERMINATION\",\"groupType\":\"%s\",\"groupName\":\"%s\"}",
                 groupType, groupName);

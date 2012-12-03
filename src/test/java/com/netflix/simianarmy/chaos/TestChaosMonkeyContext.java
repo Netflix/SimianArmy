@@ -194,4 +194,43 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         };
     }
 
+    private int notified = 0;
+
+    @Override
+    public ChaosEmailNotifier chaosEmailNotifier() {
+        return new ChaosEmailNotifier(null) {
+            @Override
+            public String getSourceAddress(String to) {
+                return "source@chaosMonkey.foo";
+            }
+
+            @Override
+            public String[] getCcAddresses(String to) {
+                return new String[] {};
+            }
+
+            @Override
+            public String buildEmailSubject(String to) {
+                return String.format("Testing Chaos termination notification for %s", to);
+            }
+
+            @Override
+            public void sendTerminationNotification(InstanceGroup group, String instance) {
+                String prop = String.format("simianarmy.chaos.%s.%s.notification.enabled",
+                        group.type(), group.name());
+                if (!cfg.getBoolOrElse(prop, false)) {
+                    LOGGER.debug(String.format("Group %s [type %s] does not turn on termination notification, "
+                            + "set %s=true to enable it.",
+                            group.name(), group.type(), prop));
+                    return;
+                }
+                notified++;
+            }
+        };
+    }
+
+    public int getNotified() {
+        return notified;
+    }
+
 }
