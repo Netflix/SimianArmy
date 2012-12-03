@@ -65,7 +65,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     public void sendTerminationNotification(InstanceGroup group, String instanceId) {
         String to = getOwnerEmail(group);
         String subject = buildEmailSubject(to);
-        String body = String.format("Instance %s of %s %s just got killed by Chaos monkey.",
+        String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
                 instanceId, group.type(), group.name());
         sendEmail(to, subject, body);
     }

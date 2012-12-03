@@ -278,10 +278,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
         } else {
             try {
                 Event evt = recordTermination(group, inst);
-
+                sendTerminationNotification(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
-                sendTerminationNotification(group, inst);
                 return evt;
             } catch (NotFoundException e) {
                 LOGGER.warn("Failed to terminate " + inst + ", it does not exist. Perhaps it was already terminated");
