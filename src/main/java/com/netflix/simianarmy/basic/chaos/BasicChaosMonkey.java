@@ -35,6 +35,7 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
@@ -277,6 +278,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         } else {
             try {
                 Event evt = recordTermination(group, inst);
+                sendTerminationNotification(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
                 return evt;
@@ -312,11 +314,30 @@ public class BasicChaosMonkey extends ChaosMonkey {
             // Check if the group has exceeded the maximum terminations for the last period
             int terminationCount = getPreviousTerminationCount(group, after.getTime());
             if (terminationCount >= maxCount) {
-                LOGGER.info("The count of terminations in the last {} days is {}, equal or greater than"
-                        + " the max count threshold {}", new Object[]{daysBack, terminationCount, maxCount});
+                LOGGER.info("The count of terminations for group {} [{}] in the last {} days is {},"
+                        + " equal or greater than the max count threshold {}",
+                        new Object[]{group.name(), group.type(), daysBack, terminationCount, maxCount});
                 return true;
             }
         }
         return false;
+    }
+
+    @Override
+    public void sendTerminationNotification(InstanceGroup group, String instance) {
+        String prop = String.format("%s%s.%s.notification.enabled", NS, group.type(), group.name());
+        if (!cfg.getBoolOrElse(prop, false)) {
+            LOGGER.debug(String.format("Group %s [type %s] does not turn on termination notification, "
+                    + "set %s=true to enable it.",
+                    group.name(), group.type(), prop));
+            return;
+        }
+        ChaosEmailNotifier notifier = context().chaosEmailNotifier();
+        if (notifier == null) {
+            String msg = "Chaos email notifier is not set.";
+            LOGGER.error(msg);
+            throw new RuntimeException(msg);
+        }
+        notifier.sendTerminationNotification(group, instance);
     }
 }
