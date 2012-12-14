@@ -57,8 +57,10 @@ public class VSphereClient extends AWSClient {
                 String groupName = virtualMachine.getParent().getName();
 
                 boolean shouldAddNamedGroup = true;
-//                if (names != null) {
-//                }
+                if (names != null) {
+                    // TODO need to implement this feature!!!
+                    throw new RuntimeException("This feature (selecting groups by name) is not implemented yet");
+                }
 
                 if (shouldAddNamedGroup) {
                     groups.addInstance(instanceId, groupName);
