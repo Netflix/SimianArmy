@@ -15,7 +15,7 @@ allprojects {
 apply from: file('gradle/convention.gradle')
 apply from: file('gradle/maven.gradle')
 apply from: file('gradle/check.gradle')
-apply from: file('gradle/license.gradle')
+// apply from: file('gradle/license.gradle')
 apply from: file('gradle/release.gradle')
 
 apply plugin: 'war'
@@ -59,3 +59,9 @@ test {
 tasks.withType(Compile) {
     options.compilerArgs << "-Xlint" << "-Werror"
 } 
+
+import nl.javadude.gradle.plugins.license.License
+tasks.withType(License).each { licenseTask ->
+    licenseTask.exclude '**/*.json'
+    licenseTask.exclude '**/*.properties'
+}
