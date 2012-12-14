@@ -16,7 +16,7 @@
  *     limitations under the License.
  *
  */
-package com.netflix.simianarmy.aws.chaos;
+package com.netflix.simianarmy.client.aws.chaos;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -33,8 +33,8 @@ import org.testng.annotations.Test;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
-import com.netflix.simianarmy.aws.AWSClient;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.client.aws.AWSClient;
 
 public class TestASGChaosCrawler {
     private final ASGChaosCrawler crawler;

@@ -17,31 +17,28 @@
  */
 package com.netflix.simianarmy.aws;
 
-import java.util.Map;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.LinkedHashMap;
-import java.util.Date;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.AWSCredentials;
-
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.Item;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
-import com.amazonaws.services.simpledb.model.Item;
-import com.amazonaws.services.simpledb.model.Attribute;
-
 import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
 /**
