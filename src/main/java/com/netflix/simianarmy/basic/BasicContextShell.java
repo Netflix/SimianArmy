@@ -56,6 +56,10 @@ public class BasicContextShell implements ChaosMonkey.Context {
     /** The recorder. */
     private MonkeyRecorder recorder;
 
+    /** The chaos email notifier. */
+    private ChaosEmailNotifier chaosEmailNotifier;
+
+    /** The reported events. */
     private LinkedList<Event> eventReport;
 
     /** protected constructor as the Shell is meant to be subclassed. */
