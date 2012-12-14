@@ -1,3 +1,18 @@
+/*
+ *  Copyright 2012 Immobilien Scout GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 // CHECKSTYLE IGNORE Javadoc
 package com.netflix.simianarmy.client.vsphere;
 
@@ -21,21 +36,6 @@ import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.VirtualMachine;
 
-/*
- *  Copyright 2012 Immobilien Scout GmbH
- *
- *     Licensed under the Apache License, Version 2.0 (the "License");
- *     you may not use this file except in compliance with the License.
- *     You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
 /**
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -45,9 +45,9 @@ public class TestVSphereServiceConnection {
 
     @Test
     public void shouldReturnConfiguredPropertiesAfterConstructedFromConfig() {
-        when(configMock.getStr("client.vsphere.username")).thenReturn("configured username");
-        when(configMock.getStr("client.vsphere.password")).thenReturn("configured password");
-        when(configMock.getStr("client.vsphere.url")).thenReturn("configured url");
+        when(configMock.getStr("simianarmy.client.vsphere.username")).thenReturn("configured username");
+        when(configMock.getStr("simianarmy.client.vsphere.password")).thenReturn("configured password");
+        when(configMock.getStr("simianarmy.client.vsphere.url")).thenReturn("configured url");
 
         VSphereServiceConnection service = new VSphereServiceConnection(configMock);
 

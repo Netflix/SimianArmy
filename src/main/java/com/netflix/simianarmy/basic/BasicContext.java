@@ -113,9 +113,9 @@ public class BasicContext extends BasicContextShell {
     }
 
     private void createRecorder(BasicConfiguration config) {
-        String account = config.getStr("simianarmy.aws.accountKey");
-        String secret = config.getStr("simianarmy.aws.secretKey");
-        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
+        String account = config.getStr("simianarmy.client.aws.accountKey");
+        String secret = config.getStr("simianarmy.client.aws.secretKey");
+        String region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
         String domain = config.getStrOrElse("simianarmy.sdb.domain", "SIMIAN_ARMY");
         setRecorder(new SimpleDBRecorder(account, secret, region, domain));
     }
@@ -124,9 +124,9 @@ public class BasicContext extends BasicContextShell {
      * Create the specific client. Override to provide your own client.
      */
     protected void createClient(BasicConfiguration config) {
-        String account = config.getStr("simianarmy.aws.accountKey");
-        String secret = config.getStr("simianarmy.aws.secretKey");
-        String region = config.getStrOrElse("simianarmy.aws.region", "us-east-1");
+        String account = config.getStr("simianarmy.client.aws.accountKey");
+        String secret = config.getStr("simianarmy.client.aws.secretKey");
+        String region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
         this.awsClient = new AWSClient(account, secret, region);
 
         setCloudClient(this.awsClient);

@@ -1,3 +1,18 @@
+/*
+ *  Copyright 2012 Immobilien Scout GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.netflix.simianarmy.client.vsphere;
 
 import java.net.MalformedURLException;
@@ -14,28 +29,13 @@ import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
 
-/*
- *  Copyright 2012 Immobilien Scout GmbH
- *
- *     Licensed under the Apache License, Version 2.0 (the "License");
- *     you may not use this file except in compliance with the License.
- *     You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- *     Unless required by applicable law or agreed to in writing, software
- *     distributed under the License is distributed on an "AS IS" BASIS,
- *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *     See the License for the specific language governing permissions and
- *     limitations under the License.
- */
 /**
  * Wraps the connection to VSphere and handles the raw service calls.
  *
  * The following properties can be overridden in the client.properties
- * client.vsphere.url                                = https://YOUR_VSPHERE_SERVER/sdk
- * client.vsphere.username                           = YOUR_SERVICE_ACCOUNT_USERNAME
- * client.vsphere.password                           = YOUR_SERVICE_ACCOUNT_PASSWORD
+ * simianarmy.client.vsphere.url                                = https://YOUR_VSPHERE_SERVER/sdk
+ * simianarmy.client.vsphere.username                           = YOUR_SERVICE_ACCOUNT_USERNAME
+ * simianarmy.client.vsphere.password                           = YOUR_SERVICE_ACCOUNT_PASSWORD
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -59,9 +59,9 @@ public class VSphereServiceConnection {
      * Constructor.
      */
     public VSphereServiceConnection(BasicConfiguration config) {
-        this.url = config.getStr("client.vsphere.url");
-        this.username = config.getStr("client.vsphere.username");
-        this.password = config.getStr("client.vsphere.password");
+        this.url = config.getStr("simianarmy.client.vsphere.url");
+        this.username = config.getStr("simianarmy.client.vsphere.username");
+        this.password = config.getStr("simianarmy.client.vsphere.password");
     }
 
     /** disconnect from the service if not already disconnected. */

@@ -79,7 +79,7 @@ public class BasicMonkeyServer extends HttpServlet {
     }
 
     private void loadClientContextClass(Properties clientConfig) throws ServletException {
-        String clientContextClassKey = "client.context.class";
+        String clientContextClassKey = "simianarmy.client.context.class";
         ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
         try {
             String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
