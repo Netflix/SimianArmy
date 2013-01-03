@@ -171,20 +171,11 @@ public enum MonkeyRunner {
      * Example:
      *
      * <pre>
-<<<<<<< HEAD
      *         {@code
      *         MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
      *         // This will actually return a BasicChaosMonkey since that is the only subclass that was registered
      *         ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
      *}
-=======
-     *          {@code
-     *          MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
-     *
-     *          // This will actualy return a BasicChaosMonkey since that is the only subclass that was registered
-     *          ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
-     * }
->>>>>>> fde87ebfbda161188f1dac96e5ea8e34bcc684f6
      * </pre>
      *
      * @param <T>
