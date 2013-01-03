@@ -15,21 +15,21 @@
  */
 package com.netflix.simianarmy.client.vsphere;
 
-import com.netflix.simianarmy.basic.BasicConfiguration;
-import com.netflix.simianarmy.basic.BasicContext;
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.basic.BasicChaosMonkeyContext;
 
 /**
  * This Context extends the BasicContext in order to provide a different client: the VSphereClient.
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
-public class VSphereContext extends BasicContext {
+public class VSphereContext extends BasicChaosMonkeyContext {
     @Override
-    protected void createClient(BasicConfiguration config) {
+    protected void createClient() {
+        MonkeyConfiguration config = configuration();
         final PropertyBasedTerminationStrategy terminationStrategy = new PropertyBasedTerminationStrategy(config);
         final VSphereServiceConnection connection = new VSphereServiceConnection(config);
         final VSphereClient client = new VSphereClient(terminationStrategy, connection);
-        setAwsClient(client);
         setCloudClient(client);
     }
 }

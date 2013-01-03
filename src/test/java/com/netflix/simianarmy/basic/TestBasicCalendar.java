@@ -18,25 +18,20 @@
  */
 package com.netflix.simianarmy.basic;
 
+import java.util.Calendar;
+import java.util.Properties;
+import java.util.TimeZone;
+
+import org.testng.Assert;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.TestMonkey;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-import org.testng.annotations.DataProvider;
-
-import java.util.TimeZone;
-import java.util.Calendar;
-import java.util.Properties;
-
 // CHECKSTYLE IGNORE MagicNumberCheck
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class TestBasicCalendar extends BasicCalendar {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicCalendar.class);
-
     private static final Properties PROPS = new Properties();
     private static final BasicConfiguration CFG = new BasicConfiguration(PROPS);
 
@@ -59,6 +54,7 @@ public class TestBasicCalendar extends BasicCalendar {
 
     private Calendar now = super.now();
 
+    @Override
     public Calendar now() {
         return (Calendar) now.clone();
     }
@@ -122,7 +118,7 @@ public class TestBasicCalendar extends BasicCalendar {
     }
 
     @Test(dataProvider = "holidayDataProvider")
-    void testHolidays(int month, int dayOfMonth) {
+    public void testHolidays(int month, int dayOfMonth) {
         Calendar test = Calendar.getInstance();
         test.set(Calendar.YEAR, 2012);
         test.set(Calendar.MONTH, month);
@@ -131,5 +127,84 @@ public class TestBasicCalendar extends BasicCalendar {
         setNow(test);
 
         Assert.assertTrue(isHoliday(test), test.getTime().toString() + " is a holiday?");
+    }
+
+    @Test
+    public void testGetBusinessDayWihoutGap() {
+        // the days from 12/3/2012 to 12/7/2012 are all business days
+        int hour = 10;
+        Calendar test = Calendar.getInstance();
+        test.set(Calendar.YEAR, 2012);
+        test.set(Calendar.MONTH, Calendar.DECEMBER);
+        test.set(Calendar.DAY_OF_MONTH, 3);
+        test.set(Calendar.HOUR_OF_DAY, hour);
+        int day = test.get(Calendar.DAY_OF_MONTH);
+        for (int n = 0; n <= 4; n++) {
+            Calendar businessDay = Calendar.getInstance();
+            businessDay.setTime(getBusinessDay(test.getTime(), n));
+            Assert.assertEquals(businessDay.get(Calendar.DAY_OF_MONTH),
+                    day + n);
+            Assert.assertEquals(businessDay.get(Calendar.HOUR_OF_DAY),
+                    hour);
+        }
+    }
+
+    @Test
+    public void testGetBusinessDayWihWeekend() {
+        // 12/7/2012 is Friday
+        int hour = 10;
+        Calendar test = Calendar.getInstance();
+        test.set(Calendar.YEAR, 2012);
+        test.set(Calendar.MONTH, Calendar.DECEMBER);
+        test.set(Calendar.DAY_OF_MONTH, 7);
+        test.set(Calendar.HOUR_OF_DAY, hour);
+        int day = test.get(Calendar.DAY_OF_MONTH);
+        for (int n = 1; n <= 5; n++) {
+            Calendar businessDay = Calendar.getInstance();
+            businessDay.setTime(getBusinessDay(test.getTime(), n));
+            Assert.assertEquals(businessDay.get(Calendar.DAY_OF_MONTH),
+                    day + n + 2);
+            Assert.assertEquals(businessDay.get(Calendar.HOUR_OF_DAY),
+                    hour);
+        }
+    }
+
+    @Test
+    public void testGetBusinessDayWihHoliday() {
+        // 12/23/2012 is Monday and 12/24 - 12/26 are holidays
+        int hour = 10;
+        Calendar test = Calendar.getInstance();
+        test.set(Calendar.YEAR, 2012);
+        test.set(Calendar.MONTH, Calendar.DECEMBER);
+        test.set(Calendar.DAY_OF_MONTH, 24);
+        test.set(Calendar.HOUR_OF_DAY, hour);
+        int day = test.get(Calendar.DAY_OF_MONTH);
+
+        Calendar businessDay = Calendar.getInstance();
+        businessDay.setTime(getBusinessDay(test.getTime(), 1));
+        Assert.assertEquals(businessDay.get(Calendar.DAY_OF_MONTH),
+                day + 4);
+        Assert.assertEquals(businessDay.get(Calendar.HOUR_OF_DAY),
+                hour);
+    }
+
+    @Test
+    public void testGetBusinessDayWihHolidayNextYear() {
+        // 12/28/2012 is Friday and 12/31 - 1/1 are holidays
+        int hour = 10;
+        Calendar test = Calendar.getInstance();
+        test.set(Calendar.YEAR, 2012);
+        test.set(Calendar.MONTH, Calendar.DECEMBER);
+        test.set(Calendar.DAY_OF_MONTH, 28);
+        test.set(Calendar.HOUR_OF_DAY, hour);
+
+        Calendar businessDay = Calendar.getInstance();
+        businessDay.setTime(getBusinessDay(test.getTime(), 1));
+        // The next business day should be 1/2/2013
+        Assert.assertEquals(businessDay.get(Calendar.YEAR), 2013);
+        Assert.assertEquals(businessDay.get(Calendar.MONTH), Calendar.JANUARY);
+        Assert.assertEquals(businessDay.get(Calendar.DAY_OF_MONTH), 2);
+        Assert.assertEquals(businessDay.get(Calendar.HOUR_OF_DAY),
+                hour);
     }
 }

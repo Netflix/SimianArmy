@@ -20,6 +20,7 @@ package com.netflix.simianarmy;
 
 /** The interface for the email notifier used by monkeys. */
 public interface MonkeyEmailNotifier {
+
     /**
      * Determines if a email address is valid.
      * @param email the email

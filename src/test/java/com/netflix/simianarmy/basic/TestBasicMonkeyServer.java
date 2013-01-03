@@ -18,30 +18,28 @@
  */
 package com.netflix.simianarmy.basic;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
+import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.TestMonkey;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 @SuppressWarnings("serial")
 public class TestBasicMonkeyServer extends BasicMonkeyServer {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicMonkeyServer.class);
     private static final MonkeyRunner RUNNER = MonkeyRunner.getInstance();
 
     private static boolean monkeyRan = false;
 
     public static class SillyMonkey extends TestMonkey {
+        @Override
         public void doMonkeyBusiness() {
             monkeyRan = true;
         }
     }
 
+    @Override
     public void addMonkeysToRun() {
         MonkeyRunner.getInstance().replaceMonkey(BasicChaosMonkey.class, TestChaosMonkeyContext.class);
         MonkeyRunner.getInstance().addMonkey(SillyMonkey.class);

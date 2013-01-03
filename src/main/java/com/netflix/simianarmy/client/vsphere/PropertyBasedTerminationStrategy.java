@@ -17,7 +17,7 @@ package com.netflix.simianarmy.client.vsphere;
 
 import java.rmi.RemoteException;
 
-import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.MonkeyConfiguration;
 import com.vmware.vim25.mo.VirtualMachine;
 
 /**
@@ -30,19 +30,19 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class PropertyBasedTerminationStrategy implements TerminationStrategy {
-    private String propertyName;
-    private String propertyValue;
+    private final String propertyName;
+    private final String propertyValue;
 
     /**
      * Reads property name <code>simianarmy.client.vsphere.terminationStrategy.property.name</code>
      * (default: Force Boot) and value <code>simianarmy.client.vsphere.terminationStrategy.property.value</code>
      * (default: server) from config.
      */
-    public PropertyBasedTerminationStrategy(BasicConfiguration config) {
-        this.propertyName
-            = config.getStrOrElse("simianarmy.client.vsphere.terminationStrategy.property.name", "Force Boot");
-        this.propertyValue
-            = config.getStrOrElse("simianarmy.client.vsphere.terminationStrategy.property.value", "server");
+    public PropertyBasedTerminationStrategy(MonkeyConfiguration config) {
+        this.propertyName = config.getStrOrElse(
+                "simianarmy.client.vsphere.terminationStrategy.property.name", "Force Boot");
+        this.propertyValue = config.getStrOrElse(
+                "simianarmy.client.vsphere.terminationStrategy.property.value", "server");
     }
 
     @Override
