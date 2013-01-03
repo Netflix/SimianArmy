@@ -28,7 +28,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.aws.janitor.VolumeTaggingMonkey;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
+import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkey;
+import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkeyContext;
+import com.netflix.simianarmy.basic.janitor.BasicVolumeTaggingMonkeyContext;
 
 /**
  * Will periodically run the configured monkeys.
@@ -44,17 +48,22 @@ public class BasicMonkeyServer extends HttpServlet {
      */
     @SuppressWarnings("unchecked")
     public void addMonkeysToRun() {
-        RUNNER.replaceMonkey(getMonkeyClass(), this.clientContextClass);
+        LOGGER.info("Adding Chaos Monkey.");
+        RUNNER.replaceMonkey(getChaosMonkeyClass(), this.chaosContextClass);
+        LOGGER.info("Adding Volume Tagging Monkey.");
+        RUNNER.replaceMonkey(VolumeTaggingMonkey.class, BasicVolumeTaggingMonkeyContext.class);
+        LOGGER.info("Adding Janitor Monkey.");
+        RUNNER.replaceMonkey(BasicJanitorMonkey.class, BasicJanitorMonkeyContext.class);
     }
 
     /**
      * make the class of the client object configurable.
      */
     @SuppressWarnings("rawtypes")
-    private Class clientContextClass = com.netflix.simianarmy.basic.BasicContext.class;
+    private Class chaosContextClass = com.netflix.simianarmy.basic.BasicChaosMonkeyContext.class;
 
     @SuppressWarnings("rawtypes")
-    protected Class getMonkeyClass() {
+    protected Class getChaosMonkeyClass() {
         return BasicChaosMonkey.class;
     }
 
@@ -84,11 +93,11 @@ public class BasicMonkeyServer extends HttpServlet {
         try {
             String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
             if (clientContextClassName == null || clientContextClassName.isEmpty()) {
-                LOGGER.info("using standard client " + this.clientContextClass.getCanonicalName());
+                LOGGER.info("using standard client " + this.chaosContextClass.getCanonicalName());
                 return;
             }
-            this.clientContextClass = classLoader.loadClass(clientContextClassName);
-            LOGGER.info("as " + clientContextClassKey + " loaded " + clientContextClass.getCanonicalName());
+            this.chaosContextClass = classLoader.loadClass(clientContextClassName);
+            LOGGER.info("as " + clientContextClassKey + " loaded " + chaosContextClass.getCanonicalName());
         } catch (ClassNotFoundException e) {
             throw new ServletException("Could not load " + clientContextClassKey, e);
         }
@@ -126,7 +135,12 @@ public class BasicMonkeyServer extends HttpServlet {
     @Override
     public void destroy() {
         RUNNER.stop();
-        RUNNER.removeMonkey(getMonkeyClass());
+        LOGGER.info("Stopping Chaos Monkey.");
+        RUNNER.removeMonkey(getChaosMonkeyClass());
+        LOGGER.info("Stopping volume tagging Monkey.");
+        RUNNER.removeMonkey(VolumeTaggingMonkey.class);
+        LOGGER.info("Stopping Janitor Monkey.");
+        RUNNER.removeMonkey(BasicJanitorMonkey.class);
         super.destroy();
     }
 }

@@ -146,6 +146,7 @@ public class ChaosMonkeyResource {
     @POST
     public Response addEvent(String content) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        LOGGER.info(String.format("JSON content: '%s'", content));
         JsonNode input = mapper.readTree(content);
 
         String eventType = getStringField(input, "eventType");
@@ -173,6 +174,7 @@ public class ChaosMonkeyResource {
         }
         gen.writeEndObject();
         gen.close();
+        LOGGER.info("entity content is '{}'", baos.toString("UTF-8"));
         return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
     }
 
