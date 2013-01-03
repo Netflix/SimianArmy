@@ -21,7 +21,7 @@ import java.rmi.RemoteException;
 import java.util.Arrays;
 
 import com.amazonaws.AmazonServiceException;
-import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.MonkeyConfiguration;
 import com.vmware.vim25.InvalidProperty;
 import com.vmware.vim25.RuntimeFault;
 import com.vmware.vim25.mo.InventoryNavigator;
@@ -40,7 +40,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereServiceConnection {
-   /** The type of managedEntity we operate on are virtual machines. */
+    /** The type of managedEntity we operate on are virtual machines. */
     public static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
 
     /** The username that is used to connect to VSpehere Center. */
@@ -58,7 +58,7 @@ public class VSphereServiceConnection {
     /**
      * Constructor.
      */
-    public VSphereServiceConnection(BasicConfiguration config) {
+    public VSphereServiceConnection(MonkeyConfiguration config) {
         this.url = config.getStr("simianarmy.client.vsphere.url");
         this.username = config.getStr("simianarmy.client.vsphere.username");
         this.password = config.getStr("simianarmy.client.vsphere.password");
@@ -116,9 +116,9 @@ public class VSphereServiceConnection {
 
         if (mes == null || mes.length == 0) {
             throw new AmazonServiceException(
-                      "vsphere returned zero entities of type \""
-                      + VIRTUAL_MACHINE_TYPE_NAME + "\""
-                  );
+                    "vsphere returned zero entities of type \""
+                            + VIRTUAL_MACHINE_TYPE_NAME + "\""
+                    );
         } else {
             return Arrays.copyOf(mes, mes.length, VirtualMachine[].class);
         }

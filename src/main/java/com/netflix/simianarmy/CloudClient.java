@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+import java.util.Map;
+
+
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
  * "the cloud".
@@ -24,7 +27,7 @@ package com.netflix.simianarmy;
 public interface CloudClient {
 
     /**
-     * Terminate instance.
+     * Terminates instance.
      *
      * @param instanceId
      *            the instance id
@@ -34,4 +37,40 @@ public interface CloudClient {
      *             should get a NotFoundException
      */
     void terminateInstance(String instanceId);
+
+    /**
+     * Deletes an auto scaling group.
+     *
+     * @param asgName
+     *          the auto scaling group name
+     */
+    void deleteAutoScalingGroup(String asgName);
+
+    /**
+     * Deletes a volume.
+     *
+     * @param volumeId
+     *          the volume id
+     */
+    void deleteVolume(String volumeId);
+
+    /**
+     * Deletes a snapshot.
+     *
+     * @param snapshotId
+     *          the snapshot id.
+     */
+    void deleteSnapshot(String snapshotId);
+
+    /**
+     * Adds or overwrites tags for the specified resources.
+     *
+     * @param keyValueMap
+     *          the new tags in the form of map from key to value
+     *
+     * @param resourceIds
+     *          the list of resource ids
+     */
+    void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
+
 }

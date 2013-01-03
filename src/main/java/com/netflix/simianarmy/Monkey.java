@@ -82,10 +82,16 @@ public abstract class Monkey {
          */
         String getEventReport();
 
+        /**
+         * Configuration.
+         *
+         * @return the monkey configuration
+         */
+        MonkeyConfiguration configuration();
     }
 
     /** The context. */
-    private Context ctx;
+    private final Context ctx;
 
     /**
      * Instantiates a new monkey.
@@ -127,7 +133,10 @@ public abstract class Monkey {
             try {
                 this.doMonkeyBusiness();
             } finally {
-                LOGGER.info("Reporting what I did...\n" + context().getEventReport());
+                String eventReport = context().getEventReport();
+                if (eventReport != null) {
+                    LOGGER.info("Reporting what I did...\n" + eventReport);
+                }
             }
         } else {
             LOGGER.info("Not Time for " + this.type().name() + " Monkey");
@@ -140,6 +149,7 @@ public abstract class Monkey {
     public void start() {
         final Monkey me = this;
         ctx.scheduler().start(this, new Runnable() {
+            @Override
             public void run() {
                 try {
                     me.run();

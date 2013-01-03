@@ -191,6 +191,22 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             public void terminateInstance(String instanceId) {
                 terminated.add(instanceId);
             }
+
+            @Override
+            public void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds) {
+            }
+
+            @Override
+            public void deleteAutoScalingGroup(String asgName) {
+            }
+
+            @Override
+            public void deleteVolume(String volumeId) {
+            }
+
+            @Override
+            public void deleteSnapshot(String snapshotId) {
+            }
         };
     }
 

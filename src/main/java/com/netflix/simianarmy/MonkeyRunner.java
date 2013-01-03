@@ -72,11 +72,11 @@ public enum MonkeyRunner {
      * The monkey map. Maps the monkey class to the context class that is registered. This is so we can create new
      * monkeys in factory() that have the same context types as the registered ones.
      */
-    // SUPPRESS CHECKSTYLE LineLength
-    private Map<Class<? extends Monkey>, Class<? extends Monkey.Context>> monkeyMap = new HashMap<Class<? extends Monkey>, Class<? extends Monkey.Context>>();
+    private final Map<Class<? extends Monkey>, Class<? extends Monkey.Context>> monkeyMap =
+            new HashMap<Class<? extends Monkey>, Class<? extends Monkey.Context>>();
 
     /** The monkeys. */
-    private List<Monkey> monkeys = new LinkedList<Monkey>();
+    private final List<Monkey> monkeys = new LinkedList<Monkey>();
 
     /**
      * Gets the registered monkeys.
@@ -171,12 +171,20 @@ public enum MonkeyRunner {
      * Example:
      *
      * <pre>
+<<<<<<< HEAD
+     *         {@code
+     *         MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
+     *         // This will actually return a BasicChaosMonkey since that is the only subclass that was registered
+     *         ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+     *}
+=======
      *          {@code
      *          MonkeyRunner.getInstance().addMonkey(BasicChaosMonkey.class, BasicMonkeyContext.class);
      *
      *          // This will actualy return a BasicChaosMonkey since that is the only subclass that was registered
      *          ChaosMonkey monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
      * }
+>>>>>>> fde87ebfbda161188f1dac96e5ea8e34bcc684f6
      * </pre>
      *
      * @param <T>
@@ -240,7 +248,7 @@ public enum MonkeyRunner {
     }
 
     /**
-     * Gets the context class. You shouldnt need this.
+     * Gets the context class. You should not need this.
      *
      * @param monkeyClass
      *            the monkey class
