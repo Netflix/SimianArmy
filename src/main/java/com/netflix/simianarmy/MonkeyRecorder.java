@@ -79,7 +79,7 @@ public interface MonkeyRecorder {
          *
          * @param name
          *            the name
-         * @return the string assiciated with that field
+         * @return the string associated with that field
          */
         String field(String name);
 

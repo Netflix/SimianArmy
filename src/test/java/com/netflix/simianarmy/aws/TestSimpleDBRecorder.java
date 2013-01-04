@@ -18,49 +18,52 @@
  */
 package com.netflix.simianarmy.aws;
 
-import java.util.Map;
-import java.util.List;
-import java.util.LinkedList;
-import java.util.LinkedHashMap;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Arrays;
-
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.AWSCredentials;
-
-import com.amazonaws.services.simpledb.AmazonSimpleDB;
-import com.amazonaws.services.simpledb.model.PutAttributesRequest;
-import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
-import com.amazonaws.services.simpledb.model.SelectRequest;
-import com.amazonaws.services.simpledb.model.SelectResult;
-import com.amazonaws.services.simpledb.model.Item;
-import com.amazonaws.services.simpledb.model.Attribute;
-
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import org.mockito.ArgumentCaptor;
-import static org.mockito.Matchers.any;
 
-import org.testng.annotations.Test;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.mockito.ArgumentCaptor;
 import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.amazonaws.services.simpledb.AmazonSimpleDB;
+import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.Item;
+import com.amazonaws.services.simpledb.model.PutAttributesRequest;
+import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
+import com.amazonaws.services.simpledb.model.SelectRequest;
+import com.amazonaws.services.simpledb.model.SelectResult;
+import com.netflix.simianarmy.client.aws.AWSClient;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestSimpleDBRecorder extends SimpleDBRecorder {
+
+    private static AWSClient makeMockAWSClient() {
+        AmazonSimpleDB sdbMock = mock(AmazonSimpleDB.class);
+        AWSClient awsClient = mock(AWSClient.class);
+        when(awsClient.sdbClient()).thenReturn(sdbMock);
+        when(awsClient.region()).thenReturn("region");
+        return awsClient;
+    }
+
     public TestSimpleDBRecorder() {
-        super("accessKey", "secretKey", "region", "DOMAIN");
+        super(makeMockAWSClient(), "DOMAIN");
+        sdbMock = super.sdbClient();
     }
 
-    public TestSimpleDBRecorder(AWSCredentials cred) {
-        super(cred, "region", "DOMAIN");
-    }
+    private final AmazonSimpleDB sdbMock;
 
-    private AmazonSimpleDB sdbMock = mock(AmazonSimpleDB.class);
-
+    @Override
     protected AmazonSimpleDB sdbClient() {
         return sdbMock;
     }
@@ -74,7 +77,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         TestSimpleDBRecorder recorder1 = new TestSimpleDBRecorder();
         Assert.assertNotNull(recorder1.superSdbClient(), "non null super sdbClient");
 
-        TestSimpleDBRecorder recorder2 = new TestSimpleDBRecorder(new BasicAWSCredentials("accessKey", "secretKey"));
+        TestSimpleDBRecorder recorder2 = new TestSimpleDBRecorder();
         Assert.assertNotNull(recorder2.superSdbClient(), "non null super sdbClient");
     }
 
@@ -98,7 +101,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         PutAttributesRequest req = arg.getValue();
         Assert.assertEquals(req.getDomainName(), "DOMAIN");
-        Assert.assertEquals(req.getItemName(), "MONKEY-testId-region");
+        Assert.assertEquals(req.getItemName(), "MONKEY-testId-region-" + evt.eventTime().getTime());
         Map<String, String> map = new HashMap<String, String>();
         for (ReplaceableAttribute attr : req.getAttributes()) {
             map.put(attr.getName(), attr.getValue());

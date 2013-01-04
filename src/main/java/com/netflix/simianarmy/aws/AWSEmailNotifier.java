@@ -34,7 +34,7 @@ import com.netflix.simianarmy.MonkeyEmailNotifier;
 
 /**
  * The class implements the monkey email notifier using AWS simple email service
- * for sending emails.
+ * for sending email.
  */
 public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
     /** The Constant LOGGER. */

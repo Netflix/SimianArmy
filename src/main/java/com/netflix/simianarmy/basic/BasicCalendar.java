@@ -18,9 +18,12 @@
 package com.netflix.simianarmy.basic;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+
+import org.apache.commons.lang.Validate;
 
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -145,44 +148,44 @@ public class BasicCalendar implements MonkeyCalendar {
         // not be in the office to respond to rampaging monkeys
 
         // new years, or closest work day
-        holidays.add(workDayInYear(Calendar.JANUARY, 1));
+        holidays.add(workDayInYear(year, Calendar.JANUARY, 1));
 
         // 3rd monday == MLK Day
-        holidays.add(dayOfYear(Calendar.JANUARY, Calendar.MONDAY, 3));
+        holidays.add(dayOfYear(year, Calendar.JANUARY, Calendar.MONDAY, 3));
 
         // 3rd monday == Presidents Day
-        holidays.add(dayOfYear(Calendar.FEBRUARY, Calendar.MONDAY, 3));
+        holidays.add(dayOfYear(year, Calendar.FEBRUARY, Calendar.MONDAY, 3));
 
         // last monday == Memorial Day
-        holidays.add(dayOfYear(Calendar.MAY, Calendar.MONDAY, -1));
+        holidays.add(dayOfYear(year, Calendar.MAY, Calendar.MONDAY, -1));
 
         // 4th of July, or closest work day
-        holidays.add(workDayInYear(Calendar.JULY, 4));
+        holidays.add(workDayInYear(year, Calendar.JULY, 4));
 
         // first monday == Labor Day
-        holidays.add(dayOfYear(Calendar.SEPTEMBER, Calendar.MONDAY, 1));
+        holidays.add(dayOfYear(year, Calendar.SEPTEMBER, Calendar.MONDAY, 1));
 
         // second monday == Columbus Day
-        holidays.add(dayOfYear(Calendar.OCTOBER, Calendar.MONDAY, 2));
+        holidays.add(dayOfYear(year, Calendar.OCTOBER, Calendar.MONDAY, 2));
 
         // veterans day, Nov 11th, or closest work day
-        holidays.add(workDayInYear(Calendar.NOVEMBER, 11));
+        holidays.add(workDayInYear(year, Calendar.NOVEMBER, 11));
 
         // 4th thursday == Thanksgiving
-        holidays.add(dayOfYear(Calendar.NOVEMBER, Calendar.THURSDAY, 4));
+        holidays.add(dayOfYear(year, Calendar.NOVEMBER, Calendar.THURSDAY, 4));
 
         // 4th friday == "black friday", monkey goes shopping!
-        holidays.add(dayOfYear(Calendar.NOVEMBER, Calendar.FRIDAY, 4));
+        holidays.add(dayOfYear(year, Calendar.NOVEMBER, Calendar.FRIDAY, 4));
 
         // christmas eve
-        holidays.add(dayOfYear(Calendar.DECEMBER, 24));
+        holidays.add(dayOfYear(year, Calendar.DECEMBER, 24));
         // christmas day
-        holidays.add(dayOfYear(Calendar.DECEMBER, 25));
+        holidays.add(dayOfYear(year, Calendar.DECEMBER, 25));
         // day after christmas
-        holidays.add(dayOfYear(Calendar.DECEMBER, 26));
+        holidays.add(dayOfYear(year, Calendar.DECEMBER, 26));
 
         // new years eve
-        holidays.add(dayOfYear(Calendar.DECEMBER, 31));
+        holidays.add(dayOfYear(year, Calendar.DECEMBER, 31));
 
         // mark the holiday set with the year, so on Jan 1 it will automatically
         // recalculate the holidays for next year
@@ -192,14 +195,17 @@ public class BasicCalendar implements MonkeyCalendar {
     /**
      * Day of year.
      *
+     * @param year
+     *            the year
      * @param month
      *            the month
      * @param day
      *            the day
      * @return the day of the year
      */
-    private int dayOfYear(int month, int day) {
+    private int dayOfYear(int year, int month, int day) {
         Calendar holiday = now();
+        holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
         holiday.set(Calendar.DAY_OF_MONTH, day);
         return holiday.get(Calendar.DAY_OF_YEAR);
@@ -208,6 +214,8 @@ public class BasicCalendar implements MonkeyCalendar {
     /**
      * Day of year.
      *
+     * @param year
+     *            the year
      * @param month
      *            the month
      * @param dayOfWeek
@@ -216,8 +224,9 @@ public class BasicCalendar implements MonkeyCalendar {
      *            the week in month
      * @return the day of the year
      */
-    private int dayOfYear(int month, int dayOfWeek, int weekInMonth) {
+    private int dayOfYear(int year, int month, int dayOfWeek, int weekInMonth) {
         Calendar holiday = now();
+        holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
         holiday.set(Calendar.DAY_OF_WEEK, dayOfWeek);
         holiday.set(Calendar.DAY_OF_WEEK_IN_MONTH, weekInMonth);
@@ -227,14 +236,17 @@ public class BasicCalendar implements MonkeyCalendar {
     /**
      * Work day in year.
      *
+     * @param year
+     *            the year
      * @param month
      *            the month
      * @param day
      *            the day
      * @return the day of the year adjusted to the closest workday
      */
-    private int workDayInYear(int month, int day) {
+    private int workDayInYear(int year, int month, int day) {
         Calendar holiday = now();
+        holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
         holiday.set(Calendar.DAY_OF_MONTH, day);
         int doy = holiday.get(Calendar.DAY_OF_YEAR);
@@ -249,6 +261,23 @@ public class BasicCalendar implements MonkeyCalendar {
         }
 
         return doy;
+    }
+
+    @Override
+    public Date getBusinessDay(Date date, int n) {
+        Validate.isTrue(n >= 0);
+        Calendar calendar = now();
+        calendar.setTime(date);
+        while (isHoliday(calendar) || isWeekend(calendar) || n-- > 0) {
+            calendar.add(Calendar.DATE, 1);
+        }
+        return calendar.getTime();
+    }
+
+    private boolean isWeekend(Calendar calendar) {
+        int dow = calendar.get(Calendar.DAY_OF_WEEK);
+        return dow == Calendar.SATURDAY
+                || dow == Calendar.SUNDAY;
     }
 
 }

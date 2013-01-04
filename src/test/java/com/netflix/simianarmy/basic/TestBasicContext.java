@@ -18,23 +18,22 @@
  */
 package com.netflix.simianarmy.basic;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.testng.annotations.Test;
 
 public class TestBasicContext {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TestBasicContext.class);
-
     @Test
     public void testContext() {
-        BasicContext ctx = new BasicContext();
+        BasicChaosMonkeyContext ctx = new BasicChaosMonkeyContext();
         Assert.assertNotNull(ctx.scheduler());
         Assert.assertNotNull(ctx.calendar());
         Assert.assertNotNull(ctx.configuration());
         Assert.assertNotNull(ctx.cloudClient());
         Assert.assertNotNull(ctx.chaosCrawler());
         Assert.assertNotNull(ctx.chaosInstanceSelector());
+
+        Assert.assertTrue(ctx.configuration().getBool("simianarmy.calendar.isMonkeyTime"));
+        // Verify that the property in chaos.properties overrides the same property in simianarmy.properties
+        Assert.assertFalse(ctx.configuration().getBool("simianarmy.chaos.enabled"));
     }
 }
