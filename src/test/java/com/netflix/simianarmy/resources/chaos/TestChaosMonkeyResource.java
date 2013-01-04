@@ -1,5 +1,5 @@
 // CHECKSTYLE IGNORE Javadoc
-// CHECKSTYLE IGNORE Javadoc
+//CHECKSTYLE IGNORE MagicNumber
 /*
  *
  *  Copyright 2012 Netflix, Inc.
@@ -51,7 +51,6 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
-//CHECKSTYLE IGNORE MagicNumber
 public class TestChaosMonkeyResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyResource.class);
 

@@ -18,6 +18,7 @@
 package com.netflix.simianarmy;
 
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * The Interface MonkeyCalendar used to tell if a monkey should be running or now. We only want monkeys to run during
@@ -54,4 +55,12 @@ public interface MonkeyCalendar {
      * @return the calendar
      */
     Calendar now();
+
+    /** Gets the next business day from the start date after n business days.
+     *
+     * @param date the start date
+     * @param n the number of business days from now
+     * @return the business day after n business days
+     */
+    Date getBusinessDay(Date date, int n);
 }
