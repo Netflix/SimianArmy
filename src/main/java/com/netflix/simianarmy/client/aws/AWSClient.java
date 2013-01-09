@@ -29,8 +29,6 @@ import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
@@ -75,13 +73,13 @@ public class AWSClient implements CloudClient {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AWSClient.class);
 
-    /** The credential. */
-    private final AWSCredentials cred;
-
     /** The region. */
     private final String region;
 
     /**
+     * <p> @deprecated use {@link AWSClient#AWSClient(String)} instead
+     * and set credentials using java system properties or Environment variables.</p>
+     *
      * Instantiates a new AWS client.
      *
      * @param accessKey
@@ -91,12 +89,16 @@ public class AWSClient implements CloudClient {
      * @param region
      *            the region
      */
+    @Deprecated
     public AWSClient(String accessKey, String secretKey, String region) {
-        this.cred = new BasicAWSCredentials(accessKey, secretKey);
+        //this.cred = new BasicAWSCredentials(accessKey, secretKey);
         this.region = region;
     }
 
     /**
+     * <p> @deprecated use {@link AWSClient#AWSClient(String)} instead
+     * and set credentials using java system properties or Environment variables.</p>
+     *
      * Instantiates a new aWS client.
      *
      * @param cred
@@ -104,19 +106,20 @@ public class AWSClient implements CloudClient {
      * @param region
      *            the region
      */
+    @Deprecated
     public AWSClient(AWSCredentials cred, String region) {
-        this.cred = cred;
+        //this.cred = cred;
         this.region = region;
     }
 
     /**
-     * This constructor will use the {@link DefaultAWSCredentialsProviderChain} to obtain credentials.
+     * This constructor will let the AWS SDK obtain the credentials credentials.
      *
      * @param region
      *            the region
      */
     public AWSClient(String region) {
-        this(new DefaultAWSCredentialsProviderChain().getCredentials(), region);
+        this.region = region;
     }
 
     /**
@@ -134,7 +137,7 @@ public class AWSClient implements CloudClient {
      * @return the Amazon EC2 client
      */
     protected AmazonEC2 ec2Client() {
-        AmazonEC2 client = new AmazonEC2Client(cred);
+        AmazonEC2 client = new AmazonEC2Client();
         client.setEndpoint("ec2." + region + ".amazonaws.com");
         return client;
     }
@@ -145,7 +148,7 @@ public class AWSClient implements CloudClient {
      * @return the Amazon Auto Scaling client
      */
     protected AmazonAutoScalingClient asgClient() {
-        AmazonAutoScalingClient client = new AmazonAutoScalingClient(cred);
+        AmazonAutoScalingClient client = new AmazonAutoScalingClient();
         client.setEndpoint("autoscaling." + region + ".amazonaws.com");
         return client;
     }
@@ -156,7 +159,7 @@ public class AWSClient implements CloudClient {
      * @return the Amazon SimpleDB client
      */
     public AmazonSimpleDB sdbClient() {
-        AmazonSimpleDB client = new AmazonSimpleDBClient(cred);
+        AmazonSimpleDB client = new AmazonSimpleDBClient();
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
         if (region == null || region.equals("us-east-1")) {

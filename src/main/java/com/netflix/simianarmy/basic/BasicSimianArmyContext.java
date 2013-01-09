@@ -94,6 +94,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
+        // if credentials are set explicitly make them available to the AWS SDK
+        if (StringUtils.isNotEmpty(account) && StringUtils.isNotEmpty(secret)) {
+            this.exportCredentials(account, secret);
+        }
+
         createClient();
 
         createScheduler();
@@ -138,13 +143,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * Create the specific client. Override to provide your own client.
      */
     protected void createClient() {
-        if (StringUtils.isBlank(account) || StringUtils.isBlank(secret)) {
-            // establish credentials via environment variables, system properties or roles
-            this.client = new AWSClient(region);
-        } else {
-            // use explicitly set credentials
-            this.client = new AWSClient(account, secret, region);
-        }
+        this.client = new AWSClient(region);
         setCloudClient(this.client);
     }
 
@@ -157,9 +156,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
+     * <p>use {@link BasicSimianArmyContext#exportCredentials(String, String)}
+     * instead to provide credentials as system property for AWS SDK.</p>
      * Gets the AWS account.
      * @return the AWS account
      */
+    @Deprecated
     protected String account() {
         return account;
     }
@@ -173,9 +175,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
+     * <p>use {@link BasicSimianArmyContext#exportCredentials(String, String)}
+     * instead to provide credentials as system property for AWS SDK.</p>
      * Gets the AWS secret.
      * @return the AWS secret
      */
+    @Deprecated
     protected String secret() {
         return secret;
     }
@@ -207,6 +212,17 @@ public class BasicSimianArmyContext implements Monkey.Context {
             report.append(")\n");
         }
         return report.toString();
+    }
+
+    /**
+     * Exports credentials as Java system properties
+     * to be picked up by AWS SDK clients.
+     * @param accountKey
+     * @param secretKey
+     */
+    public void exportCredentials(String accountKey, String secretKey) {
+        System.setProperty("aws.accessKeyId", accountKey);
+        System.setProperty("aws.secretKey", secretKey);
     }
 
     /** {@inheritDoc} */
