@@ -138,10 +138,13 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * Create the specific client. Override to provide your own client.
      */
     protected void createClient() {
-        if (StringUtils.isEmpty(account) || StringUtils.isEmpty(secret)) {
-            return;
+        if (StringUtils.isBlank(account) || StringUtils.isBlank(secret)) {
+            // establish credentials via environment variables, system properties or roles
+            this.client = new AWSClient(region);
+        } else {
+            // use explicitly set credentials
+            this.client = new AWSClient(account, secret, region);
         }
-        this.client = new AWSClient(account, secret, region);
         setCloudClient(this.client);
     }
 
