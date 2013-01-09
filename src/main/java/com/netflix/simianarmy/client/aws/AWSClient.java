@@ -379,13 +379,15 @@ public class AWSClient implements CloudClient {
      */
     public List<Snapshot> describeSnapshots(String... snapshotIds) {
         if (snapshotIds == null || snapshotIds.length == 0) {
-            LOGGER.info("Getting all EBS volumes.");
+            LOGGER.info("Getting all EBS snapshots.");
         } else {
             LOGGER.info(String.format("Getting EBS snapshotIds for %d ids.", snapshotIds.length));
         }
 
         AmazonEC2 ec2Client = ec2Client();
         DescribeSnapshotsRequest request = new DescribeSnapshotsRequest();
+        // Set the owner id to self to avoid getting snapshots from other accounts.
+        request.withOwnerIds(Arrays.<String>asList("self"));
         if (snapshotIds != null) {
             request.setSnapshotIds(Arrays.asList(snapshotIds));
         }
