@@ -95,7 +95,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
         // if credentials are set explicitly make them available to the AWS SDK
-        if (StringUtils.isNotEmpty(account) && StringUtils.isNotEmpty(secret)) {
+        if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
             this.exportCredentials(account, secret);
         }
 
