@@ -26,7 +26,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.DiscoveryManager;
@@ -104,8 +103,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         janitorResourceTracker = new SimpleDBJanitorResourceTracker(awsClient(), resourceDomain);
 
         janitorEmailBuilder = new BasicJanitorEmailBuilder();
-        sesClient = new AmazonSimpleEmailServiceClient(
-                new BasicAWSCredentials(account(), secret()));
+        sesClient = new AmazonSimpleEmailServiceClient();
         defaultEmail = configuration().getStrOrElse("simianarmy.janitor.notification.defaultEmail", "");
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.janitor.notification.ccEmails", ""), ",");
