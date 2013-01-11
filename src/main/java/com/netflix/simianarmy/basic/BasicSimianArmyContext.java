@@ -156,33 +156,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
-     * <p>use {@link BasicSimianArmyContext#exportCredentials(String, String)}
-     * instead to provide credentials as system property for AWS SDK.</p>
-     * Gets the AWS account.
-     * @return the AWS account
-     */
-    @Deprecated
-    protected String account() {
-        return account;
-    }
-
-    /**
      * Gets the region.
      * @return the region
      */
     public String region() {
         return region;
-    }
-
-    /**
-     * <p>use {@link BasicSimianArmyContext#exportCredentials(String, String)}
-     * instead to provide credentials as system property for AWS SDK.</p>
-     * Gets the AWS secret.
-     * @return the AWS secret
-     */
-    @Deprecated
-    protected String secret() {
-        return secret;
     }
 
     @Override

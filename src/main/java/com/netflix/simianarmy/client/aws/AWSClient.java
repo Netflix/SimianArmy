@@ -28,7 +28,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
@@ -64,6 +65,7 @@ import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 
 /**
  * The Class AWSClient. Simple Amazon EC2 and Amazon ASG client interface.
@@ -77,46 +79,37 @@ public class AWSClient implements CloudClient {
     private final String region;
 
     /**
-     * <p> @deprecated use {@link AWSClient#AWSClient(String)} instead
-     * and set credentials using java system properties or Environment variables.</p>
+     * This constructor will let the AWS SDK obtain the credentials, which will
+     * choose such in the following order:
      *
-     * Instantiates a new AWS client.
+     * <ul>
+     * <li>Environment Variables: {@code AWS_ACCESS_KEY_ID} and
+     * {@code AWS_SECRET_KEY}</li>
+     * <li>Java System Properties: {@code aws.accessKeyId} and
+     * {@code aws.secretKey}</li>
+     * <li>Instance Metadata Service, which provides the credentials associated
+     * with the IAM role for the EC2 instance</li>
+     * </ul>
      *
-     * @param accessKey
-     *            the access key
-     * @param secretKey
-     *            the secret key
-     * @param region
-     *            the region
-     */
-    @Deprecated
-    public AWSClient(String accessKey, String secretKey, String region) {
-        //this.cred = new BasicAWSCredentials(accessKey, secretKey);
-        this.region = region;
-    }
-
-    /**
-     * <p> @deprecated use {@link AWSClient#AWSClient(String)} instead
-     * and set credentials using java system properties or Environment variables.</p>
+     * <p>
+     * If credentials are provided explicitly, use
+     * {@link BasicSimianArmyContext#exportCredentials(String, String)} which
+     * will set them as System properties used by each AWS SDK call.
+     * </p>
      *
-     * Instantiates a new aWS client.
-     *
-     * @param cred
-     *            the credential
-     * @param region
-     *            the region
-     */
-    @Deprecated
-    public AWSClient(AWSCredentials cred, String region) {
-        //this.cred = cred;
-        this.region = region;
-    }
-
-    /**
-     * This constructor will let the AWS SDK obtain the credentials credentials.
+     * <p>
+     * <b>Note:</b> Avoid storing credentials received dynamically via the
+     * {@link InstanceProfileCredentialsProvider} as these will be rotated and
+     * their renewal is handled by its
+     * {@link InstanceProfileCredentialsProvider#getCredentials()
+     * getCredentials()} method.
+     * </p>
      *
      * @param region
      *            the region
+     * @see DefaultAWSCredentialsProviderChain
+     * @see InstanceProfileCredentialsProvider
+     * @see BasicSimianArmyContext#exportCredentials(String, String)
      */
     public AWSClient(String region) {
         this.region = region;
