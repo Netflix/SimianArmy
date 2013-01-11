@@ -17,17 +17,8 @@
  */
 package com.netflix.simianarmy.client.aws;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
@@ -66,6 +57,16 @@ import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.basic.BasicSimianArmyContext;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
 
 /**
  * The Class AWSClient. Simple Amazon EC2 and Amazon ASG client interface.
@@ -77,6 +78,8 @@ public class AWSClient implements CloudClient {
 
     /** The region. */
     private final String region;
+
+    private final AWSCredentialsProvider awsCredentialsProvider;
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -113,6 +116,19 @@ public class AWSClient implements CloudClient {
      */
     public AWSClient(String region) {
         this.region = region;
+        this.awsCredentialsProvider = null;
+    }
+
+    /**
+     * The constructor allows you to provide your own AWS credentials provider.
+     * @param region
+     *          the region
+     * @param awsCredentialsProvider
+     *          the AWS credentials provider
+     */
+    public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider) {
+        this.region = region;
+        this.awsCredentialsProvider = awsCredentialsProvider;
     }
 
     /**
@@ -130,7 +146,12 @@ public class AWSClient implements CloudClient {
      * @return the Amazon EC2 client
      */
     protected AmazonEC2 ec2Client() {
-        AmazonEC2 client = new AmazonEC2Client();
+        AmazonEC2 client;
+        if (awsCredentialsProvider == null) {
+            client = new AmazonEC2Client();
+        } else {
+            client = new AmazonEC2Client(awsCredentialsProvider);
+        }
         client.setEndpoint("ec2." + region + ".amazonaws.com");
         return client;
     }
@@ -141,7 +162,12 @@ public class AWSClient implements CloudClient {
      * @return the Amazon Auto Scaling client
      */
     protected AmazonAutoScalingClient asgClient() {
-        AmazonAutoScalingClient client = new AmazonAutoScalingClient();
+        AmazonAutoScalingClient client;
+        if (awsCredentialsProvider == null) {
+            client = new AmazonAutoScalingClient();
+        } else {
+            client = new AmazonAutoScalingClient(awsCredentialsProvider);
+        }
         client.setEndpoint("autoscaling." + region + ".amazonaws.com");
         return client;
     }
@@ -152,7 +178,12 @@ public class AWSClient implements CloudClient {
      * @return the Amazon SimpleDB client
      */
     public AmazonSimpleDB sdbClient() {
-        AmazonSimpleDB client = new AmazonSimpleDBClient();
+        AmazonSimpleDB client;
+        if (awsCredentialsProvider == null) {
+            client = new AmazonSimpleDBClient();
+        } else {
+            client = new AmazonSimpleDBClient(awsCredentialsProvider);
+        }
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
         if (region == null || region.equals("us-east-1")) {
