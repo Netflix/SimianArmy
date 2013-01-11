@@ -43,11 +43,7 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 
 public class TestAWSClient extends AWSClient {
     public TestAWSClient() {
-        super("accessKey", "secretKey", "us-east-1");
-    }
-
-    public TestAWSClient(AWSCredentials cred) {
-        super(cred, "us-east-1");
+        super("us-east-1");
     }
 
     private AmazonEC2 ec2Mock = mock(AmazonEC2.class);
@@ -75,10 +71,6 @@ public class TestAWSClient extends AWSClient {
         TestAWSClient client1 = new TestAWSClient();
         Assert.assertNotNull(client1.superEc2Client(), "non null super ec2Client");
         Assert.assertNotNull(client1.superAsgClient(), "non null super asgClient");
-
-        TestAWSClient client2 = new TestAWSClient(new BasicAWSCredentials("accessKey", "secretKey"));
-        Assert.assertNotNull(client2.superEc2Client(), "non null super ec2Client");
-        Assert.assertNotNull(client2.superAsgClient(), "non null super asgClient");
     }
 
     @Test

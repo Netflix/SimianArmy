@@ -94,6 +94,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
+        // if credentials are set explicitly make them available to the AWS SDK
+        if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
+            this.exportCredentials(account, secret);
+        }
+
         createClient();
 
         createScheduler();
@@ -138,10 +143,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * Create the specific client. Override to provide your own client.
      */
     protected void createClient() {
-        if (StringUtils.isEmpty(account) || StringUtils.isEmpty(secret)) {
-            return;
-        }
-        this.client = new AWSClient(account, secret, region);
+        this.client = new AWSClient(region);
         setCloudClient(this.client);
     }
 
@@ -154,27 +156,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
-     * Gets the AWS account.
-     * @return the AWS account
-     */
-    protected String account() {
-        return account;
-    }
-
-    /**
      * Gets the region.
      * @return the region
      */
     public String region() {
         return region;
-    }
-
-    /**
-     * Gets the AWS secret.
-     * @return the AWS secret
-     */
-    protected String secret() {
-        return secret;
     }
 
     @Override
@@ -204,6 +190,17 @@ public class BasicSimianArmyContext implements Monkey.Context {
             report.append(")\n");
         }
         return report.toString();
+    }
+
+    /**
+     * Exports credentials as Java system properties
+     * to be picked up by AWS SDK clients.
+     * @param accountKey
+     * @param secretKey
+     */
+    public void exportCredentials(String accountKey, String secretKey) {
+        System.setProperty("aws.accessKeyId", accountKey);
+        System.setProperty("aws.secretKey", secretKey);
     }
 
     /** {@inheritDoc} */
