@@ -60,6 +60,10 @@ tasks.withType(Compile) {
     options.compilerArgs << "-Xlint" << "-Werror"
 }
 
+artifacts {
+    archives tasks.jar
+}
+
 import nl.javadude.gradle.plugins.license.License
 tasks.withType(License).each { licenseTask ->
     licenseTask.exclude '**/*.json'
