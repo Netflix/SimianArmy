@@ -47,6 +47,14 @@ public interface CloudClient {
     void deleteAutoScalingGroup(String asgName);
 
     /**
+     * Deletes a launch configuration.
+     *
+     * @param launchConfigName
+     *          the launch configuration name
+     */
+    void deleteLaunchConfiguration(String launchConfigName);
+
+    /**
      * Deletes a volume.
      *
      * @param volumeId

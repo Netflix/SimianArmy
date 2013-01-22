@@ -19,12 +19,11 @@ package com.netflix.simianarmy.client.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
-import com.amazonaws.auth.InstanceProfileCredentialsProvider;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
 import com.amazonaws.services.autoscaling.model.DeleteAutoScalingGroupRequest;
+import com.amazonaws.services.autoscaling.model.DeleteLaunchConfigurationRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
 import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesRequest;
@@ -56,7 +55,6 @@ import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
-import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,23 +94,22 @@ public class AWSClient implements CloudClient {
      *
      * <p>
      * If credentials are provided explicitly, use
-     * {@link BasicSimianArmyContext#exportCredentials(String, String)} which
-     * will set them as System properties used by each AWS SDK call.
+     * {@link com.netflix.simianarmy.basic.BasicSimianArmyContext#exportCredentials(String, String)}
+     * which will set them as System properties used by each AWS SDK call.
      * </p>
      *
      * <p>
      * <b>Note:</b> Avoid storing credentials received dynamically via the
-     * {@link InstanceProfileCredentialsProvider} as these will be rotated and
+     * {@link com.amazonaws.auth.InstanceProfileCredentialsProvider} as these will be rotated and
      * their renewal is handled by its
-     * {@link InstanceProfileCredentialsProvider#getCredentials()
-     * getCredentials()} method.
+     * {@link com.amazonaws.auth.InstanceProfileCredentialsProvider#getCredentials()} method.
      * </p>
      *
      * @param region
      *            the region
-     * @see DefaultAWSCredentialsProviderChain
-     * @see InstanceProfileCredentialsProvider
-     * @see BasicSimianArmyContext#exportCredentials(String, String)
+     * @see com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+     * @see com.amazonaws.auth.InstanceProfileCredentialsProvider
+     * @see com.netflix.simianarmy.basic.BasicSimianArmyContext#exportCredentials(String, String)
      */
     public AWSClient(String region) {
         this.region = region;
@@ -338,6 +335,17 @@ public class AWSClient implements CloudClient {
         DeleteAutoScalingGroupRequest request = new DeleteAutoScalingGroupRequest()
         .withAutoScalingGroupName(asgName);
         asgClient.deleteAutoScalingGroup(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void deleteLaunchConfiguration(String launchConfigName) {
+        Validate.notEmpty(launchConfigName);
+        LOGGER.info(String.format("Deleting launch configuration with name %s.", launchConfigName));
+        AmazonAutoScalingClient asgClient = asgClient();
+        DeleteLaunchConfigurationRequest request = new DeleteLaunchConfigurationRequest()
+                .withLaunchConfigurationName(launchConfigName);
+        asgClient.deleteLaunchConfiguration(request);
     }
 
     /** {@inheritDoc} */
