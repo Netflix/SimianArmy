@@ -17,15 +17,6 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.janitor;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.DiscoveryManager;
@@ -36,14 +27,17 @@ import com.netflix.simianarmy.aws.janitor.ASGJanitor;
 import com.netflix.simianarmy.aws.janitor.EBSSnapshotJanitor;
 import com.netflix.simianarmy.aws.janitor.EBSVolumeJanitor;
 import com.netflix.simianarmy.aws.janitor.InstanceJanitor;
+import com.netflix.simianarmy.aws.janitor.LaunchConfigJanitor;
 import com.netflix.simianarmy.aws.janitor.SimpleDBJanitorResourceTracker;
 import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.EBSSnapshotJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.EBSVolumeJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.InstanceJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.crawler.LaunchConfigJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.rule.asg.OldEmptyASGRule;
 import com.netflix.simianarmy.aws.janitor.rule.asg.SuspendedASGRule;
 import com.netflix.simianarmy.aws.janitor.rule.instance.OrphanedInstanceRule;
+import com.netflix.simianarmy.aws.janitor.rule.launchconfig.OldUnusedLaunchConfigRule;
 import com.netflix.simianarmy.aws.janitor.rule.snapshot.NoGeneratedAMIRule;
 import com.netflix.simianarmy.aws.janitor.rule.volume.OldDetachedVolumeRule;
 import com.netflix.simianarmy.basic.BasicSimianArmyContext;
@@ -54,6 +48,14 @@ import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The basic implementation of the context class for Janitor monkey.
@@ -128,6 +130,10 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
         if (enabledResourceSet.contains("EBS_SNAPSHOT")) {
             janitors.add(getEBSSnapshotJanitor());
+        }
+
+        if (enabledResourceSet.contains("LAUNCH_CONFIG")) {
+            janitors.add(getLaunchConfigJanitor());
         }
     }
 
@@ -216,6 +222,22 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                 monkeyRegion, ruleEngine, snapshotCrawler, janitorResourceTracker,
                 monkeyCalendar, configuration(), recorder());
         return new EBSSnapshotJanitor(awsClient(), snapshotJanitorCtx);
+    }
+
+    private LaunchConfigJanitor getLaunchConfigJanitor() {
+        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.oldUnusedLaunchConfigRule.enabled", false)) {
+            ruleEngine.addRule(new OldUnusedLaunchConfigRule(monkeyCalendar,
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.oldUnusedLaunchConfigRule.ageThreshold", 4),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.oldUnusedLaunchConfigRule.retentionDays", 3)));
+        }
+        JanitorCrawler crawler = new LaunchConfigJanitorCrawler(awsClient());
+        BasicJanitorContext janitorCtx = new BasicJanitorContext(
+                monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
+                monkeyCalendar, configuration(), recorder());
+        return new LaunchConfigJanitor(awsClient(), janitorCtx);
     }
 
     private Set<String> getEnabledResourceSet() {

@@ -207,6 +207,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public void deleteSnapshot(String snapshotId) {
             }
+
+            @Override
+            public void deleteLaunchConfiguration(String launchConfigName) {
+            }
         };
     }
 

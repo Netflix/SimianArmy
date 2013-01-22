@@ -100,7 +100,7 @@ public class BasicCalendar implements MonkeyCalendar {
     /** {@inheritDoc} */
     @Override
     public boolean isMonkeyTime(Monkey monkey) {
-        if (cfg.getStrOrElse("simianarmy.calendar.isMonkeyTime", null) != null) {
+        if (cfg != null && cfg.getStrOrElse("simianarmy.calendar.isMonkeyTime", null) != null) {
             return cfg.getBool("simianarmy.calendar.isMonkeyTime");
         }
 

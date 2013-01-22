@@ -124,6 +124,10 @@ public class TestMonkeyContext implements Monkey.Context {
             @Override
             public void deleteSnapshot(String snapshotId) {
             }
+
+            @Override
+            public void deleteLaunchConfiguration(String launchConfigName) {
+            }
         };
     }
 
