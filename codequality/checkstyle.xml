@@ -128,7 +128,8 @@
         <!-- Checks for common coding problems               -->
         <!-- See http://checkstyle.sf.net/config_coding.html -->
         <!-- <module name="AvoidInlineConditionals"/> -->
-        <module name="DoubleCheckedLocking"/>    <!-- MY FAVOURITE -->
+        <!--The DoubleCheckedLocking rule is not supported in CheckStyle 5.6-->
+        <!--<module name="DoubleCheckedLocking"/>    &lt;!&ndash; MY FAVOURITE &ndash;&gt;-->
         <module name="EmptyStatement"/>
         <module name="EqualsHashCode"/>
         <module name="HiddenField">
