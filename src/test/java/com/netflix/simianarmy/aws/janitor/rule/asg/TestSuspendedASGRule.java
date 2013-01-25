@@ -46,7 +46,8 @@ public class TestSuspendedASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_SUSPENSION_TIME,
                 ASGJanitorCrawler.SUSPENSION_TIME_FORMATTER.print(suspensionTime));
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
         verifyTerminationTime(resource, retentionDays, now);
     }
@@ -62,7 +63,8 @@ public class TestSuspendedASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_LC_CREATION_TIME,
                 String.valueOf(now.minusDays(suspensionAgeThreshold + 1).getMillis()));
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -79,7 +81,8 @@ public class TestSuspendedASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_SUSPENSION_TIME,
                 ASGJanitorCrawler.SUSPENSION_TIME_FORMATTER.print(suspensionTime));
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -95,7 +98,8 @@ public class TestSuspendedASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_SUSPENSION_TIME,
                 ASGJanitorCrawler.SUSPENSION_TIME_FORMATTER.print(suspensionTime));
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -107,7 +111,8 @@ public class TestSuspendedASGRule {
         int suspensionAgeThreshold = 2;
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -123,7 +128,8 @@ public class TestSuspendedASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_SUSPENSION_TIME,
                 ASGJanitorCrawler.SUSPENSION_TIME_FORMATTER.print(suspensionTime));
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
         String oldTermReason = "Foo";
         resource.setExpectedTerminationTime(oldTermDate);
@@ -135,42 +141,48 @@ public class TestSuspendedASGRule {
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullResource() {
-        SuspendedASGRule rule = new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, null);
+        SuspendedASGRule rule = new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, new DummyASGInstanceValidator());
         rule.isValid(null);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testNullValidator() {
+        new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNgativeRetentionDays() {
-        new SuspendedASGRule(new TestMonkeyCalendar(), -1, 2, null);
+        new SuspendedASGRule(new TestMonkeyCalendar(), -1, 2, new DummyASGInstanceValidator());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNgativeLaunchConfigAgeThreshold() {
-        new SuspendedASGRule(new TestMonkeyCalendar(), 3, -1, null);
+        new SuspendedASGRule(new TestMonkeyCalendar(), 3, -1, new DummyASGInstanceValidator());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testNullCalendar() {
+    public void testSuspensionTimeIncorrectFormat() {
         Resource resource = new AWSResource().withId("asg1").withResourceType(AWSResourceType.ASG);
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_MAX_SIZE, "0");
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         int suspensionAgeThreshold = 2;
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_SUSPENSION_TIME, "foo");
         int retentionDays = 3;
-        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays, null);
+        SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
     }
 
     @Test
     public void testNonASGResource() {
         Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
-        SuspendedASGRule rule = new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, null);
+        SuspendedASGRule rule = new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
-    public void testSuspensionTimeIncorrectFormat() {
+    public void testNullCalendar() {
         new SuspendedASGRule(null, 3, 2, null);
     }
 

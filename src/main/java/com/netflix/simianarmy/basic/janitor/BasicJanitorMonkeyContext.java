@@ -18,7 +18,6 @@
 package com.netflix.simianarmy.basic.janitor;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -34,6 +33,9 @@ import com.netflix.simianarmy.aws.janitor.crawler.EBSSnapshotJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.EBSVolumeJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.InstanceJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.LaunchConfigJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.rule.asg.ASGInstanceValidator;
+import com.netflix.simianarmy.aws.janitor.rule.asg.DiscoveryASGInstanceValidator;
+import com.netflix.simianarmy.aws.janitor.rule.asg.DummyASGInstanceValidator;
 import com.netflix.simianarmy.aws.janitor.rule.asg.OldEmptyASGRule;
 import com.netflix.simianarmy.aws.janitor.rule.asg.SuspendedASGRule;
 import com.netflix.simianarmy.aws.janitor.rule.instance.OrphanedInstanceRule;
@@ -140,13 +142,13 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     private ASGJanitor getASGJanitor() {
         JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
         boolean discoveryEnabled = configuration().getBoolOrElse("simianarmy.janitor.Eureka.enabled", false);
-        DiscoveryClient discoveryClient;
+        ASGInstanceValidator instanceValidator;
         if (discoveryEnabled) {
             LOGGER.info("Initializing Discovery client.");
-            discoveryClient = DiscoveryManager.getInstance().getDiscoveryClient();
+            instanceValidator = new DiscoveryASGInstanceValidator(DiscoveryManager.getInstance().getDiscoveryClient());
         } else {
-            LOGGER.info("Discovery/Eureka is not enabled.");
-            discoveryClient = null;
+            LOGGER.info("Discovery/Eureka is not enabled, use the dummy instance validator.");
+            instanceValidator = new DummyASGInstanceValidator();
         }
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.oldEmptyASGRule.enabled", false)) {
             ruleEngine.addRule(new OldEmptyASGRule(monkeyCalendar,
@@ -154,7 +156,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                             "simianarmy.janitor.rule.oldEmptyASGRule.launchConfigAgeThreshold", 50),
                             (int) configuration().getNumOrElse(
                                     "simianarmy.janitor.rule.oldEmptyASGRule.retentionDays", 10),
-                                    discoveryClient
+                                    instanceValidator
                     ));
         }
 
@@ -164,7 +166,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                             "simianarmy.janitor.rule.suspendedASGRule.suspensionAgeThreshold", 2),
                             (int) configuration().getNumOrElse(
                                     "simianarmy.janitor.rule.suspendedASGRule.retentionDays", 5),
-                                    discoveryClient
+                                    instanceValidator
                     ));
         }
         JanitorCrawler asgCrawler = new ASGJanitorCrawler(awsClient());
