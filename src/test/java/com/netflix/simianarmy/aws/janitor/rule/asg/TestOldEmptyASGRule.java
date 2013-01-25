@@ -46,7 +46,8 @@ public class TestOldEmptyASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_LC_CREATION_TIME,
                 String.valueOf(now.minusDays(launchConfiguAgeThreshold + 1).getMillis()));
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
         verifyTerminationTime(resource, retentionDays, now);
     }
@@ -62,7 +63,8 @@ public class TestOldEmptyASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_LC_CREATION_TIME,
                 String.valueOf(now.minusDays(launchConfiguAgeThreshold - 1).getMillis()));
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -79,7 +81,8 @@ public class TestOldEmptyASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_LC_CREATION_TIME,
                 String.valueOf(now.minusDays(launchConfiguAgeThreshold + 1).getMillis()));
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -95,7 +98,8 @@ public class TestOldEmptyASGRule {
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_LC_CREATION_TIME,
                 String.valueOf(now.minusDays(launchConfiguAgeThreshold + 1).getMillis()));
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -108,7 +112,8 @@ public class TestOldEmptyASGRule {
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         DateTime now = new DateTime(calendar.now().getTimeInMillis());
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
         verifyTerminationTime(resource, retentionDays, now);
     }
@@ -121,7 +126,8 @@ public class TestOldEmptyASGRule {
         int launchConfiguAgeThreshold = 60;
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
@@ -134,7 +140,8 @@ public class TestOldEmptyASGRule {
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         DateTime now = new DateTime(calendar.now().getTimeInMillis());
         int retentionDays = 3;
-        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
+                new DummyASGInstanceValidator());
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
         String oldTermReason = "Foo";
         resource.setExpectedTerminationTime(oldTermDate);
@@ -145,30 +152,35 @@ public class TestOldEmptyASGRule {
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
+    public void testNullValidator() {
+        new OldEmptyASGRule(new TestMonkeyCalendar(), 3, 60, null);
+    }
+
+    @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullResource() {
-        OldEmptyASGRule rule = new OldEmptyASGRule(new TestMonkeyCalendar(), 3, 60, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(new TestMonkeyCalendar(), 3, 60, new DummyASGInstanceValidator());
         rule.isValid(null);
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNgativeRetentionDays() {
-        new OldEmptyASGRule(new TestMonkeyCalendar(), -1, 60, null);
+        new OldEmptyASGRule(new TestMonkeyCalendar(), -1, 60, new DummyASGInstanceValidator());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNgativeLaunchConfigAgeThreshold() {
-        new OldEmptyASGRule(new TestMonkeyCalendar(), 3, -1, null);
+        new OldEmptyASGRule(new TestMonkeyCalendar(), 3, -1, new DummyASGInstanceValidator());
     }
 
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullCalendar() {
-        new OldEmptyASGRule(null, 3, 60, null);
+        new OldEmptyASGRule(null, 3, 60, new DummyASGInstanceValidator());
     }
 
     @Test
     public void testNonASGResource() {
         Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
-        OldEmptyASGRule rule = new OldEmptyASGRule(new TestMonkeyCalendar(), 3, 60, null);
+        OldEmptyASGRule rule = new OldEmptyASGRule(new TestMonkeyCalendar(), 3, 60, new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());
     }

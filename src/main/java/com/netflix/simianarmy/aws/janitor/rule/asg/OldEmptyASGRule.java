@@ -18,19 +18,17 @@
 
 package com.netflix.simianarmy.aws.janitor.rule.asg;
 
-import java.util.Date;
-
+import com.netflix.simianarmy.MonkeyCalendar;
+import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
+import com.netflix.simianarmy.janitor.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
-import com.netflix.simianarmy.janitor.Rule;
+import java.util.Date;
 
 /**
  * The rule for detecting the ASGs that 1) have old launch configurations and
@@ -57,18 +55,19 @@ public class OldEmptyASGRule implements Rule {
      * @param launchConfigAgeThreshold
      *            The number of days that the launch configuration for the ASG has been created that makes the ASG be
      *            considered obsolete
-     * @param discoveryClient
-     *            The Discovery client used to check if an instance is registered
+     * @param instanceValidator
+     *            The instance validator to check if an instance is active
      */
     public OldEmptyASGRule(MonkeyCalendar calendar, int launchConfigAgeThreshold, int retentionDays,
-            DiscoveryClient discoveryClient) {
+            ASGInstanceValidator instanceValidator) {
         Validate.notNull(calendar);
         Validate.isTrue(retentionDays >= 0);
         Validate.isTrue(launchConfigAgeThreshold >= 0);
+        Validate.notNull(instanceValidator);
         this.calendar = calendar;
         this.retentionDays = retentionDays;
         this.launchConfigAgeThreshold = launchConfigAgeThreshold;
-        this.instanceValidator = new ASGInstanceValidator(discoveryClient);
+        this.instanceValidator = instanceValidator;
     }
 
     /** {@inheritDoc} */

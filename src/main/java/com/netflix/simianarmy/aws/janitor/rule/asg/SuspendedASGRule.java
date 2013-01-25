@@ -18,19 +18,17 @@
 
 package com.netflix.simianarmy.aws.janitor.rule.asg;
 
-import java.util.Date;
-
+import com.netflix.simianarmy.MonkeyCalendar;
+import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
+import com.netflix.simianarmy.janitor.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.discovery.DiscoveryClient;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
-import com.netflix.simianarmy.janitor.Rule;
+import java.util.Date;
 
 /**
  * The rule for detecting the ASGs that 1) have old launch configurations and
@@ -58,18 +56,19 @@ public class SuspendedASGRule implements Rule {
      * @param suspensionAgeThreshold
      *            The number of days that the ASG has been suspended from ELB that makes the ASG be
      *            considered a cleanup candidate
-     * @param discoveryClient
-     *            The Discovery client used to check if an instance is registered
+     * @param instanceValidator
+     *            The instance validator to check if an instance is active
      */
     public SuspendedASGRule(MonkeyCalendar calendar, int suspensionAgeThreshold, int retentionDays,
-            DiscoveryClient discoveryClient) {
+                            ASGInstanceValidator instanceValidator) {
         Validate.notNull(calendar);
         Validate.isTrue(retentionDays >= 0);
         Validate.isTrue(suspensionAgeThreshold >= 0);
+        Validate.notNull(instanceValidator);
         this.calendar = calendar;
         this.retentionDays = retentionDays;
         this.suspensionAgeThreshold = suspensionAgeThreshold;
-        this.instanceValidator = new ASGInstanceValidator(discoveryClient);
+        this.instanceValidator = instanceValidator;
     }
 
     /** {@inheritDoc} */
