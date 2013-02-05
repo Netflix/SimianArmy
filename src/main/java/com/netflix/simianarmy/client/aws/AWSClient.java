@@ -208,9 +208,9 @@ public class AWSClient implements CloudClient {
      */
     public List<AutoScalingGroup> describeAutoScalingGroups(String... names) {
         if (names == null || names.length == 0) {
-            LOGGER.info("Getting all auto-scaling groups.");
+            LOGGER.info(String.format("Getting all auto-scaling groups in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting auto-scaling groups for %d names.", names.length));
+            LOGGER.info(String.format("Getting auto-scaling groups for %d names in region %s.", names.length, region));
         }
 
         List<AutoScalingGroup> asgs = new LinkedList<AutoScalingGroup>();
@@ -229,7 +229,7 @@ public class AWSClient implements CloudClient {
             asgs.addAll(result.getAutoScalingGroups());
         }
 
-        LOGGER.info(String.format("Got %d auto-scaling groups.", asgs.size()));
+        LOGGER.info(String.format("Got %d auto-scaling groups in region %s.", asgs.size(), region));
         return asgs;
     }
 
@@ -241,9 +241,10 @@ public class AWSClient implements CloudClient {
      */
     public List<AutoScalingInstanceDetails> describeAutoScalingInstances(String... instanceIds) {
         if (instanceIds == null || instanceIds.length == 0) {
-            LOGGER.info("Getting all auto-scaling instances.");
+            LOGGER.info(String.format("Getting all auto-scaling instances in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting auto-scaling instances for %d ids.", instanceIds.length));
+            LOGGER.info(String.format("Getting auto-scaling instances for %d ids in region %s.",
+                    instanceIds.length, region));
         }
 
         List<AutoScalingInstanceDetails> instances = new LinkedList<AutoScalingInstanceDetails>();
@@ -274,9 +275,9 @@ public class AWSClient implements CloudClient {
      */
     public List<Instance> describeInstances(String... instanceIds) {
         if (instanceIds == null || instanceIds.length == 0) {
-            LOGGER.info("Getting all EC2 instances.");
+            LOGGER.info(String.format("Getting all EC2 instances in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting EC2 instances for %d ids.", instanceIds.length));
+            LOGGER.info(String.format("Getting EC2 instances for %d ids in region %s.", instanceIds.length, region));
         }
 
         List<Instance> instances = new LinkedList<Instance>();
@@ -291,7 +292,7 @@ public class AWSClient implements CloudClient {
             instances.addAll(reservation.getInstances());
         }
 
-        LOGGER.info(String.format("Got %d EC2 instances.", instances.size()));
+        LOGGER.info(String.format("Got %d EC2 instances in region %s.", instances.size(), region));
         return instances;
     }
 
@@ -303,9 +304,10 @@ public class AWSClient implements CloudClient {
      */
     public List<LaunchConfiguration> describeLaunchConfigurations(String... names) {
         if (names == null || names.length == 0) {
-            LOGGER.info("Getting all launch configurations.");
+            LOGGER.info(String.format("Getting all launch configurations in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting launch configurations for %d names.", names.length));
+            LOGGER.info(String.format("Getting launch configurations for %d names in region %s.",
+                    names.length, region));
         }
 
         List<LaunchConfiguration> lcs = new LinkedList<LaunchConfiguration>();
@@ -322,7 +324,7 @@ public class AWSClient implements CloudClient {
             lcs.addAll(result.getLaunchConfigurations());
         }
 
-        LOGGER.info(String.format("Got %d launch configurations.", lcs.size()));
+        LOGGER.info(String.format("Got %d launch configurations in region %s.", lcs.size(), region));
         return lcs;
     }
 
@@ -330,7 +332,7 @@ public class AWSClient implements CloudClient {
     @Override
     public void deleteAutoScalingGroup(String asgName) {
         Validate.notEmpty(asgName);
-        LOGGER.info(String.format("Deleting auto-scaling group with name %s.", asgName));
+        LOGGER.info(String.format("Deleting auto-scaling group with name %s in region %s.", asgName, region));
         AmazonAutoScalingClient asgClient = asgClient();
         DeleteAutoScalingGroupRequest request = new DeleteAutoScalingGroupRequest()
         .withAutoScalingGroupName(asgName);
@@ -341,7 +343,8 @@ public class AWSClient implements CloudClient {
     @Override
     public void deleteLaunchConfiguration(String launchConfigName) {
         Validate.notEmpty(launchConfigName);
-        LOGGER.info(String.format("Deleting launch configuration with name %s.", launchConfigName));
+        LOGGER.info(String.format("Deleting launch configuration with name %s in region %s.",
+                launchConfigName, region));
         AmazonAutoScalingClient asgClient = asgClient();
         DeleteLaunchConfigurationRequest request = new DeleteLaunchConfigurationRequest()
                 .withLaunchConfigurationName(launchConfigName);
@@ -352,7 +355,7 @@ public class AWSClient implements CloudClient {
     @Override
     public void deleteVolume(String volumeId) {
         Validate.notEmpty(volumeId);
-        LOGGER.info(String.format("Deleting volume %s.", volumeId));
+        LOGGER.info(String.format("Deleting volume %s in region %s.", volumeId, region));
         AmazonEC2 ec2Client = ec2Client();
         DeleteVolumeRequest request = new DeleteVolumeRequest().withVolumeId(volumeId);
         ec2Client.deleteVolume(request);
@@ -362,7 +365,7 @@ public class AWSClient implements CloudClient {
     @Override
     public void deleteSnapshot(String snapshotId) {
         Validate.notEmpty(snapshotId);
-        LOGGER.info(String.format("Deleting snapshot %s.", snapshotId));
+        LOGGER.info(String.format("Deleting snapshot %s in region %s.", snapshotId, region));
         AmazonEC2 ec2Client = ec2Client();
         DeleteSnapshotRequest request = new DeleteSnapshotRequest().withSnapshotId(snapshotId);
         ec2Client.deleteSnapshot(request);
@@ -371,6 +374,8 @@ public class AWSClient implements CloudClient {
     /** {@inheritDoc} */
     @Override
     public void terminateInstance(String instanceId) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Terminating instance %s in region %s.", instanceId, region));
         try {
             ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
         } catch (AmazonServiceException e) {
@@ -389,9 +394,9 @@ public class AWSClient implements CloudClient {
      */
     public List<Volume> describeVolumes(String... volumeIds) {
         if (volumeIds == null || volumeIds.length == 0) {
-            LOGGER.info("Getting all EBS volumes.");
+            LOGGER.info(String.format("Getting all EBS volumes in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting EBS volumes for %d ids.", volumeIds.length));
+            LOGGER.info(String.format("Getting EBS volumes for %d ids in region %s.", volumeIds.length, region));
         }
 
         AmazonEC2 ec2Client = ec2Client();
@@ -402,7 +407,7 @@ public class AWSClient implements CloudClient {
         DescribeVolumesResult result = ec2Client.describeVolumes(request);
         List<Volume> volumes = result.getVolumes();
 
-        LOGGER.info(String.format("Got %d EBS volumes.", volumes.size()));
+        LOGGER.info(String.format("Got %d EBS volumes in region %s.", volumes.size(), region));
         return volumes;
     }
 
@@ -414,9 +419,9 @@ public class AWSClient implements CloudClient {
      */
     public List<Snapshot> describeSnapshots(String... snapshotIds) {
         if (snapshotIds == null || snapshotIds.length == 0) {
-            LOGGER.info("Getting all EBS snapshots.");
+            LOGGER.info(String.format("Getting all EBS snapshots in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting EBS snapshotIds for %d ids.", snapshotIds.length));
+            LOGGER.info(String.format("Getting EBS snapshotIds for %d ids in region %s.", snapshotIds.length, region));
         }
 
         AmazonEC2 ec2Client = ec2Client();
@@ -429,7 +434,7 @@ public class AWSClient implements CloudClient {
         DescribeSnapshotsResult result = ec2Client.describeSnapshots(request);
         List<Snapshot> snapshots = result.getSnapshots();
 
-        LOGGER.info(String.format("Got %d EBS snapshots.", snapshots.size()));
+        LOGGER.info(String.format("Got %d EBS snapshots in region %s.", snapshots.size(), region));
         return snapshots;
     }
 
@@ -456,9 +461,9 @@ public class AWSClient implements CloudClient {
      */
     public List<Image> describeImages(String... imageIds) {
         if (imageIds == null || imageIds.length == 0) {
-            LOGGER.info("Getting all AMIs.");
+            LOGGER.info(String.format("Getting all AMIs in region %s.", region));
         } else {
-            LOGGER.info(String.format("Getting AMIs for %d ids.", imageIds.length));
+            LOGGER.info(String.format("Getting AMIs for %d ids in region %s.", imageIds.length, region));
         }
 
         AmazonEC2 ec2Client = ec2Client();
@@ -469,7 +474,7 @@ public class AWSClient implements CloudClient {
         DescribeImagesResult result = ec2Client.describeImages(request);
         List<Image> images = result.getImages();
 
-        LOGGER.info(String.format("Got %d AMIs.", images.size()));
+        LOGGER.info(String.format("Got %d AMIs in region %s.", images.size(), region));
         return images;
     }
 }

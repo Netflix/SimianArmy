@@ -143,10 +143,9 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
      */
     public void sendNotifications() {
         validateEmails();
-        List<Resource> markedResources = resourceTracker.getResources(null, CleanupState.MARKED, region);
         Map<String, Collection<Resource>> emailToResources = new HashMap<String, Collection<Resource>>();
         invalidEmailToResources.clear();
-        for (Resource r : markedResources) {
+        for (Resource r : getMarkedResources()) {
             if (r.isOptOutOfJanitor()) {
                 LOGGER.info(String.format("Resource %s is opted out of Janitor Monkey so no notification is sent.",
                         r.getId()));
@@ -189,6 +188,14 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             LOGGER.info(String.format("Email notification has been sent to %s for %d resources.",
                     email, entry.getValue().size()));
         }
+    }
+
+    /**
+     * Gets the marked resources for notification. Allow overriding in subclasses.
+     * @return the marked resources
+     */
+    protected Collection<Resource> getMarkedResources() {
+        return resourceTracker.getResources(null, CleanupState.MARKED, region);
     }
 
     private void validateEmails() {
