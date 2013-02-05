@@ -87,6 +87,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         } else {
             LOGGER.info(String.format("Marking resources with %d janitors.", janitors.size()));
             for (AbstractJanitor janitor : janitors) {
+                LOGGER.info(String.format("Running janitor for region %s", janitor.getRegion()));
                 janitor.markResources();
                 LOGGER.info(String.format("Marked %d resources of type %s in the last run.",
                         janitor.getMarkedResources().size(), janitor.getResourceType().name()));
@@ -151,10 +152,11 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             StringBuilder message = new StringBuilder();
             for (AbstractJanitor janitor : janitors) {
                 Enum resourceType = janitor.getResourceType();
-                appendSummary(message, "markings", resourceType, janitor.getMarkedResources());
-                appendSummary(message, "unmarkings", resourceType, janitor.getUnmarkedResources());
-                appendSummary(message, "cleanups", resourceType, janitor.getCleanedResources());
-                appendSummary(message, "cleanup failures", resourceType, janitor.getFailedToCleanResources());
+                appendSummary(message, "markings", resourceType, janitor.getMarkedResources(), janitor.getRegion());
+                appendSummary(message, "unmarkings", resourceType, janitor.getUnmarkedResources(), janitor.getRegion());
+                appendSummary(message, "cleanups", resourceType, janitor.getCleanedResources(), janitor.getRegion());
+                appendSummary(message, "cleanup failures", resourceType, janitor.getFailedToCleanResources(),
+                        janitor.getRegion());
             }
             String subject = getSummaryEmailSubject();
             emailNotifier.sendEmail(summaryEmailTarget, subject, message.toString());
@@ -162,9 +164,9 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     }
 
     private void appendSummary(StringBuilder message, String summaryName,
-            Enum resourceType, Collection<Resource> resources) {
-        message.append(String.format("Total %s for %s = %d<br/>",
-                summaryName, resourceType.name(), resources.size()));
+            Enum resourceType, Collection<Resource> resources, String janitorRegion) {
+        message.append(String.format("Total %s for %s = %d in region %s<br/>",
+                summaryName, resourceType.name(), resources.size(), janitorRegion));
         message.append(String.format("List: %s<br/>", printResources(resources)));
     }
 

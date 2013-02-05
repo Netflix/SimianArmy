@@ -17,17 +17,32 @@
  */
 package com.netflix.simianarmy.basic.janitor;
 
+import com.google.common.collect.Lists;
 import com.netflix.simianarmy.aws.janitor.VolumeTaggingMonkey;
 import com.netflix.simianarmy.basic.BasicSimianArmyContext;
+import com.netflix.simianarmy.client.aws.AWSClient;
+import org.apache.commons.lang.StringUtils;
+
+import java.util.Collection;
 
 /** The basic context for the monkey that tags volumes with Janitor meta data.
  */
 public class BasicVolumeTaggingMonkeyContext extends BasicSimianArmyContext implements VolumeTaggingMonkey.Context {
+
+    private final Collection<AWSClient> awsClients = Lists.newArrayList();
 
     /**
      * The constructor.
      */
     public BasicVolumeTaggingMonkeyContext() {
         super("simianarmy.properties", "client.properties", "volumeTagging.properties");
+        for (String r : StringUtils.split(region(), ",")) {
+            awsClients.add(new AWSClient(r));
+        }
+    }
+
+    @Override
+    public Collection<AWSClient> awsClients() {
+        return awsClients;
     }
 }
