@@ -54,8 +54,11 @@ public abstract class AbstractJanitor implements Janitor {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJanitor.class);
 
-    /** The region the janitor is running in. */
     private final String region;
+    /** The region the janitor is running in. */
+    public String getRegion() {
+        return region;
+    }
 
     /**
      * The rule engine used to decide if a resource should be a cleanup

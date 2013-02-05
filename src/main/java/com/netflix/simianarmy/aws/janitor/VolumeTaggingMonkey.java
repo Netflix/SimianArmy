@@ -17,11 +17,13 @@
  */
 package com.netflix.simianarmy.aws.janitor;
 
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,19 +66,19 @@ public class VolumeTaggingMonkey extends Monkey {
         MonkeyConfiguration configuration();
 
         /**
-         * AWS client.
+         * AWS clients. Using a collection of clients for supporting running one monkey for multiple regions.
          *
-         * @return the AWS client
+         * @return the collection of AWS clients
          */
-        AWSClient awsClient();
+        Collection<AWSClient> awsClients();
     }
 
     private final MonkeyConfiguration config;
-    private final AWSClient awsClient;
+    private final Collection<AWSClient> awsClients;
     private final MonkeyCalendar calendar;
 
     /** We cache the global map from instance id to its owner when starting the monkey. */
-    private final Map<String, String> instanceToOwner;
+    private final Map<AWSClient, Map<String, String>> awsClientToInstanceToOwner;
 
     /**
      * The constructor.
@@ -85,13 +87,17 @@ public class VolumeTaggingMonkey extends Monkey {
     public VolumeTaggingMonkey(Context ctx) {
         super(ctx);
         this.config = ctx.configuration();
-        this.awsClient = ctx.awsClient();
+        this.awsClients = ctx.awsClients();
         this.calendar = ctx.calendar();
-        instanceToOwner = new HashMap<String, String>();
-        for (Instance instance : awsClient.describeInstances()) {
-            for (Tag tag : instance.getTags()) {
-                if (tag.getKey().equals(JanitorMonkey.OWNER_TAG_KEY)) {
-                    instanceToOwner.put(instance.getInstanceId(), tag.getValue());
+        awsClientToInstanceToOwner = Maps.newHashMap();
+        for (AWSClient awsClient : awsClients) {
+            Map<String, String> instanceToOwner = Maps.newHashMap();
+            awsClientToInstanceToOwner.put(awsClient, instanceToOwner);
+            for (Instance instance : awsClient.describeInstances()) {
+                for (Tag tag : instance.getTags()) {
+                    if (tag.getKey().equals(JanitorMonkey.OWNER_TAG_KEY)) {
+                        instanceToOwner.put(instance.getInstanceId(), tag.getValue());
+                    }
                 }
             }
         }
@@ -122,14 +128,17 @@ public class VolumeTaggingMonkey extends Monkey {
     public void doMonkeyBusiness() {
         String prop = "simianarmy.volumeTagging.enabled";
         if (config.getBoolOrElse(prop, false)) {
-            tagVolumesWithLatestAttachment(awsClient.describeVolumes());
+            for (AWSClient awsClient : awsClients) {
+                tagVolumesWithLatestAttachment(awsClient);
+            }
         } else {
             LOGGER.info(String.format("Volume tagging monkey is not enabled. You can set %s to true to enalbe it.",
                     prop));
         }
     }
 
-    private void tagVolumesWithLatestAttachment(List<Volume> volumes) {
+    private void tagVolumesWithLatestAttachment(AWSClient awsClient) {
+        List<Volume> volumes = awsClient.describeVolumes();
         LOGGER.info(String.format("Trying to tag %d volumes for Janitor Monkey meta data.",
                 volumes.size()));
         Date now = calendar.now().getTime();
@@ -157,7 +166,7 @@ public class VolumeTaggingMonkey extends Monkey {
             }
             if (latest != null) {
                 instanceId = latest.getInstanceId();
-                owner = getOwnerEmail(instanceId, janitorMetadata, tags);
+                owner = getOwnerEmail(instanceId, janitorMetadata, tags, awsClient);
             }
 
             if (latest == null || "detached".equals(latest.getState())) {
@@ -181,7 +190,7 @@ public class VolumeTaggingMonkey extends Monkey {
                 owner = existingOwner;
             }
             if (needsUpdate(janitorMetadata, owner, instanceId, lastDetachTime)) {
-                Event evt = updateJanitorMetaTag(volume, instanceId, owner, lastDetachTime);
+                Event evt = updateJanitorMetaTag(volume, instanceId, owner, lastDetachTime, awsClient);
                 if (evt != null) {
                     context().recorder().recordEvent(evt);
                 }
@@ -189,9 +198,10 @@ public class VolumeTaggingMonkey extends Monkey {
         }
     }
 
-    private String getOwnerEmail(String instanceId, Map<String, String> janitorMetadata, List<Tag> tags) {
+    private String getOwnerEmail(String instanceId, Map<String, String> janitorMetadata,
+                                 List<Tag> tags, AWSClient awsClient) {
         // The owner of the volume is set as the owner of the last instance attached to it.
-        String owner = instanceToOwner.get(instanceId);
+        String owner = awsClientToInstanceToOwner.get(awsClient).get(instanceId);
         if (owner == null) {
             owner = janitorMetadata.get(JanitorMonkey.OWNER_TAG_KEY);
         }
@@ -243,7 +253,8 @@ public class VolumeTaggingMonkey extends Monkey {
         return config.getStrOrElse("simianarmy.volumeTagging.ownerEmailDomain", "");
     }
 
-    private Event updateJanitorMetaTag(Volume volume, String instance, String owner, Date lastDetachTime) {
+    private Event updateJanitorMetaTag(Volume volume, String instance, String owner, Date lastDetachTime,
+                                       AWSClient awsClient) {
         String meta = makeMetaTag(instance, owner, lastDetachTime);
         Map<String, String> janitorTags = new HashMap<String, String>();
         janitorTags.put(JanitorMonkey.JANITOR_META_TAG, meta);
