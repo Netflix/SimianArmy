@@ -32,6 +32,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.netflix.simianarmy.Monkey;
+import com.sun.jersey.spi.resource.Singleton;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -52,13 +54,14 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
  * The Class ChaosMonkeyResource for json REST apis.
  */
 @Path("/v1/chaos")
+@Singleton
 public class ChaosMonkeyResource {
 
     /** The Constant JSON_FACTORY. */
     private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory();
 
     /** The monkey. */
-    private final ChaosMonkey monkey;
+    private ChaosMonkey monkey = null;
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosMonkeyResource.class);
@@ -77,7 +80,16 @@ public class ChaosMonkeyResource {
      * Instantiates a chaos monkey resource using a registered chaos monkey from factory.
      */
     public ChaosMonkeyResource() {
-        this.monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+        for (Monkey runningMonkey : MonkeyRunner.getInstance().getMonkeys()) {
+            if (runningMonkey instanceof ChaosMonkey) {
+                this.monkey = (ChaosMonkey) runningMonkey;
+                break;
+            }
+        }
+        if (this.monkey == null) {
+            LOGGER.info("Creating a new Chaos monkey instance for the resource.");
+            this.monkey = MonkeyRunner.getInstance().factory(ChaosMonkey.class);
+        }
     }
 
     /**
