@@ -155,9 +155,9 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
                 String email = r.getOwnerEmail();
                 if (!isValidEmail(email)) {
                     if (defaultEmail != null) {
-                        email = defaultEmail;
                         LOGGER.info(String.format("Email %s is not valid, send to the default email address %s",
                                 email, defaultEmail));
+                        putEmailAndResource(emailToResources, defaultEmail, r);
                     } else {
                         if (email == null) {
                             email = UNKNOWN_EMAIL;
