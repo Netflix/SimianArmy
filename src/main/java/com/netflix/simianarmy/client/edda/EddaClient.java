@@ -1,0 +1,38 @@
+package com.netflix.simianarmy.client.edda;
+
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.client.MonkeyRestClient;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * The REST client to access Edda to get the history of a cloud resource.
+ */
+public class EddaClient extends MonkeyRestClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EddaClient.class);
+
+    private final MonkeyConfiguration config;
+    /**
+     * Constructor.
+     * @param timeout the timeout in miliseconds
+     * @param maxRetries the max number of retries
+     * @param retryInterval the interval in milisends between retries
+     * @param config the monkey configuration
+     */
+    public EddaClient(int timeout, int maxRetries, int retryInterval, MonkeyConfiguration config) {
+        super(timeout, maxRetries, retryInterval);
+        this.config = config;
+    }
+
+    @Override
+    public String getBaseUrl(String region) {
+        Validate.notEmpty(region);
+        String baseUrl = config.getStr("edda.endpoint." + region);
+        if (StringUtils.isBlank(baseUrl)) {
+            LOGGER.error("No endpoint of Edda is found.");
+        }
+        return baseUrl;
+    }
+}

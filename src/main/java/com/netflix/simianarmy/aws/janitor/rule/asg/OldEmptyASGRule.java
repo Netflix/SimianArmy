@@ -21,6 +21,7 @@ package com.netflix.simianarmy.aws.janitor.rule.asg;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaASGJanitorCrawler;
 import com.netflix.simianarmy.janitor.Rule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -40,6 +41,7 @@ public class OldEmptyASGRule implements Rule {
     private final MonkeyCalendar calendar;
     private final int retentionDays;
     private final int launchConfigAgeThreshold;
+    private final Integer lastChangeDaysThreshold;
     private final ASGInstanceValidator instanceValidator;
 
     /** The Constant LOGGER. */
@@ -58,15 +60,38 @@ public class OldEmptyASGRule implements Rule {
      * @param instanceValidator
      *            The instance validator to check if an instance is active
      */
-    public OldEmptyASGRule(MonkeyCalendar calendar, int launchConfigAgeThreshold, int retentionDays,
-            ASGInstanceValidator instanceValidator) {
+    public OldEmptyASGRule(MonkeyCalendar calendar, int launchConfigAgeThreshold,
+                           int retentionDays, ASGInstanceValidator instanceValidator) {
+        this(calendar, launchConfigAgeThreshold, null, retentionDays, instanceValidator);
+    }
+
+    /**
+     * Constructor.
+     *
+     * @param calendar
+     *            The calendar used to calculate the termination time
+     * @param retentionDays
+     *            The number of days that the marked ASG is retained before being terminated
+     * @param launchConfigAgeThreshold
+     *            The number of days that the launch configuration for the ASG has been created that makes the ASG be
+     *            considered obsolete
+     * @param  lastChangeDaysThreshold
+     *            The number of days that the launch configuration has not been changed. An ASG is considered as a
+     *            cleanup candidate only if it has no change during the last n days. The parameter can be null.
+     * @param instanceValidator
+     *            The instance validator to check if an instance is active
+     */
+    public OldEmptyASGRule(MonkeyCalendar calendar, int launchConfigAgeThreshold, Integer lastChangeDaysThreshold,
+                           int retentionDays, ASGInstanceValidator instanceValidator) {
         Validate.notNull(calendar);
         Validate.isTrue(retentionDays >= 0);
         Validate.isTrue(launchConfigAgeThreshold >= 0);
+        Validate.isTrue(lastChangeDaysThreshold == null || lastChangeDaysThreshold >= 0);
         Validate.notNull(instanceValidator);
         this.calendar = calendar;
         this.retentionDays = retentionDays;
         this.launchConfigAgeThreshold = launchConfigAgeThreshold;
+        this.lastChangeDaysThreshold = lastChangeDaysThreshold;
         this.instanceValidator = instanceValidator;
     }
 
@@ -110,6 +135,19 @@ public class OldEmptyASGRule implements Rule {
         }
         LOGGER.info(String.format("The launch configuation %s has been created for more than %d days",
                 lcName, launchConfigAgeThreshold));
+
+        if (lastChangeDaysThreshold != null) {
+            String lastChangeTimeField = resource.getAdditionalField(EddaASGJanitorCrawler.ASG_FIELD_LAST_CHANGE_TIME);
+            if (StringUtils.isNotBlank(lastChangeTimeField)) {
+                DateTime lastChangeTime = new DateTime(Long.parseLong(lastChangeTimeField));
+                if (lastChangeTime.plusDays(lastChangeDaysThreshold).isAfter(now)) {
+                    LOGGER.info(String.format("ASG %s had change during the last %d days",
+                            resource.getId(), lastChangeDaysThreshold));
+                    return true;
+                }
+            }
+        }
+
         markResource(resource, now);
         return false;
     }
