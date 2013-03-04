@@ -29,9 +29,9 @@ public class EddaClient extends MonkeyRestClient {
     @Override
     public String getBaseUrl(String region) {
         Validate.notEmpty(region);
-        String baseUrl = config.getStr("edda.endpoint." + region);
+        String baseUrl = config.getStr("simianarmy.janitor.edda.endpoint." + region);
         if (StringUtils.isBlank(baseUrl)) {
-            LOGGER.error("No endpoint of Edda is found.");
+            LOGGER.error(String.format("No endpoint of Edda is found for region %s.", region));
         }
         return baseUrl;
     }
