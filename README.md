@@ -4,7 +4,7 @@ The Simian Army is a suite of tools for keeping your cloud operating in top form
 helps ensure that your applications can tolerate random instance failures
 
 # CloudBees build status
-[![Build Status](https://buildhive.cloudbees.com/job/michaelneale/job/SimianArmy/badge/icon)](https://buildhive.cloudbees.com/job/michaelneale/job/SimianArmy/)
+[![Build Status](https://netflixoss.ci.cloudbees.com/job/SimianArmy-master/badge/icon)](https://netflixoss.ci.cloudbees.com/job/SimianArmy-master/)
 
 ## DETAILS
 
