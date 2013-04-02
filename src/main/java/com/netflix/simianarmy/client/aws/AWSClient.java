@@ -36,6 +36,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeleteSnapshotRequest;
 import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
+import com.amazonaws.services.ec2.model.DeregisterImageRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
@@ -349,6 +350,17 @@ public class AWSClient implements CloudClient {
         DeleteLaunchConfigurationRequest request = new DeleteLaunchConfigurationRequest()
                 .withLaunchConfigurationName(launchConfigName);
         asgClient.deleteLaunchConfiguration(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void deleteImage(String imageId) {
+        Validate.notEmpty(imageId);
+        LOGGER.info(String.format("Deleting image %s in region %s.",
+                imageId, region));
+        AmazonEC2 ec2Client = ec2Client();
+        DeregisterImageRequest request = new DeregisterImageRequest(imageId);
+        ec2Client.deregisterImage(request);
     }
 
     /** {@inheritDoc} */

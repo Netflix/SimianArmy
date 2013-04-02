@@ -70,7 +70,14 @@ public interface CloudClient {
      */
     void deleteSnapshot(String snapshotId);
 
-    /**
+    /** Deletes an image.
+     *
+     * @param imageId
+     *          the image id.
+     */
+     void deleteImage(String imageId);
+
+     /**
      * Adds or overwrites tags for the specified resources.
      *
      * @param keyValueMap
