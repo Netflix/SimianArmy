@@ -25,6 +25,7 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.aws.janitor.ASGJanitor;
 import com.netflix.simianarmy.aws.janitor.EBSSnapshotJanitor;
 import com.netflix.simianarmy.aws.janitor.EBSVolumeJanitor;
+import com.netflix.simianarmy.aws.janitor.ImageJanitor;
 import com.netflix.simianarmy.aws.janitor.InstanceJanitor;
 import com.netflix.simianarmy.aws.janitor.LaunchConfigJanitor;
 import com.netflix.simianarmy.aws.janitor.SimpleDBJanitorResourceTracker;
@@ -36,8 +37,10 @@ import com.netflix.simianarmy.aws.janitor.crawler.LaunchConfigJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaASGJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaEBSSnapshotJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaEBSVolumeJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaImageJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaInstanceJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaLaunchConfigJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.rule.ami.UnusedImageRule;
 import com.netflix.simianarmy.aws.janitor.rule.asg.ASGInstanceValidator;
 import com.netflix.simianarmy.aws.janitor.rule.asg.DiscoveryASGInstanceValidator;
 import com.netflix.simianarmy.aws.janitor.rule.asg.DummyASGInstanceValidator;
@@ -143,6 +146,10 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
         if (enabledResourceSet.contains("LAUNCH_CONFIG")) {
             janitors.add(getLaunchConfigJanitor());
+        }
+
+        if (enabledResourceSet.contains("IMAGE")) {
+            janitors.add(getImageJanitor());
         }
     }
 
@@ -282,6 +289,29 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                 monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
                 monkeyCalendar, configuration(), recorder());
         return new LaunchConfigJanitor(awsClient(), janitorCtx);
+    }
+
+    private ImageJanitor getImageJanitor() {
+        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorCrawler crawler;
+        if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)
+                && configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
+            crawler = new EddaImageJanitorCrawler(createEddaClient(),
+                    configuration().getStr("simianarmy.janitor.image.ownerId"),
+                    (int) configuration().getNumOrElse("simianarmy.janitor.image.crawler.lookBackDays", 60),
+                    awsClient().region());
+        } else {
+            throw new RuntimeException("Image Janitor only works when Edda is enabled.");
+        }
+        ruleEngine.addRule(new UnusedImageRule(monkeyCalendar,
+                (int) configuration().getNumOrElse(
+                        "simianarmy.janitor.rule.unusedImageRule.retentionDays", 3),
+                (int) configuration().getNumOrElse(
+                        "simianarmy.janitor.rule.unusedImageRule.lastReferenceDaysThreshold", 45)));
+        BasicJanitorContext janitorCtx = new BasicJanitorContext(
+                monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
+                monkeyCalendar, configuration(), recorder());
+        return new ImageJanitor(awsClient(), janitorCtx);
     }
 
     private EddaClient createEddaClient() {
