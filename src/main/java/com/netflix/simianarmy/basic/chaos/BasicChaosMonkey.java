@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.basic.chaos;
 
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -99,8 +100,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
                     continue;
                 }
                 double prob = getEffectiveProbability(group);
-                String inst = context().chaosInstanceSelector().select(group, prob / runsPerDay);
-                if (inst != null) {
+                Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
+                for (String inst : instances) {
                     terminateInstance(group, inst);
                 }
             }
@@ -125,9 +126,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
             if (group == null) {
                 throw new InstanceGroupNotFoundException(type, name);
             }
-            String inst = context().chaosInstanceSelector().select(group, 1.0);
-            if (inst != null) {
-                return terminateInstance(group, inst);
+            Collection<String> instances = context().chaosInstanceSelector().select(group, 1.0);
+            Validate.isTrue(instances.size() <= 1);
+            if (instances.size() == 1) {
+                return terminateInstance(group, instances.iterator().next());
             } else {
                 throw new NotFoundException(String.format("No instance is found in group %s [type %s]",
                         name, type));
