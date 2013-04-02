@@ -21,6 +21,7 @@ package com.netflix.simianarmy.chaos;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -171,7 +172,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     public ChaosInstanceSelector chaosInstanceSelector() {
         return new BasicChaosInstanceSelector() {
             @Override
-            public String select(InstanceGroup group, double probability) {
+            public Collection<String> select(InstanceGroup group, double probability) {
                 selectedOn.add(group);
                 return super.select(group, probability);
             }
