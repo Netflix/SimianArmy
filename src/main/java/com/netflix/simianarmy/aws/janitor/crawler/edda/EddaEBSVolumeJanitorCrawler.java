@@ -48,6 +48,11 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
      */
     public static final String DELETE_ON_TERMINATION = "deleteOnTermination";
 
+    /**
+     * The field name for detach time.
+     */
+    public static final String DETACH_TIME = "detachTime";
+
     private final EddaClient eddaClient;
     private final List<String> regions = Lists.newArrayList();
     private final Map<String, String> instanceToOwner = Maps.newHashMap();
@@ -67,7 +72,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
             this.regions.add(region);
             updateInstanceToOwner(region);
         }
-        LOGGER.info(String.format("Found owner for %d instances", instanceToOwner.size()));
+        LOGGER.info(String.format("Found owner for %d instances in %s", instanceToOwner.size(), this.regions));
     }
 
     private void updateInstanceToOwner(String region) {
@@ -300,6 +305,8 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
         LOGGER.info(String.format("Setting Janitor Metatag as %s for volume %s", metaTag, volumeId));
         resource.setTag(JanitorMonkey.JANITOR_META_TAG, metaTag);
 
+        LOGGER.info(String.format("The last detach time of volume %s is %s", volumeId, detachTime));
+        resource.setAdditionalField(DETACH_TIME, String.valueOf(detachTime.getMillis()));
     }
 
     private String makeMetaTag(String instance, String owner, DateTime lastDetachTime) {

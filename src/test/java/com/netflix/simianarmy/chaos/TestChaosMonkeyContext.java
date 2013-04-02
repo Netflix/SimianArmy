@@ -209,6 +209,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
+            public void deleteImage(String imageId) {
+            }
+
+            @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
             }
         };

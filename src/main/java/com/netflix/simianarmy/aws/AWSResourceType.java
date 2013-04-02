@@ -35,5 +35,7 @@ public enum AWSResourceType {
     /** AWS S3 bucket. */
     S3_BUCKET,
     /** AWS security group. */
-    SECURITY_GROUP
+    SECURITY_GROUP,
+    /** AWS Amazon Amazon Machine Image. **/
+    IMAGE
 }

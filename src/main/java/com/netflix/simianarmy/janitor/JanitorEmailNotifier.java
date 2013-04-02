@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.Validate;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,6 +46,11 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
                     + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private static final String UNKNOWN_EMAIL = "UNKNOWN";
+    /**
+     * If the sheduled termination date is within 2 hours of notification date + headsup days,
+     * we don't need to extend the termination date.
+     */
+    private static final int HOURS_IN_MARGIN = 2;
 
     private final String region;
     private final String defaultEmail;
@@ -242,7 +248,9 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
         Date notificationTime = resource.getNotificationTime();
         // We don't want to send notification too early (since things may change) or too late (we need
         // to give owners enough time to take actions.
-        Date windowStart = calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination);
+        Date windowStart = new Date(new DateTime(
+                calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination).getTime())
+                .minusHours(HOURS_IN_MARGIN).getMillis());
         Date windowEnd = calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination + 1);
         Date terminationDate = resource.getExpectedTerminationTime();
         if (notificationTime == null
