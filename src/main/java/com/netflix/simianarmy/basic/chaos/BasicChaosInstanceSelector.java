@@ -17,8 +17,13 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +51,34 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
 
     /** {@inheritDoc} */
     @Override
-    public String select(InstanceGroup group, double probability) {
+    public Collection<String> select(InstanceGroup group, double probability) {
+        int n = ((int) probability);
+        String selected = selectOneInstance(group, probability - n);
+        Collection<String> result = selectNInstances(group.instances(), n, selected);
+        if (selected != null) {
+            result.add(selected);
+        }
+        return result;
+    }
+
+    private Collection<String> selectNInstances(Collection<String> instances, int n, String selected) {
+        logger().info("Randomly selecting {} from {} instances, excluding {}",
+                new Object[] {n, instances.size(), selected});
+        List<String> copy = Lists.newArrayList();
+        for (String instance : instances) {
+            if (!instance.equals(selected)) {
+                copy.add(instance);
+            }
+        }
+        if (n >= copy.size()) {
+            return copy;
+        }
+        Collections.shuffle(copy);
+        return copy.subList(0, n);
+    }
+
+    private String selectOneInstance(InstanceGroup group, double probability) {
+        Validate.isTrue(probability < 1);
         if (probability <= 0) {
             logger().info("Group {} [type {}] has disabled probability: {}",
                     new Object[] {group.name(), group.type(), probability});
