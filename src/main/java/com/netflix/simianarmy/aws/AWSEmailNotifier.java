@@ -79,7 +79,12 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
         request.setReturnPath(sourceAddress);
         LOGGER.debug(String.format("Sending email with subject '%s' to %s",
                 subject, to));
-        SendEmailResult result = sesClient.sendEmail(request);
+        SendEmailResult result = null;
+        try {
+            result = sesClient.sendEmail(request);
+        } catch (Exception e) {
+            throw new RuntimeException(String.format("Failed to send email to %s", to), e);
+        }
         LOGGER.info(String.format("Email to %s, result id is %s, subject is %s",
                 to, result.getMessageId(), subject));
     }
