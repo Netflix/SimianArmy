@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,10 +198,7 @@ public abstract class AbstractJanitor implements Janitor {
     public void markResources() {
         markedResources.clear();
         unmarkedResources.clear();
-        Map<String, Resource> trackedMarkedResources = new HashMap<String, Resource>();
-        for (Resource resource : resourceTracker.getResources(resourceType, Resource.CleanupState.MARKED, region)) {
-            trackedMarkedResources.put(resource.getId(), resource);
-        }
+        Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
 
         List<Resource> crawledResources = crawler.resources(resourceType);
         LOGGER.info(String.format("Looking for cleanup candidate in %d crawled resources.",
@@ -254,6 +252,20 @@ public abstract class AbstractJanitor implements Janitor {
 
         // Unmark the resources that are terminated by user so not returned by the crawler.
         unmarkUserTerminatedResources(crawledResources, trackedMarkedResources);
+    }
+
+
+    /**
+     * Gets the existing resources that are marked as cleanup candidate. Allowing the subclass to override for e.g.
+     * to handle multi-region.
+     * @return
+     */
+    protected Map<String, Resource> getTrackedMarkedResources() {
+        Map<String, Resource> trackedMarkedResources = Maps.newHashMap();
+        for (Resource resource : resourceTracker.getResources(resourceType, Resource.CleanupState.MARKED, region)) {
+            trackedMarkedResources.put(resource.getId(), resource);
+        }
+        return trackedMarkedResources;
     }
 
     /**
