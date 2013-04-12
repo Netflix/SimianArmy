@@ -38,6 +38,10 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
 
     private static final int BATCH_SIZE = 50;
 
+    // The value below specifies how many days we want to look back in Edda to find the owner of old instances.
+    // In case of Edda keeps too much history data, without a reasonal data range, the query may fail.
+    private static final int LOOKBACK_DAYS = 90;
+
     /**
      * The field name for purpose.
      */
@@ -78,8 +82,10 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
     private void updateInstanceToOwner(String region) {
         LOGGER.info(String.format("Getting owners for all instances in region %s", region));
 
-        String url = eddaClient.getBaseUrl(region) + "/view/instances;_since=0;state.name=running;tags.key=owner;"
-                + "_expand:(instanceId,tags:(key,value))";
+        long startTime = DateTime.now().minusDays(LOOKBACK_DAYS).getMillis();
+        String url = String.format("%s/view/instances;_since=%d;state.name=running;tags.key=owner;"
+                + "_expand:(instanceId,tags:(key,value))",
+                eddaClient.getBaseUrl(region), startTime);
         JsonNode jsonNode = null;
         try {
             jsonNode = eddaClient.getJsonNodeFromUrl(url);
