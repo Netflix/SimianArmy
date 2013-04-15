@@ -18,21 +18,7 @@
 
 package com.netflix.simianarmy.janitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.Maps;
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
@@ -41,6 +27,18 @@ import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.janitor.JanitorMonkey.EventTypes;
 import com.netflix.simianarmy.janitor.JanitorMonkey.Type;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An abstract implementation of Janitor. It marks resources that the rule engine considers
@@ -258,7 +256,7 @@ public abstract class AbstractJanitor implements Janitor {
     /**
      * Gets the existing resources that are marked as cleanup candidate. Allowing the subclass to override for e.g.
      * to handle multi-region.
-     * @return
+     * @return the map from resource id to marked resource
      */
     protected Map<String, Resource> getTrackedMarkedResources() {
         Map<String, Resource> trackedMarkedResources = Maps.newHashMap();
