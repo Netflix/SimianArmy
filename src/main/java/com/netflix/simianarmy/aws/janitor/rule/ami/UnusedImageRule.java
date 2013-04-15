@@ -22,7 +22,6 @@ import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaImageJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.rule.asg.ASGInstanceValidator;
 import com.netflix.simianarmy.janitor.Rule;
 import org.apache.commons.lang.Validate;
 import org.joda.time.DateTime;
