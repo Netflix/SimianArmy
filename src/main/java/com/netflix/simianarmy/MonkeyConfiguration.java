@@ -77,4 +77,11 @@ public interface MonkeyConfiguration {
      * If the configuration has dynamic elements then they should be reloaded with this.
      */
     void reload();
+
+    /**
+     * Reloads the properties of specific group.
+     * @param groupName
+     *          the instance group's name
+     */
+    void reload(String groupName);
 }

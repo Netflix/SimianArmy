@@ -113,7 +113,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             throws FeatureNotEnabledException, InstanceGroupNotFoundException {
         Validate.notNull(type);
         Validate.notNull(name);
-        cfg.reload();
+        cfg.reload(name);
         if (!isChaosMonkeyEnabled()) {
             String msg = String.format("Chaos monkey is not enabled for group %s [type %s]",
                     name, type);
