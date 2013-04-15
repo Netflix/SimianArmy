@@ -76,4 +76,9 @@ public class BasicConfiguration implements MonkeyConfiguration {
     public void reload() {
         // BasicConfiguration is based on static properties, so reload is a no-op
     }
+
+    @Override
+    public void reload(String groupName) {
+        // BasicConfiguration is based on static properties, so reload is a no-op
+    }
 }
