@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
@@ -71,6 +72,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     private final Set<String> usedByLaunchConfig = Sets.newHashSet();
     private final Set<String> usedNames = Sets.newHashSet();
     private final Map<String, String> imageIdToName = Maps.newHashMap();
+    private final Map<String, Long> imageIdToCreationTime = Maps.newHashMap();
     private final Set<String> ancestorImageIds = Sets.newHashSet();
 
     private String ownerId;
@@ -128,6 +130,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
         refreshIdToNameMap();
         refreshAMIsUsedByInstance();
         refreshAMIsUsedByLC();
+        refreshIdToCreationTime();
         for (String excludedId : getExcludedImageIds()) {
             String name = imageIdToName.get(excludedId);
             usedNames.add(name);
@@ -194,6 +197,47 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
         LOGGER.info(String.format("Got mapping from image id to name for %d ids", imageIdToName.size()));
     }
 
+    /**
+     * AWS doesn't provide creation time for images. We use the ctime (the creation time of the image record in Edda)
+     * to approximate the creation time of the image.
+     */
+    private void refreshIdToCreationTime() {
+        for (String region : regions) {
+            String url = eddaClient.getBaseUrl(region) + "/aws/images";
+            LOGGER.info(String.format("Getting the creation time for all AMIs in region %s", region));
+            if (StringUtils.isNotBlank(ownerId)) {
+                url += ";data.ownerId=" + ownerId;
+            }
+            url += ";_expand;_meta:(ctime,data:(imageId))";
+
+            JsonNode jsonNode = null;
+            try {
+                jsonNode = eddaClient.getJsonNodeFromUrl(url);
+            } catch (Exception e) {
+                LOGGER.error(String.format(
+                        "Failed to get Jason node from edda for creation time of AMIs in region %s.", region), e);
+            }
+
+            if (jsonNode == null || !jsonNode.isArray()) {
+                throw new RuntimeException(String.format("Failed to get valid document from %s, got: %s", url, jsonNode));
+            }
+
+            for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
+                JsonNode elem = it.next();
+                JsonNode data = elem.get("data");
+                String imageId = data.get("imageId").getTextValue();
+                JsonNode ctimeNode = elem.get("ctime");
+                if (ctimeNode != null && !ctimeNode.isNull()) {
+                    long ctime = ctimeNode.asLong();
+                    LOGGER.debug(String.format("The image record of %s was created in Edda at %s",
+                            imageId, new DateTime(ctime)));
+                    imageIdToCreationTime.put(imageId, ctime);
+                }
+            }
+        }
+        LOGGER.info(String.format("Got creation time for %d images", imageIdToCreationTime.size()));
+    }
+
     private List<Resource> getAMIResourcesInRegion(
             String region, Collection<String> excludedImageIds, String... imageIds) {
         JsonNode jsonNode = getImagesInJson(region, imageIds);
@@ -240,6 +284,11 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
 
         Resource resource = new AWSResource().withId(imageId).withRegion(region)
                 .withResourceType(AWSResourceType.IMAGE);
+
+        Long creationTime = imageIdToCreationTime.get(imageId);
+        if (creationTime != null) {
+            resource.setLaunchTime(new Date(creationTime));
+        }
 
         JsonNode tags = jsonNode.get("tags");
         if (tags == null || !tags.isArray() || tags.size() == 0) {
