@@ -76,13 +76,11 @@ public class UnusedImageRule  implements Rule {
                     resource.getId()));
             return true;
         }
-        String instanceRefTime = resource.getAdditionalField(EddaImageJanitorCrawler.AMI_FIELD_LAST_INSTANCE_REF_TIME);
-        String lcRefTime = resource.getAdditionalField(EddaImageJanitorCrawler.AMI_FIELD_LAST_LC_REF_TIME);
+        long instanceRefTime = getRefTimeInMilis(resource, EddaImageJanitorCrawler.AMI_FIELD_LAST_INSTANCE_REF_TIME);
+        long lcRefTime = getRefTimeInMilis(resource, EddaImageJanitorCrawler.AMI_FIELD_LAST_LC_REF_TIME);
         Date now = calendar.now().getTime();
         long windowStart = new DateTime(now.getTime()).minusDays(lastReferenceDaysThreshold).getMillis();
-        boolean instanceOld = instanceRefTime != null && Long.parseLong(instanceRefTime) < windowStart;
-        boolean lcOld = lcRefTime != null && Long.parseLong(lcRefTime) < windowStart;
-        if (instanceRefTime == null && lcOld || lcRefTime == null && instanceOld || lcOld && instanceOld) {
+        if (instanceRefTime < windowStart && lcRefTime < windowStart) {
             if (resource.getExpectedTerminationTime() == null) {
                 Date terminationTime = calendar.getBusinessDay(now, retentionDays);
                 resource.setExpectedTerminationTime(terminationTime);
@@ -99,5 +97,26 @@ public class UnusedImageRule  implements Rule {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Tries to get the long value from the provided field. If the field does not exist, try to use the
+     * creation time. If both do not exist, use the current time.
+     */
+    private long getRefTimeInMilis(Resource resource, String field) {
+        String fieldValue = resource.getAdditionalField(field);
+        long refTime;
+        if (fieldValue != null) {
+            refTime = Long.parseLong(fieldValue);
+        } else if (resource.getLaunchTime() != null) {
+            LOGGER.info(String.format("No value in field %s is found, use the creation time %s as the ref time of %s",
+                    field, resource.getLaunchTime(), resource.getId()));
+            refTime = resource.getLaunchTime().getTime();
+        } else {
+            // When there is no creation time or ref time is found, we consider the image is referenced.
+            LOGGER.info(String.format("Use the current time as the ref time of %s", resource.getId()));
+            refTime = DateTime.now().getMillis();
+        }
+        return refTime;
     }
 }
