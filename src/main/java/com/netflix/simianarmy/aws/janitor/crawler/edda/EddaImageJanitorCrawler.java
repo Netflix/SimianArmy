@@ -245,6 +245,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
         for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
             JsonNode ami = it.next();
             String imageId = ami.get("imageId").getTextValue();
+            Resource resource = parseJsonElementToresource(region, ami);
             String name = ami.get("name").getTextValue();
             if (excludedImageIds.contains(imageId)) {
                 LOGGER.info(String.format("Image %s is excluded from being managed by Janitor Monkey, ignore.",
@@ -260,7 +261,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
                 if (usedNames.contains(name)) {
                     LOGGER.info(String.format("The same AMI name %s is used in another region", name));
                 } else {
-                    resources.add(parseJsonElementToresource(region, ami));
+                    resources.add(resource);
                 }
             }
         }
