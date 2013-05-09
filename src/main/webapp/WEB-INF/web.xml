@@ -13,7 +13,7 @@
         <param-name>com.sun.jersey.config.property.packages</param-name>
         <param-value>com.netflix.simianarmy.resources</param-value>
       </init-param>
-      <load-on-startup>1</load-on-startup>
+      <load-on-startup>2</load-on-startup>
     </servlet>
     <servlet-mapping>
       <servlet-name>jersey-servlet</servlet-name>
