@@ -17,6 +17,10 @@
  */
 package com.netflix.simianarmy.basic;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceAsyncClient;
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.basic.chaos.BasicChaosEmailNotifier;
 import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
@@ -47,6 +51,8 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
         super("simianarmy.properties", "client.properties", "chaos.properties");
         setChaosCrawler(new ASGChaosCrawler(awsClient()));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
+        MonkeyConfiguration cfg = configuration();
+        setChaosEmailNotifier(new BasicChaosEmailNotifier(cfg, new AmazonSimpleEmailServiceClient(), null));
     }
 
     /** {@inheritDoc} */
