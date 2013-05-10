@@ -154,7 +154,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         verify(sdbMock, times(2)).select(arg.capture());
         SelectRequest req = arg.getValue();
         StringBuilder sb = new StringBuilder();
-        sb.append("select * from DOMAIN where region = 'region'");
+        sb.append("select * from `DOMAIN` where region = 'region'");
         sb.append(" and instanceId = 'testId1'");
 
         Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > '0' order by eventTime desc");
