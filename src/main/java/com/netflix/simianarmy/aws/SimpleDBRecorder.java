@@ -186,7 +186,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      */
     protected List<Event> findEvents(Map<String, String> queryMap, long after) {
         StringBuilder query = new StringBuilder(
-                String.format("select * from %s where region = '%s'", domain, region));
+                String.format("select * from `%s` where region = '%s'", domain, region));
         for (Map.Entry<String, String> pair : queryMap.entrySet()) {
             query.append(String.format(" and %s = '%s'", pair.getKey(), pair.getValue()));
         }
