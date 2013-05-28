@@ -219,7 +219,8 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
             }
 
             if (jsonNode == null || !jsonNode.isArray()) {
-                throw new RuntimeException(String.format("Failed to get valid document from %s, got: %s", url, jsonNode));
+                throw new RuntimeException(String.format("Failed to get valid document from %s, got: %s",
+                        url, jsonNode));
             }
 
             for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {

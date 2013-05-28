@@ -52,6 +52,10 @@ import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.netflix.simianarmy.CloudClient;
@@ -171,6 +175,22 @@ public class AWSClient implements CloudClient {
     }
 
     /**
+     * Amazon ELB client. Abstracted to aid testing.
+     *
+     * @return the Amazon ELB client
+     */
+    protected AmazonElasticLoadBalancingClient elbClient() {
+        AmazonElasticLoadBalancingClient client;
+        if (awsCredentialsProvider == null) {
+            client = new AmazonElasticLoadBalancingClient();
+        } else {
+            client = new AmazonElasticLoadBalancingClient(awsCredentialsProvider);
+        }
+        client.setEndpoint("elasticloadbalancing." + region + ".amazonaws.com");
+        return client;
+    }
+
+    /**
      * Amazon SimpleDB client.
      *
      * @return the Amazon SimpleDB client
@@ -233,6 +253,28 @@ public class AWSClient implements CloudClient {
         LOGGER.info(String.format("Got %d auto-scaling groups in region %s.", asgs.size(), region));
         return asgs;
     }
+
+    /**
+     * Describe a set of specific ELBs.
+     *
+     * @param names the ELB names
+     * @return the ELBs
+     */
+    public List<LoadBalancerDescription> describeElasticLoadBalancers(String... names) {
+        if (names == null || names.length == 0) {
+            LOGGER.info(String.format("Getting all ELBs in region %s.", region));
+        } else {
+            LOGGER.info(String.format("Getting ELBs for %d names in region %s.", names.length, region));
+        }
+
+        AmazonElasticLoadBalancingClient elbClient = elbClient();
+        DescribeLoadBalancersRequest request = new DescribeLoadBalancersRequest().withLoadBalancerNames(names);
+        DescribeLoadBalancersResult result = elbClient.describeLoadBalancers(request);
+        List<LoadBalancerDescription> elbs = result.getLoadBalancerDescriptions();
+        LOGGER.info(String.format("Got %d ELBs in region %s.", elbs.size(), region));
+        return elbs;
+    }
+
 
     /**
      * Describe a set of specific auto-scaling instances.
