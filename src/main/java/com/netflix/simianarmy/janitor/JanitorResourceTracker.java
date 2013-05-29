@@ -47,7 +47,7 @@ public interface JanitorResourceTracker {
     /** Gets the resource of a specific id.
      *
      * @param resourceId the resource id
-     * @return list of resources that match the resource id
+     * @return the resource that matches the resource id
      */
     Resource getResource(String resourceId);
 

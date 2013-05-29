@@ -273,12 +273,11 @@ public abstract class AbstractJanitor implements Janitor {
     public void cleanupResources() {
         cleanedResources.clear();
         failedToCleanResources.clear();
-        List<Resource> trackedMarkedResources = resourceTracker.getResources(
-                resourceType, Resource.CleanupState.MARKED, region);
+        Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
         LOGGER.info(String.format("Checking %d marked resources for cleanup.", trackedMarkedResources.size()));
 
         Date now = calendar.now().getTime();
-        for (Resource markedResource : trackedMarkedResources) {
+        for (Resource markedResource : trackedMarkedResources.values()) {
             if (canClean(markedResource, now)) {
                 LOGGER.info(String.format("Cleaning up resource %s of type %s",
                         markedResource.getId(), markedResource.getResourceType().name()));

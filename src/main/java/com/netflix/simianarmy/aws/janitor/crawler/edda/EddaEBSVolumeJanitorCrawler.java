@@ -39,7 +39,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
     private static final int BATCH_SIZE = 50;
 
     // The value below specifies how many days we want to look back in Edda to find the owner of old instances.
-    // In case of Edda keeps too much history data, without a reasonal data range, the query may fail.
+    // In case of Edda keeps too much history data, without a reasonable date range, the query may fail.
     private static final int LOOKBACK_DAYS = 90;
 
     /**
