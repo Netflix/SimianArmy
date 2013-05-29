@@ -17,6 +17,16 @@
  */
 package com.netflix.simianarmy.janitor;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.netflix.simianarmy.MonkeyCalendar;
+import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.aws.AWSEmailNotifier;
+import org.apache.commons.lang.Validate;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,27 +34,12 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.Validate;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.Resource.CleanupState;
-import com.netflix.simianarmy.aws.AWSEmailNotifier;
 
 /** The email notifier implemented for Janitor Monkey. */
 public class JanitorEmailNotifier extends AWSEmailNotifier {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(JanitorEmailNotifier.class);
-    private static final String EMAIL_PATTERN =
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private static final String UNKNOWN_EMAIL = "UNKNOWN";
     /**
      * If the sheduled termination date is within 2 hours of notification date + headsup days,
@@ -55,7 +50,6 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     private final String region;
     private final String defaultEmail;
     private final List<String> ccEmails;
-    private final Pattern emailPattern;
     private final JanitorResourceTracker resourceTracker;
     private final JanitorEmailBuilder emailBuilder;
     private final MonkeyCalendar calendar;
@@ -126,7 +120,6 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     public JanitorEmailNotifier(Context ctx) {
         super(ctx.sesClient());
         this.region = ctx.region();
-        this.emailPattern = Pattern.compile(EMAIL_PATTERN);
         this.defaultEmail = ctx.defaultEmail();
         this.daysBeforeTermination = ctx.daysBeforeTermination();
         this.resourceTracker = ctx.resourceTracker();
@@ -212,19 +205,6 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             for (String ccEmail : ccEmails) {
                 Validate.isTrue(isValidEmail(ccEmail), String.format("CC email %s is invalid", ccEmail));
             }
-        }
-    }
-
-    @Override
-    public boolean isValidEmail(String email) {
-        if (email == null) {
-            return false;
-        }
-        if (emailPattern.matcher(email).matches()) {
-            return true;
-        } else {
-            LOGGER.error(String.format("Invalid email address: %s", email));
-            return false;
         }
     }
 
