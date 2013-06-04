@@ -19,7 +19,6 @@ package com.netflix.simianarmy.basic.conformity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.conformity.Cluster;
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -120,13 +120,16 @@ public class BasicConformityMonkey extends ConformityMonkey {
             nonexistentClusters.clear();
 
             List<Cluster> clusters = crawler.clusters();
-            Set<String> existingClusterNames = Sets.newHashSet();
+            Map<String, Set<String>> existingClusterNamesByRegion = Maps.newHashMap();
+            for (String region : regions) {
+                existingClusterNamesByRegion.put(region, new HashSet<String>());
+            }
             for (Cluster cluster : clusters) {
-                existingClusterNames.add(cluster.getName());
+                existingClusterNamesByRegion.get(cluster.getRegion()).add(cluster.getName());
             }
             List<Cluster> trackedClusters = clusterTracker.getAllClusters(regions.toArray(new String[regions.size()]));
             for (Cluster trackedCluster : trackedClusters) {
-                if (!existingClusterNames.contains(trackedCluster.getName())) {
+                if (!existingClusterNamesByRegion.get(trackedCluster.getRegion()).contains(trackedCluster.getName())) {
                     addCluster(nonexistentClusters, trackedCluster);
                 }
             }
