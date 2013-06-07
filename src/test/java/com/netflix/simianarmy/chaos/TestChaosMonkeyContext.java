@@ -112,6 +112,11 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         public void deleteInstance(String id) {
             instances.remove(id);
         }
+
+        @Override
+        public InstanceGroup copyAs(String name){
+            return this;
+        }
     }
 
     public enum CrawlerTypes {

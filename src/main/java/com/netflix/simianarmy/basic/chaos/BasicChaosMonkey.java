@@ -199,7 +199,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
      * @param group
      * @return
      */
-    private double getEffectiveProbability(InstanceGroup group) {
+    protected double getEffectiveProbability(InstanceGroup group) {
         if (!isGroupEnabled(group)) {
             return 0;
         }
@@ -247,7 +247,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return false;
     }
 
-    private boolean isGroupEnabled(InstanceGroup group) {
+    protected boolean isGroupEnabled(InstanceGroup group) {
         String prop = NS + group.type() + "." + group.name() + ".enabled";
         String defaultProp = NS + group.type() + ".enabled";
         if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp))) {
@@ -309,7 +309,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
-    private boolean isMaxTerminationCountExceeded(InstanceGroup group) {
+    protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
         Validate.notNull(group);
         String propName = "maxTerminationsPerDay";
         String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
