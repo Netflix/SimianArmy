@@ -199,11 +199,15 @@ public class BasicChaosMonkey extends ChaosMonkey {
      * @param group
      * @return
      */
-    protected double getEffectiveProbability(InstanceGroup group) {
-        if (!isGroupEnabled(group)) {
-            return 0;
+    
+    protected double getEffectiveProbability(InstanceGroup group) {       
+        if(!isGroupEnabled(group)){
+        	return 0;
         }
+        return getEffectiveProbabilityFromCfg(group);
+    }
 
+    protected double getEffectiveProbabilityFromCfg(InstanceGroup group){
         String propName;
         if (cfg.getBool(NS + "mandatoryTermination.enabled")) {
             String mtwProp = NS + "mandatoryTermination.windowInDays";

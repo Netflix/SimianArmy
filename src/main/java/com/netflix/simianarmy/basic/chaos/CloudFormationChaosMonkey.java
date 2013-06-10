@@ -23,7 +23,10 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     @Override
     protected double getEffectiveProbability(InstanceGroup group){
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
-        return super.getEffectiveProbability(noSuffixGroup);
+        if(!super.isGroupEnabled(noSuffixGroup)){
+        	return 0;
+        }
+        return getEffectiveProbabilityFromCfg(noSuffixGroup);
     }
 
     public InstanceGroup noSuffixInstanceGroup(InstanceGroup group) {
