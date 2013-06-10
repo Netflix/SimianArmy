@@ -115,12 +115,12 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
         @Override
         public InstanceGroup copyAs(String name){
-            return this;
+        	return new TestInstanceGroup(this.type, name, this.region, instances().toString());
         }
     }
 
     public enum CrawlerTypes {
-        TYPE_A, TYPE_B, TYPE_C
+        TYPE_A, TYPE_B, TYPE_C, TYPE_D
     };
 
     @Override
@@ -141,7 +141,9 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                         "3:i-123456785");
                 InstanceGroup gC2 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name5", "reg1", "3:i-123456786",
                         "3:i-123456787");
-                return Arrays.asList(gA0, gA1, gB2, gB3, gC1, gC2);
+                InstanceGroup gD0 = new TestInstanceGroup(CrawlerTypes.TYPE_D, "new-group-TestGroup1-XXXXXXXXX", "reg1", "3:i-123456786",
+                        "3:i-123456787");
+                return Arrays.asList(gA0, gA1, gB2, gB3, gC1, gC2, gD0);
             }
 
             @Override

@@ -15,8 +15,8 @@ public class TestCloudFormationChaosMonkey {
     public void testIsGroupEnabled(){
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
-        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_A, "region");
-        InstanceGroup group2 = new BasicInstanceGroup("new-group-TestGroup2-XCFNGHFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_A, "region");
+        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+        InstanceGroup group2 = new BasicInstanceGroup("new-group-TestGroup2-XCFNGHFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
         assertTrue(chaos.isGroupEnabled(group1));
         assertFalse(chaos.isGroupEnabled(group2));
     }
@@ -25,7 +25,7 @@ public class TestCloudFormationChaosMonkey {
     public void testIsMaxTerminationCountExceeded(){
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
-        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_A, "region");
+        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
         assertFalse(chaos.isMaxTerminationCountExceeded(group1));
     }
     
@@ -33,16 +33,27 @@ public class TestCloudFormationChaosMonkey {
     public void testGetEffectiveProbability(){
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
-        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_A, "region");
-        assertEquals(0.543,chaos.getEffectiveProbability(group1));
+        InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+        assertEquals(1.0,chaos.getEffectiveProbability(group1));
     }
 
     @Test
     public void testNoSuffixInstanceGroup(){
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("disabled.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
-        InstanceGroup group = new BasicInstanceGroup("new-group-TestGroup-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_A, "region");
+        InstanceGroup group = new BasicInstanceGroup("new-group-TestGroup-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
         InstanceGroup newGroup = chaos.noSuffixInstanceGroup(group);
         assertEquals(newGroup.name(), "new-group-TestGroup");
+    }
+    
+    @Test
+    public void testCloudFormationChaosMonkeyIntegration() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
+        CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 1);
+        Assert.assertEquals(ctx.terminated().size(), 1);
+
     }
 }
