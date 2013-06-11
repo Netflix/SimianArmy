@@ -83,9 +83,9 @@ public class BasicInstanceGroup implements InstanceGroup {
 
     /** {@inheritDoc} */
     @Override
-    public BasicInstanceGroup copyAs(String name){
-    	BasicInstanceGroup newGroup = new BasicInstanceGroup(name, this.type(), this.region());
-        for(String instance: this.instances()){
+    public BasicInstanceGroup copyAs(String newName) {
+        BasicInstanceGroup newGroup = new BasicInstanceGroup(newName, this.type(), this.region());
+        for (String instance: this.instances()) {
             newGroup.addInstance(instance);
         }
         return newGroup;

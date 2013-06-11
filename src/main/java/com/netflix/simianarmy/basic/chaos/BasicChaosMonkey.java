@@ -187,6 +187,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     /**
+     * Gets the effective probability value, returns 0 if the group is not enabled. Otherwise calls
+     * getEffectiveProbability.
+     *
+     * @param group
+     * @return
+     */
+    protected double getEffectiveProbability(InstanceGroup group) {
+        if (!isGroupEnabled(group)) {
+            return 0;
+        }
+        return getEffectiveProbabilityFromCfg(group);
+    }
+
+    /**
      * Gets the effective probability value when the monkey processes an instance group, it uses the following
      * logic in the order as listed below.
      *
@@ -197,17 +211,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
      * 3) Use the probability configured for the group
      * 4) Use 1.0
      * @param group
-     * @return
+     * @return double
      */
-    
-    protected double getEffectiveProbability(InstanceGroup group) {       
-        if(!isGroupEnabled(group)){
-        	return 0;
-        }
-        return getEffectiveProbabilityFromCfg(group);
-    }
-
-    protected double getEffectiveProbabilityFromCfg(InstanceGroup group){
+    protected double getEffectiveProbabilityFromCfg(InstanceGroup group) {
         String propName;
         if (cfg.getBool(NS + "mandatoryTermination.enabled")) {
             String mtwProp = NS + "mandatoryTermination.windowInDays";
@@ -251,6 +257,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return false;
     }
 
+    /**
+     * Checks to see if the given instance group is enabled.
+     * @param group
+     * @return boolean
+     */
     protected boolean isGroupEnabled(InstanceGroup group) {
         String prop = NS + group.type() + "." + group.name() + ".enabled";
         String defaultProp = NS + group.type() + ".enabled";
@@ -313,6 +324,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
+    /**
+     * Checks to see if the maximum termination window has been exceeded.
+     *
+     * @param group
+     * @return boolean
+     */
     protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
         Validate.notNull(group);
         String propName = "maxTerminationsPerDay";

@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.aws.janitor.VolumeTaggingMonkey;
-import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkey;
 import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkeyContext;
 import com.netflix.simianarmy.basic.janitor.BasicVolumeTaggingMonkeyContext;
@@ -65,13 +64,13 @@ public class BasicMonkeyServer extends HttpServlet {
      */
     @SuppressWarnings("rawtypes")
     private Class chaosContextClass = com.netflix.simianarmy.basic.BasicChaosMonkeyContext.class;
-    
+
     /**
-     * make the class of the chaos object configurable
+     * make the class of the chaos object configurable.
      */
     @SuppressWarnings("rawtypes")
     private Class chaosClass = com.netflix.simianarmy.basic.chaos.BasicChaosMonkey.class;
-    
+
     @Override
     public void init() throws ServletException {
         super.init();
@@ -89,24 +88,23 @@ public class BasicMonkeyServer extends HttpServlet {
     private void configureClient() throws ServletException {
         Properties clientConfig = loadClientConfigProperties();
 
-        Class newContextClass = loadClientClass(clientConfig, "simianarmy.client.context.class"); 
-        this.chaosContextClass = ( newContextClass == null ? this.chaosContextClass : newContextClass );
+        Class newContextClass = loadClientClass(clientConfig, "simianarmy.client.context.class");
+        this.chaosContextClass = (newContextClass == null ? this.chaosContextClass : newContextClass);
 
-        Class newChaosClass = loadClientClass(clientConfig, "simianarmy.client.chaos.class"); 
-        this.chaosClass = ( newChaosClass == null ? this.chaosClass : newChaosClass );
-
+        Class newChaosClass = loadClientClass(clientConfig, "simianarmy.client.chaos.class");
+        this.chaosClass = (newChaosClass == null ? this.chaosClass : newChaosClass);
     }
-    
+
     @SuppressWarnings("rawtypes")
     private Class loadClientClass(Properties clientConfig, String key) throws ServletException {
-    	ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
-    	try {
+        ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
+        try {
             String clientClassName = clientConfig.getProperty(key);
             if (clientClassName == null || clientClassName.isEmpty()) {
                 LOGGER.info("using standard client " + this.chaosContextClass.getCanonicalName());
                 return null;
             }
-			Class newClass = classLoader.loadClass(clientClassName);
+        Class newClass = classLoader.loadClass(clientClassName);
             LOGGER.info("as " + key + " loaded " + chaosContextClass.getCanonicalName());
             return newClass;
         } catch (ClassNotFoundException e) {
