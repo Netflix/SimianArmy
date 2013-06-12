@@ -236,10 +236,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return prob;
     }
 
-    private boolean noTerminationInLastWindow(InstanceGroup group, int mandatoryTerminationWindowInDays) {
+    /**
+     * Returns lastOptInTimeInMilliseconds from the .properties file.
+     *
+     * @param group
+     * @return long
+     */
+    protected long getLastOptInMilliseconds(InstanceGroup group) {
         String prop = NS + group.type() + "." + group.name() + ".lastOptInTimeInMilliseconds";
         long lastOptInTimeInMilliseconds = (long) cfg.getNumOrElse(prop, -1);
+        return lastOptInTimeInMilliseconds;
+    }
 
+    private boolean noTerminationInLastWindow(InstanceGroup group, int mandatoryTerminationWindowInDays) {
+    long lastOptInTimeInMilliseconds = getLastOptInMilliseconds(group);
         if (lastOptInTimeInMilliseconds < 0) {
             return false;
         }

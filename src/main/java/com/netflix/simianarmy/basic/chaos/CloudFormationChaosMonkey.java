@@ -54,6 +54,19 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     }
 
     /**
+     * Returns the lastOptInTimeInMilliseconds parameter for a group omitting the
+     * randomly generated suffix.
+     *
+     * @param group
+     * @return long
+     */
+    @Override
+    protected long getLastOptInMilliseconds(InstanceGroup group) {
+        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
+        return super.getLastOptInMilliseconds(noSuffixGroup);
+    }
+
+    /**
      * Return a copy of the instance group removing the randomly generated suffix from
      * its name.
      *

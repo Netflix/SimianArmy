@@ -47,6 +47,14 @@ public class TestCloudFormationChaosMonkey {
     }
     
     @Test
+    public void testGetLastOptInMilliseconds(){
+    	TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
+        CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
+        InstanceGroup group = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+        assertEquals(chaos.getLastOptInMilliseconds(group),2000);
+    }
+    
+    @Test
     public void testCloudFormationChaosMonkeyIntegration() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
@@ -54,6 +62,5 @@ public class TestCloudFormationChaosMonkey {
         chaos.stop();
         Assert.assertEquals(ctx.selectedOn().size(), 1);
         Assert.assertEquals(ctx.terminated().size(), 1);
-
     }
 }
