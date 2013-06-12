@@ -68,7 +68,7 @@ public class TestBasicChaosInstanceSelector {
         }
 
         @Override
-        public InstanceGroup copyAs(String name){
+        public InstanceGroup copyAs(String name) {
             return this;
         }
     };
