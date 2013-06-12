@@ -65,6 +65,16 @@ public interface ChaosCrawler {
          *            the instance
          */
         void addInstance(String instance);
+
+        /**
+         * Copies the Instance group replacing its name with
+         * the supplied name.
+         *
+         *
+         * @param name
+         * @return the new instance group
+         */
+        InstanceGroup copyAs(String name);
     }
 
     /**
