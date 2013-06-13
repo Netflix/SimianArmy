@@ -189,9 +189,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
     /**
      * Gets the effective probability value, returns 0 if the group is not enabled. Otherwise calls
      * getEffectiveProbability.
-     *
      * @param group
-     * @return
+     * @return the effective probability value for the instance group
      */
     protected double getEffectiveProbability(InstanceGroup group) {
         if (!isGroupEnabled(group)) {
