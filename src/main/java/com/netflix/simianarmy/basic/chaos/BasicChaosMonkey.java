@@ -187,6 +187,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     /**
+     * Gets the effective probability value, returns 0 if the group is not enabled. Otherwise calls
+     * getEffectiveProbability.
+     *
+     * @param group
+     * @return
+     */
+    protected double getEffectiveProbability(InstanceGroup group) {
+        if (!isGroupEnabled(group)) {
+            return 0;
+        }
+        return getEffectiveProbabilityFromCfg(group);
+    }
+
+    /**
      * Gets the effective probability value when the monkey processes an instance group, it uses the following
      * logic in the order as listed below.
      *
@@ -197,13 +211,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
      * 3) Use the probability configured for the group
      * 4) Use 1.0
      * @param group
-     * @return
+     * @return double
      */
-    private double getEffectiveProbability(InstanceGroup group) {
-        if (!isGroupEnabled(group)) {
-            return 0;
-        }
-
+    protected double getEffectiveProbabilityFromCfg(InstanceGroup group) {
         String propName;
         if (cfg.getBool(NS + "mandatoryTermination.enabled")) {
             String mtwProp = NS + "mandatoryTermination.windowInDays";
@@ -226,10 +236,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return prob;
     }
 
-    private boolean noTerminationInLastWindow(InstanceGroup group, int mandatoryTerminationWindowInDays) {
+    /**
+     * Returns lastOptInTimeInMilliseconds from the .properties file.
+     *
+     * @param group
+     * @return long
+     */
+    protected long getLastOptInMilliseconds(InstanceGroup group) {
         String prop = NS + group.type() + "." + group.name() + ".lastOptInTimeInMilliseconds";
         long lastOptInTimeInMilliseconds = (long) cfg.getNumOrElse(prop, -1);
+        return lastOptInTimeInMilliseconds;
+    }
 
+    private boolean noTerminationInLastWindow(InstanceGroup group, int mandatoryTerminationWindowInDays) {
+    long lastOptInTimeInMilliseconds = getLastOptInMilliseconds(group);
         if (lastOptInTimeInMilliseconds < 0) {
             return false;
         }
@@ -247,7 +267,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return false;
     }
 
-    private boolean isGroupEnabled(InstanceGroup group) {
+    /**
+     * Checks to see if the given instance group is enabled.
+     * @param group
+     * @return boolean
+     */
+    protected boolean isGroupEnabled(InstanceGroup group) {
         String prop = NS + group.type() + "." + group.name() + ".enabled";
         String defaultProp = NS + group.type() + ".enabled";
         if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp))) {
@@ -309,7 +334,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
-    private boolean isMaxTerminationCountExceeded(InstanceGroup group) {
+    /**
+     * Checks to see if the maximum termination window has been exceeded.
+     *
+     * @param group
+     * @return boolean
+     */
+    protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
         Validate.notNull(group);
         String propName = "maxTerminationsPerDay";
         String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);

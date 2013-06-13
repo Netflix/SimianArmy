@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.aws.janitor.VolumeTaggingMonkey;
-import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkey;
 import com.netflix.simianarmy.basic.janitor.BasicJanitorMonkeyContext;
 import com.netflix.simianarmy.basic.janitor.BasicVolumeTaggingMonkeyContext;
@@ -51,7 +50,7 @@ public class BasicMonkeyServer extends HttpServlet {
     @SuppressWarnings("unchecked")
     public void addMonkeysToRun() {
         LOGGER.info("Adding Chaos Monkey.");
-        RUNNER.replaceMonkey(getChaosMonkeyClass(), this.chaosContextClass);
+        RUNNER.replaceMonkey(this.chaosClass, this.chaosContextClass);
         LOGGER.info("Adding Volume Tagging Monkey.");
         RUNNER.replaceMonkey(VolumeTaggingMonkey.class, BasicVolumeTaggingMonkeyContext.class);
         LOGGER.info("Adding Janitor Monkey.");
@@ -66,10 +65,11 @@ public class BasicMonkeyServer extends HttpServlet {
     @SuppressWarnings("rawtypes")
     private Class chaosContextClass = com.netflix.simianarmy.basic.BasicChaosMonkeyContext.class;
 
+    /**
+     * make the class of the chaos object configurable.
+     */
     @SuppressWarnings("rawtypes")
-    protected Class getChaosMonkeyClass() {
-        return BasicChaosMonkey.class;
-    }
+    private Class chaosClass = com.netflix.simianarmy.basic.chaos.BasicChaosMonkey.class;
 
     @Override
     public void init() throws ServletException {
@@ -84,26 +84,31 @@ public class BasicMonkeyServer extends HttpServlet {
      * @throws ServletException
      *             if the configured client cannot be loaded properly
      */
+    @SuppressWarnings("rawtypes")
     private void configureClient() throws ServletException {
         Properties clientConfig = loadClientConfigProperties();
 
-        loadClientContextClass(clientConfig);
+        Class newContextClass = loadClientClass(clientConfig, "simianarmy.client.context.class");
+        this.chaosContextClass = (newContextClass == null ? this.chaosContextClass : newContextClass);
 
+        Class newChaosClass = loadClientClass(clientConfig, "simianarmy.client.chaos.class");
+        this.chaosClass = (newChaosClass == null ? this.chaosClass : newChaosClass);
     }
 
-    private void loadClientContextClass(Properties clientConfig) throws ServletException {
-        String clientContextClassKey = "simianarmy.client.context.class";
+    @SuppressWarnings("rawtypes")
+    private Class loadClientClass(Properties clientConfig, String key) throws ServletException {
         ClassLoader classLoader = BasicMonkeyServer.class.getClassLoader();
         try {
-            String clientContextClassName = clientConfig.getProperty(clientContextClassKey);
-            if (clientContextClassName == null || clientContextClassName.isEmpty()) {
+            String clientClassName = clientConfig.getProperty(key);
+            if (clientClassName == null || clientClassName.isEmpty()) {
                 LOGGER.info("using standard client " + this.chaosContextClass.getCanonicalName());
-                return;
+                return null;
             }
-            this.chaosContextClass = classLoader.loadClass(clientContextClassName);
-            LOGGER.info("as " + clientContextClassKey + " loaded " + chaosContextClass.getCanonicalName());
+        Class newClass = classLoader.loadClass(clientClassName);
+            LOGGER.info("as " + key + " loaded " + chaosContextClass.getCanonicalName());
+            return newClass;
         } catch (ClassNotFoundException e) {
-            throw new ServletException("Could not load " + clientContextClassKey, e);
+            throw new ServletException("Could not load " + key, e);
         }
     }
 
@@ -140,7 +145,7 @@ public class BasicMonkeyServer extends HttpServlet {
     public void destroy() {
         RUNNER.stop();
         LOGGER.info("Stopping Chaos Monkey.");
-        RUNNER.removeMonkey(getChaosMonkeyClass());
+        RUNNER.removeMonkey(this.chaosClass);
         LOGGER.info("Stopping volume tagging Monkey.");
         RUNNER.removeMonkey(VolumeTaggingMonkey.class);
         LOGGER.info("Stopping Janitor Monkey.");

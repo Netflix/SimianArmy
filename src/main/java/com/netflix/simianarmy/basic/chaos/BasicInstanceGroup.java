@@ -80,4 +80,14 @@ public class BasicInstanceGroup implements InstanceGroup {
     public void addInstance(String instance) {
         list.add(instance);
     }
+
+    /** {@inheritDoc} */
+    @Override
+    public BasicInstanceGroup copyAs(String newName) {
+        BasicInstanceGroup newGroup = new BasicInstanceGroup(newName, this.type(), this.region());
+        for (String instance: this.instances()) {
+            newGroup.addInstance(instance);
+        }
+        return newGroup;
+    }
 }

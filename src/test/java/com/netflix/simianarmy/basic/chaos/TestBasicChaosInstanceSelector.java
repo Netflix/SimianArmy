@@ -66,6 +66,11 @@ public class TestBasicChaosInstanceSelector {
 
         public void addInstance(String ignored) {
         }
+
+        @Override
+        public InstanceGroup copyAs(String name) {
+            return this;
+        }
     };
 
     @Test
