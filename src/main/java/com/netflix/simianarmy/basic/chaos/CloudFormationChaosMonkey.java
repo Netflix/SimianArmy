@@ -19,8 +19,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
 
     /**
      * {@inheritDoc}
-     * @param group
-     * @return
      */
     @Override
     protected boolean isGroupEnabled(InstanceGroup group) {
@@ -30,8 +28,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
 
     /**
      * {@inheritDoc}
-     * @param group
-     * @return
      */
     @Override
     protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
@@ -41,8 +37,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
 
     /**
      * {@inheritDoc}
-     * @param group
-     * @return
      */
     @Override
     protected double getEffectiveProbability(InstanceGroup group) {
@@ -56,9 +50,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     /**
      * Returns the lastOptInTimeInMilliseconds parameter for a group omitting the
      * randomly generated suffix.
-     *
-     * @param group
-     * @return long
      */
     @Override
     protected long getLastOptInMilliseconds(InstanceGroup group) {
@@ -69,9 +60,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     /**
      * Return a copy of the instance group removing the randomly generated suffix from
      * its name.
-     *
-     * @param group
-     * @return InstanceGroup
      */
     public InstanceGroup noSuffixInstanceGroup(InstanceGroup group) {
         String newName = group.name().replaceAll("(-)([^-]*$)", "");
