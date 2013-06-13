@@ -101,11 +101,11 @@ public class BasicMonkeyServer extends HttpServlet {
         try {
             String clientClassName = clientConfig.getProperty(key);
             if (clientClassName == null || clientClassName.isEmpty()) {
-                LOGGER.info("using standard client " + this.chaosContextClass.getCanonicalName());
+                LOGGER.info("using standard client for " + key);
                 return null;
             }
         Class newClass = classLoader.loadClass(clientClassName);
-            LOGGER.info("as " + key + " loaded " + chaosContextClass.getCanonicalName());
+            LOGGER.info("using " + key + " loaded " + newClass.getCanonicalName());
             return newClass;
         } catch (ClassNotFoundException e) {
             throw new ServletException("Could not load " + key, e);
@@ -120,7 +120,8 @@ public class BasicMonkeyServer extends HttpServlet {
      *             if the file cannot be read
      */
     private Properties loadClientConfigProperties() throws ServletException {
-        String clientConfigFileName = "/client.properties";
+        String propertyFileName = "client.properties";
+        String clientConfigFileName = System.getProperty(propertyFileName, "/" + propertyFileName);
         LOGGER.info("using client properties " + clientConfigFileName);
 
         InputStream input = null;
