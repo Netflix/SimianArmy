@@ -58,6 +58,15 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     }
 
     /**
+     * Handle email notifications for no suffix instance groups.
+     */
+    @Override
+    public void sendTerminationNotification(InstanceGroup group, String instance) {
+        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
+        super.sendTerminationNotification(noSuffixGroup, instance);
+    }
+
+    /**
      * Return a copy of the instance group removing the randomly generated suffix from
      * its name.
      */

@@ -76,6 +76,11 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
      * @return the owner email of the instance group
      */
     protected String getOwnerEmail(InstanceGroup group) {
+        String propEmailGlobalReceiver = String.format("simianarmy.chaos.notification.global.receiverEmail");
+        if (cfg.getStr(propEmailGlobalReceiver) != null) {
+            return cfg.getStr(propEmailGlobalReceiver);
+        }
+
         String prop = String.format("simianarmy.chaos.%s.%s.ownerEmail", group.type(), group.name());
         String ownerEmail = cfg.getStr(prop);
         if (ownerEmail == null) {

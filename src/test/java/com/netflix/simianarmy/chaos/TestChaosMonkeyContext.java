@@ -248,14 +248,6 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
             @Override
             public void sendTerminationNotification(InstanceGroup group, String instance) {
-                String prop = String.format("simianarmy.chaos.%s.%s.notification.enabled",
-                        group.type(), group.name());
-                if (!cfg.getBoolOrElse(prop, false)) {
-                    LOGGER.debug(String.format("Group %s [type %s] does not turn on termination notification, "
-                            + "set %s=true to enable it.",
-                            group.name(), group.type(), prop));
-                    return;
-                }
                 notified++;
             }
         };
