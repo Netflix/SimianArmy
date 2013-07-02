@@ -21,6 +21,7 @@ apply from: file('gradle/release.gradle')
 apply plugin: 'war'
 apply plugin: 'jetty'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
 
 dependencies {
     // for the VMWareClient

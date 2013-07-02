@@ -162,7 +162,7 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
             }
 
             @Override
-            public int opentHour() {
+            public int openHour() {
                 return (int) configuration().getNumOrElse("simianarmy.conformity.notification.openHour", 0);
             }
 

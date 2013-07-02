@@ -111,9 +111,7 @@ public class BasicConformityMonkey extends ConformityMonkey {
         cfg.reload();
         context().resetEventReport();
 
-        if (!isConformityMonkeyEnabled()) {
-            return;
-        } else {
+        if (isConformityMonkeyEnabled()) {
             nonconformingClusters.clear();
             conformingClusters.clear();
             failedClusters.clear();
@@ -143,7 +141,7 @@ public class BasicConformityMonkey extends ConformityMonkey {
             LOGGER.info(String.format("Performing conformity check for %d crawled clusters.", clusters.size()));
             Date now = calendar.now().getTime();
             for (Cluster cluster : clusters) {
-                boolean conforming = true;
+                boolean conforming;
                 try {
                     conforming = ruleEngine.check(cluster);
                 } catch (Exception e) {
