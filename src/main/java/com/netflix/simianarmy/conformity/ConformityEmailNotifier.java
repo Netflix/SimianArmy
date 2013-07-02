@@ -65,7 +65,7 @@ public class ConformityEmailNotifier  extends AWSEmailNotifier {
          * @return
          *      the open hour the email notifications are sent
          */
-        int opentHour();
+        int openHour();
 
         /**
          * Gets the close hour the email notifications are sent.
@@ -120,7 +120,7 @@ public class ConformityEmailNotifier  extends AWSEmailNotifier {
      */
     public ConformityEmailNotifier(Context ctx) {
         super(ctx.sesClient());
-        this.openHour = ctx.opentHour();
+        this.openHour = ctx.openHour();
         this.closeHour = ctx.closeHour();
         for (String region : ctx.regions()) {
             this.regions.add(region);
