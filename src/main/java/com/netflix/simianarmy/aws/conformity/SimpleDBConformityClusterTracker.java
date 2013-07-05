@@ -112,7 +112,7 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
         Validate.notEmpty(clusterName);
         Validate.notEmpty(region);
         StringBuilder query = new StringBuilder();
-        query.append(String.format("select * from %s where cluster = '%s' and region = '%s'",
+        query.append(String.format("select * from `%s` where cluster = '%s' and region = '%s'",
                 domain, clusterName, region));
 
         LOGGER.info(String.format("Query is to get the cluster is '%s'", query));
@@ -149,7 +149,7 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
         Validate.notNull(regions);
         List<Cluster> clusters = Lists.newArrayList();
         StringBuilder query = new StringBuilder();
-        query.append(String.format("select * from %s where cluster is not null and ", domain));
+        query.append(String.format("select * from `%s` where cluster is not null and ", domain));
         boolean needsAnd = false;
         if (regions.length != 0) {
             query.append(String.format("region in ('%s') ", StringUtils.join(regions, "','")));
