@@ -22,6 +22,7 @@ import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.SuspendedProcess;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.conformity.Cluster;
@@ -31,6 +32,7 @@ import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -75,11 +77,13 @@ public class AWSClusterCrawler implements ClusterCrawler {
         for (Map.Entry<String, AWSClient> entry : regionToAwsClient.entrySet()) {
             String region = entry.getKey();
             AWSClient awsClient = entry.getValue();
+            HashSet<String> asgInstances = Sets.newHashSet();
             LOGGER.info(String.format("Crawling clusters in region %s", region));
             for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(clusterNames)) {
                 List<String> instances = Lists.newArrayList();
                 for (Instance instance : asg.getInstances()) {
                     instances.add(instance.getInstanceId());
+                    asgInstances.add(instance.getInstanceId());
                 }
                 com.netflix.simianarmy.conformity.AutoScalingGroup conformityAsg =
                         new com.netflix.simianarmy.conformity.AutoScalingGroup(
@@ -97,14 +101,17 @@ public class AWSClusterCrawler implements ClusterCrawler {
                 updateCluster(cluster);
                 list.add(cluster);
             }
-            //Cluster containing all instances
+            //Cluster containing all solo instances
             List<String> instances = Lists.newArrayList();
             for (com.amazonaws.services.ec2.model.Instance awsInstance : awsClient.describeInstances()) {
-                //May need to exclude those in an asg but not a straightforward api for it.
-                LOGGER.info(String.format("Found instance %s.", awsInstance.getInstanceId()));
-                instances.add(awsInstance.getInstanceId());
+                LOGGER.debug(String.format("Found instance %s.", awsInstance.getInstanceId()));
+                if (!asgInstances.contains(awsInstance.getInstanceId())) {
+                    LOGGER.info(String.format("Adding instance %s to soloInstances cluster.",
+                            awsInstance.getInstanceId()));
+                    instances.add(awsInstance.getInstanceId());
+                }
             }
-            Cluster cluster = new Cluster("SoleInstances", region, instances);
+            Cluster cluster = new Cluster("SoloInstances", region, instances);
             updateCluster(cluster);
             list.add(cluster);
         }
