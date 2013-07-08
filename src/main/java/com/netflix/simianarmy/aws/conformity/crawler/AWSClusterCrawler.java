@@ -94,19 +94,33 @@ public class AWSClusterCrawler implements ClusterCrawler {
                     }
                 }
                 Cluster cluster = new Cluster(asg.getAutoScalingGroupName(), region, conformityAsg);
+                updateCluster(cluster);
                 list.add(cluster);
-                updateExcludedConformityRules(cluster);
-                cluster.setOwnerEmail(getOwnerEmailForCluster(cluster));
-                String prop = String.format("simianarmy.conformity.cluster.%s.optedOut", cluster.getName());
-                if (cfg.getBoolOrElse(prop, false)) {
-                    LOGGER.info(String.format("Cluster %s is opted out of Conformity Monkey.", cluster.getName()));
-                    cluster.setOptOutOfConformity(true);
-                } else {
-                    cluster.setOptOutOfConformity(false);
-                }
             }
+            //Cluster containing all instances
+            List<String> instances = Lists.newArrayList();
+            for (com.amazonaws.services.ec2.model.Instance awsInstance : awsClient.describeInstances()) {
+                //May need to exclude those in an asg but not a straightforward api for it.
+                LOGGER.info(String.format("Found instance %s.", awsInstance.getInstanceId()));
+                instances.add(awsInstance.getInstanceId());
+            }
+            Cluster cluster = new Cluster("SoleInstances", region, instances);
+            updateCluster(cluster);
+            list.add(cluster);
         }
         return list;
+    }
+
+    private void updateCluster(Cluster cluster) {
+        updateExcludedConformityRules(cluster);
+        cluster.setOwnerEmail(getOwnerEmailForCluster(cluster));
+        String prop = String.format("simianarmy.conformity.cluster.%s.optedOut", cluster.getName());
+        if (cfg.getBoolOrElse(prop, false)) {
+            LOGGER.info(String.format("Cluster %s is opted out of Conformity Monkey.", cluster.getName()));
+            cluster.setOptOutOfConformity(true);
+        } else {
+            cluster.setOptOutOfConformity(false);
+        }
     }
 
     /**

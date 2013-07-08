@@ -55,6 +55,7 @@ public class Cluster {
     private final Collection<String> excludedConformityRules = Sets.newHashSet();
     private boolean isConforming;
     private boolean isOptOutOfConformity;
+    private Collection<String> soleInstances = Lists.newArrayList();
 
     /**
      * Constructor.
@@ -71,6 +72,24 @@ public class Cluster {
         this.region = region;
         for (AutoScalingGroup asg : autoScalingGroups) {
             this.autoScalingGroups.add(asg);
+        }
+    }
+
+    /**
+     * Constructor.
+     * @param name
+     *          the name of the cluster
+     * @param soleInstances
+     *          the list of all instances
+     */
+    public Cluster(String name, String region, List<String> soleInstances) {
+        Validate.notNull(name);
+        Validate.notNull(region);
+        Validate.notNull(autoScalingGroups);
+        this.name = name;
+        this.region = region;
+        for (String soleInstance : soleInstances) {
+            this.soleInstances.add(soleInstance);
         }
     }
 
@@ -294,4 +313,9 @@ public class Cluster {
             map.put(key, value);
         }
     }
+
+    public Collection<String> getSoleInstances() {
+        return Collections.unmodifiableCollection(soleInstances);
+    }
+
 }
