@@ -104,16 +104,18 @@ public class AWSClusterCrawler implements ClusterCrawler {
             //Cluster containing all solo instances
             List<String> instances = Lists.newArrayList();
             for (com.amazonaws.services.ec2.model.Instance awsInstance : awsClient.describeInstances()) {
-                LOGGER.debug(String.format("Found instance %s.", awsInstance.getInstanceId()));
                 if (!asgInstances.contains(awsInstance.getInstanceId())) {
                     LOGGER.info(String.format("Adding instance %s to soloInstances cluster.",
                             awsInstance.getInstanceId()));
                     instances.add(awsInstance.getInstanceId());
                 }
             }
-            Cluster cluster = new Cluster("SoloInstances", region, instances);
-            updateCluster(cluster);
-            list.add(cluster);
+            //Only create cluster if we have solo instances.
+            if (!instances.isEmpty()) {
+                Cluster cluster = new Cluster("SoloInstances", region, instances);
+                updateCluster(cluster);
+                list.add(cluster);
+            }
         }
         return list;
     }
