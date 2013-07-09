@@ -20,6 +20,7 @@ package com.netflix.simianarmy.aws.conformity.rule;
 
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
+import com.netflix.simianarmy.conformity.AutoScalingGroup;
 import com.netflix.simianarmy.conformity.Cluster;
 import com.netflix.simianarmy.conformity.Conformity;
 import junit.framework.Assert;
@@ -62,6 +63,24 @@ public class TestInstanceInVPC {
         list.add(INSTANCE_ID);
         Cluster cluster = new Cluster("SoloInstances", REGION, list);
         Conformity result = instanceInVPC.check(cluster);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getRuleId(), instanceInVPC.getName());
+        Assert.assertEquals(result.getFailedComponents().size(), 1);
+        Assert.assertEquals(result.getFailedComponents().iterator().next(), INSTANCE_ID);
+    }
+
+    @Test
+    public void testAsgInstances() throws Exception {
+        AutoScalingGroup autoScalingGroup = new AutoScalingGroup("Conforming", VPC_INSTANCE_ID);
+        Cluster conformingCluster = new Cluster("Conforming", REGION, autoScalingGroup);
+        Conformity result = instanceInVPC.check(conformingCluster);
+        Assert.assertNotNull(result);
+        Assert.assertEquals(result.getRuleId(), instanceInVPC.getName());
+        Assert.assertEquals(result.getFailedComponents().size(), 0);
+
+        autoScalingGroup = new AutoScalingGroup("NonConforming", INSTANCE_ID);
+        Cluster nonConformingCluster = new Cluster("NonConforming", REGION, autoScalingGroup);
+        result = instanceInVPC.check(nonConformingCluster);
         Assert.assertNotNull(result);
         Assert.assertEquals(result.getRuleId(), instanceInVPC.getName());
         Assert.assertEquals(result.getFailedComponents().size(), 1);
