@@ -20,6 +20,7 @@ package com.netflix.simianarmy.aws.conformity.rule;
 
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.netflix.simianarmy.conformity.AutoScalingGroup;
 import com.netflix.simianarmy.conformity.Cluster;
 import com.netflix.simianarmy.conformity.Conformity;
@@ -30,6 +31,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import java.util.List;
+import java.util.Set;
 
 import static org.mockito.Mockito.doReturn;
 
@@ -58,7 +60,7 @@ public class TestInstanceInVPC {
 
     @Test
     public void testCheckSoloInstances() throws Exception {
-        List<String> list = Lists.newArrayList();
+        Set<String> list = Sets.newHashSet();
         list.add(VPC_INSTANCE_ID);
         list.add(INSTANCE_ID);
         Cluster cluster = new Cluster("SoloInstances", REGION, list);

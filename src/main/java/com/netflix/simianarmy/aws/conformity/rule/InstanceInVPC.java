@@ -3,6 +3,7 @@ package com.netflix.simianarmy.aws.conformity.rule;
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.conformity.AutoScalingGroup;
 import com.netflix.simianarmy.conformity.Cluster;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class implements a conformity rule to check an instance is in a virtual private cloud.
@@ -30,13 +32,15 @@ public class InstanceInVPC implements ConformityRule {
     public Conformity check(Cluster cluster) {
         Collection<String> failedComponents = Lists.newArrayList();
         //check all instances
-        checkInstancesInVPC(cluster.getRegion(), cluster.getSoloInstances(), failedComponents);
+        Set<String> failedInstances = checkInstancesInVPC(cluster.getRegion(), cluster.getSoloInstances());
+        failedComponents.addAll(failedInstances);
         //check asg instances
         for (AutoScalingGroup asg : cluster.getAutoScalingGroups()) {
             if (asg.isSuspended()) {
                 continue;
             }
-            checkInstancesInVPC(cluster.getRegion(), asg.getInstances(), failedComponents);
+            Set<String> asgFailedInstances = checkInstancesInVPC(cluster.getRegion(), asg.getInstances());
+            failedComponents.addAll(asgFailedInstances);
         }
         return new Conformity(getName(), failedComponents);
     }
@@ -60,16 +64,17 @@ public class InstanceInVPC implements ConformityRule {
         return awsClient;
     }
 
-    private void checkInstancesInVPC(String region, Collection<String> instances,
-                                      Collection<String> failedComponents) {
+    private Set<String> checkInstancesInVPC(String region, Collection<String> instances) {
+        Set<String> failedInstances = Sets.newHashSet();
         for (String instanceId : instances) {
             for (Instance awsInstance : getAWSInstances(region, instanceId)) {
                 if (awsInstance.getVpcId() == null) {
                     LOGGER.info(String.format("Instance %s is not in a virtual private cloud", instanceId));
-                    failedComponents.add(instanceId);
+                    failedInstances.add(instanceId);
                 }
             }
         }
+        return failedInstances;
     }
 
     /**

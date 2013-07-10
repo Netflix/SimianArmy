@@ -32,9 +32,9 @@ import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class implementing a crawler that gets the auto scaling groups from AWS.
@@ -77,7 +77,7 @@ public class AWSClusterCrawler implements ClusterCrawler {
         for (Map.Entry<String, AWSClient> entry : regionToAwsClient.entrySet()) {
             String region = entry.getKey();
             AWSClient awsClient = entry.getValue();
-            HashSet<String> asgInstances = Sets.newHashSet();
+            Set<String> asgInstances = Sets.newHashSet();
             LOGGER.info(String.format("Crawling clusters in region %s", region));
             for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(clusterNames)) {
                 List<String> instances = Lists.newArrayList();
@@ -102,7 +102,7 @@ public class AWSClusterCrawler implements ClusterCrawler {
                 list.add(cluster);
             }
             //Cluster containing all solo instances
-            List<String> instances = Lists.newArrayList();
+            Set<String> instances = Sets.newHashSet();
             for (com.amazonaws.services.ec2.model.Instance awsInstance : awsClient.describeInstances()) {
                 if (!asgInstances.contains(awsInstance.getInstanceId())) {
                     LOGGER.info(String.format("Adding instance %s to soloInstances cluster.",
