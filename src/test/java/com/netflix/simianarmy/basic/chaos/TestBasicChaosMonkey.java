@@ -402,7 +402,8 @@ public class TestBasicChaosMonkey {
         chaos.stop();
         Assert.assertEquals(ctx.selectedOn().size(), 4);
         Assert.assertEquals(ctx.terminated().size(), 4);
-        Assert.assertEquals(ctx.getNotified(), 4);
+        Assert.assertEquals(ctx.getNotified(), 1);
+        Assert.assertEquals(ctx.getGloballyNotified(), 4);
     }
 
     private void terminateOnDemand(TestChaosMonkeyContext ctx, String groupType, String groupName) {

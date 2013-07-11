@@ -55,18 +55,40 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         this.defaultEmail = defaultEmail;
         this.ccAddresses = Arrays.asList(ccAddresses);
     }
+    
+    /**
+     * Sends an email notification for a termination of instance to a global
+     * email address
+     * @param group the instance group
+     * @param instanceId the instance id
+     */
+    @Override
+    public void sendTerminationGlobalNotification(InstanceGroup group, String instanceId) {
+        String to = cfg.getStr("simianarmy.chaos.notification.global.receiverEmail");
+        
+        if(to == null) {
+            LOGGER.warn("Global email address was not set, but global email notification was enabled!");
+            return;
+        }
+
+        String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
+                    instanceId, group.type(), group.name());
+        String subject = buildEmailSubject(to);
+        sendEmail(to, subject, body);
+    }    
 
     /**
-     * Sends an email notification for a termination of instance.
+     * Sends an email notification for a termination of instance to the group
+     * owner's email address
      * @param group the instance group
      * @param instanceId the instance id
      */
     @Override
     public void sendTerminationNotification(InstanceGroup group, String instanceId) {
         String to = getOwnerEmail(group);
-        String subject = buildEmailSubject(to);
         String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
-                instanceId, group.type(), group.name());
+                    instanceId, group.type(), group.name());
+        String subject = buildEmailSubject(to);
         sendEmail(to, subject, body);
     }
 
@@ -76,11 +98,6 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
      * @return the owner email of the instance group
      */
     protected String getOwnerEmail(InstanceGroup group) {
-        String propEmailGlobalReceiver = String.format("simianarmy.chaos.notification.global.receiverEmail");
-        if (cfg.getStr(propEmailGlobalReceiver) != null) {
-            return cfg.getStr(propEmailGlobalReceiver);
-        }
-
         String prop = String.format("simianarmy.chaos.%s.%s.ownerEmail", group.type(), group.name());
         String ownerEmail = cfg.getStr(prop);
         if (ownerEmail == null) {

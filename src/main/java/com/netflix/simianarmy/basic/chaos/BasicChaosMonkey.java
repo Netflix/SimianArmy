@@ -372,19 +372,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     @Override
     public void sendTerminationNotification(InstanceGroup group, String instance) {
-        String propEmailGlobalReceiver = "simianarmy.chaos.notification.global.receiverEmail";
+        String propEmailGlobalEnabled = "simianarmy.chaos.notification.global.enabled";
         String propEmailGroupEnabled = String.format("%s%s.%s.notification.enabled", NS, group.type(), group.name());
-
-        if (cfg.getStr(propEmailGlobalReceiver) == null) {
-            LOGGER.debug(String.format("No global notification termination turned on, set %s",
-                    propEmailGlobalReceiver));
-
-            if (!cfg.getBoolOrElse(propEmailGroupEnabled, false)) {
-                LOGGER.debug(String.format("Group %s [type %s] does not turn on termination notification, "
-                                + "set %s=true to enable it.", group.name(), group.type(), propEmailGroupEnabled));
-                return;
-            }
-        }
 
         ChaosEmailNotifier notifier = context().chaosEmailNotifier();
         if (notifier == null) {
@@ -392,6 +381,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
             LOGGER.error(msg);
             throw new RuntimeException(msg);
         }
-        notifier.sendTerminationNotification(group, instance);
+        if (cfg.getBoolOrElse(propEmailGroupEnabled, false)) {
+            notifier.sendTerminationNotification(group, instance);
+        }
+        if (cfg.getBoolOrElse(propEmailGlobalEnabled, false)) {
+            notifier.sendTerminationGlobalNotification(group, instance);
+        }
     }
 }
