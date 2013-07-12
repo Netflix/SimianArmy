@@ -20,6 +20,7 @@ package com.netflix.simianarmy.basic.chaos;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,18 +56,18 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         this.defaultEmail = defaultEmail;
         this.ccAddresses = Arrays.asList(ccAddresses);
     }
-    
+
     /**
      * Sends an email notification for a termination of instance to a global
-     * email address
+     * email address.
      * @param group the instance group
      * @param instanceId the instance id
      */
     @Override
     public void sendTerminationGlobalNotification(InstanceGroup group, String instanceId) {
         String to = cfg.getStr("simianarmy.chaos.notification.global.receiverEmail");
-        
-        if(to == null) {
+
+        if (StringUtils.isBlank(to)) {
             LOGGER.warn("Global email address was not set, but global email notification was enabled!");
             return;
         }
@@ -74,12 +75,13 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
                     instanceId, group.type(), group.name());
         String subject = buildEmailSubject(to);
+        LOGGER.info("sending termination notification to global email address {}", to);
         sendEmail(to, subject, body);
-    }    
+    }
 
     /**
      * Sends an email notification for a termination of instance to the group
-     * owner's email address
+     * owner's email address.
      * @param group the instance group
      * @param instanceId the instance id
      */
@@ -89,6 +91,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
                     instanceId, group.type(), group.name());
         String subject = buildEmailSubject(to);
+        LOGGER.info("sending termination notification to group owner email address {}", to);
         sendEmail(to, subject, body);
     }
 
