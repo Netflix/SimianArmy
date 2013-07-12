@@ -394,6 +394,18 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(ctx.getNotified(), 2);
     }
 
+    @Test
+    public void testGlobalNotificationEnabled() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("globalNotificationEnabled.properties");
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        Assert.assertEquals(ctx.selectedOn().size(), 4);
+        Assert.assertEquals(ctx.terminated().size(), 4);
+        Assert.assertEquals(ctx.getNotified(), 1);
+        Assert.assertEquals(ctx.getGloballyNotified(), 4);
+    }
+
     private void terminateOnDemand(TestChaosMonkeyContext ctx, String groupType, String groupName) {
         String input = String.format("{\"eventType\":\"CHAOS_TERMINATION\",\"groupType\":\"%s\",\"groupName\":\"%s\"}",
                 groupType, groupName);

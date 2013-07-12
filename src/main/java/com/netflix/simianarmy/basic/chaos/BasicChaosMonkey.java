@@ -372,19 +372,20 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     @Override
     public void sendTerminationNotification(InstanceGroup group, String instance) {
-        String prop = String.format("%s%s.%s.notification.enabled", NS, group.type(), group.name());
-        if (!cfg.getBoolOrElse(prop, false)) {
-            LOGGER.debug(String.format("Group %s [type %s] does not turn on termination notification, "
-                    + "set %s=true to enable it.",
-                    group.name(), group.type(), prop));
-            return;
-        }
+        String propEmailGlobalEnabled = "simianarmy.chaos.notification.global.enabled";
+        String propEmailGroupEnabled = String.format("%s%s.%s.notification.enabled", NS, group.type(), group.name());
+
         ChaosEmailNotifier notifier = context().chaosEmailNotifier();
         if (notifier == null) {
             String msg = "Chaos email notifier is not set.";
             LOGGER.error(msg);
             throw new RuntimeException(msg);
         }
-        notifier.sendTerminationNotification(group, instance);
+        if (cfg.getBoolOrElse(propEmailGroupEnabled, false)) {
+            notifier.sendTerminationNotification(group, instance);
+        }
+        if (cfg.getBoolOrElse(propEmailGlobalEnabled, false)) {
+            notifier.sendTerminationGlobalNotification(group, instance);
+        }
     }
 }

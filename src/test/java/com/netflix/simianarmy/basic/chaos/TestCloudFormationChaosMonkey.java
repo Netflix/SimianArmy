@@ -88,5 +88,6 @@ public class TestCloudFormationChaosMonkey {
         chaos.stop();
         Assert.assertEquals(ctx.selectedOn().size(), 1);
         Assert.assertEquals(ctx.terminated().size(), 1);
+        Assert.assertEquals(ctx.getNotified(), 1);
     }
 }

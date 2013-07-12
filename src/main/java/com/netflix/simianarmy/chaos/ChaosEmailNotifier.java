@@ -37,10 +37,19 @@ public abstract class ChaosEmailNotifier extends AWSEmailNotifier {
     }
 
     /**
-     * Sends an email notification for a termination of instance.
+     * Sends an email notification for a termination of instance to group
+     * owner's email address.
      * @param group the instance group
      * @param instance the instance id
      */
     public abstract void sendTerminationNotification(InstanceGroup group, String instance);
+
+    /**
+     * Sends an email notification for a termination of instance to a global
+     * email address.
+     * @param group the instance group
+     * @param instance the instance id
+     */
+    public abstract void sendTerminationGlobalNotification(InstanceGroup group, String instance);
 
 }
