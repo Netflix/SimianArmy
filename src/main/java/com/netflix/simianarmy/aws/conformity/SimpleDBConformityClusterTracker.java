@@ -53,6 +53,8 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
     /** The SimpleDB client. */
     private final AmazonSimpleDB simpleDBClient;
 
+    private static final int  MAX_ATTR_SIZE = 1024;
+
     /**
      * Instantiates a new simple db cluster tracker for conformity monkey.
      *
@@ -82,7 +84,8 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
         List<ReplaceableAttribute> attrs = new ArrayList<ReplaceableAttribute>();
         Map<String, String> fieldToValueMap = cluster.getFieldToValueMap();
         for (Map.Entry<String, String> entry : fieldToValueMap.entrySet()) {
-            attrs.add(new ReplaceableAttribute(entry.getKey(), entry.getValue(), true));
+            attrs.add(new ReplaceableAttribute(entry.getKey(), StringUtils.left(entry.getValue(), MAX_ATTR_SIZE),
+                    true));
         }
         PutAttributesRequest putReqest = new PutAttributesRequest(domain, getSimpleDBItemName(cluster), attrs);
         LOGGER.debug(String.format("Saving cluster %s to SimpleDB domain %s",
