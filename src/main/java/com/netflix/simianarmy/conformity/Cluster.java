@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The class implementing clusters. Cluster is the basic unit of conformity check. It can be a single ASG or
@@ -55,6 +56,7 @@ public class Cluster {
     private final Collection<String> excludedConformityRules = Sets.newHashSet();
     private boolean isConforming;
     private boolean isOptOutOfConformity;
+    private final Set<String> soloInstances = Sets.newHashSet();
 
     /**
      * Constructor.
@@ -71,6 +73,24 @@ public class Cluster {
         this.region = region;
         for (AutoScalingGroup asg : autoScalingGroups) {
             this.autoScalingGroups.add(asg);
+        }
+    }
+
+    /**
+     * Constructor.
+     * @param name
+     *          the name of the cluster
+     * @param soloInstances
+     *          the list of all instances
+     */
+    public Cluster(String name, String region, Set<String> soloInstances) {
+        Validate.notNull(name);
+        Validate.notNull(region);
+        Validate.notNull(soloInstances);
+        this.name = name;
+        this.region = region;
+        for (String soleInstance : soloInstances) {
+            this.soloInstances.add(soleInstance);
         }
     }
 
@@ -294,4 +314,9 @@ public class Cluster {
             map.put(key, value);
         }
     }
+
+    public Set<String> getSoloInstances() {
+        return Collections.unmodifiableSet(soloInstances);
+    }
+
 }
