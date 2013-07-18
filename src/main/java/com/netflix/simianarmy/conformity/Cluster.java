@@ -86,7 +86,7 @@ public class Cluster {
     public Cluster(String name, String region, Set<String> soloInstances) {
         Validate.notNull(name);
         Validate.notNull(region);
-        Validate.notNull(autoScalingGroups);
+        Validate.notNull(soloInstances);
         this.name = name;
         this.region = region;
         for (String soleInstance : soloInstances) {
