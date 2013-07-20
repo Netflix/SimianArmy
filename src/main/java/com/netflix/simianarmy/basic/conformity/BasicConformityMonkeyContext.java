@@ -29,6 +29,7 @@ import com.netflix.simianarmy.aws.conformity.rule.ConformityEurekaClient;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceHasHealthCheckUrl;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceHasStatusUrl;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceInSecurityGroup;
+import com.netflix.simianarmy.aws.conformity.rule.InstanceInVPC;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceIsHealthyInEureka;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceTooOld;
 import com.netflix.simianarmy.aws.conformity.rule.SameZonesInElbAndAsg;
@@ -141,6 +142,11 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.SameZonesInElbAndAsg.enabled", false)) {
             ruleEngine().addRule(new SameZonesInElbAndAsg());
+        }
+
+        if (configuration().getBoolOrElse(
+                "simianarmy.conformity.rule.InstanceInVPC.enabled", false)) {
+            ruleEngine.addRule(new InstanceInVPC());
         }
 
         regionToAwsClient.put(region(), new AWSClient(region()));
