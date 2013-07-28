@@ -24,7 +24,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  * Terminates a VirtualMachine by setting the named property and resetting it.
  *
  * The following properties can be overridden in the client.properties
- * simianarmy.client.vsphere.terminationStrategy.property.name  = PROPETY_NAME
+ * simianarmy.client.vsphere.terminationStrategy.property.name  = PROPERTY_NAME
  * simianarmy.client.vsphere.terminationStrategy.property.value = PROPERTY_VALUE
  *
  * @author ingmar.krusch@immobilienscout24.de
