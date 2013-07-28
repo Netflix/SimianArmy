@@ -217,7 +217,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
 
 
     /**
-     * Adds information of last attachement to the resources. To be compatible with the AWS implemenation of
+     * Adds information of last attachment to the resources. To be compatible with the AWS implementation of
      * the same crawler, add the information to the JANITOR_META tag. It always uses the latest information
      * to update the tag in this resource (not writing back to AWS) no matter if the tag exists.
      * @param resources the volume resources
