@@ -91,7 +91,7 @@ public class InstanceTooOld implements ConformityRule {
 
     /**
      * Gets the launch time (in milliseconds) for a list of instance ids of the same region. The default
-     * implementation is using an AWS client. The method can be overriden in subclasses to get the instance
+     * implementation is using an AWS client. The method can be overridden in subclasses to get the instance
      * launch times differently.
      * @param region
      *      the region of the instances
