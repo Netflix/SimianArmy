@@ -316,7 +316,7 @@ public abstract class AbstractJanitor implements Janitor {
      * 2) the expected termination time is already passed
      * 3) the owner has already been notified about the cleanup
      * 4) the resource is not opted out of Janitor monkey
-     * The method can be overriden in subclasses.
+     * The method can be overridden in subclasses.
      * @param resource the resource the Janitor considers to clean
      * @param now the time that represents the current time
      * @return true if the resource is OK to clean, false otherwise
