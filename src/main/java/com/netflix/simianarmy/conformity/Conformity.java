@@ -63,6 +63,6 @@ public class Conformity {
      *      the components that cause the conformity check to fail
      */
     public Collection<String> getFailedComponents() {
-        return Collections.unmodifiableCollection(failedComponenets);
+        return Collections.unmodifiableCollection(failedComponents);
     }
 }
