@@ -129,11 +129,11 @@ public class OldEmptyASGRule implements Rule {
 
         DateTime createTime = new DateTime(Long.parseLong(lcCreationTime));
         if (now.isBefore(createTime.plusDays(launchConfigAgeThreshold))) {
-            LOGGER.info(String.format("The launch configuation %s has not been created for more than %d days",
+            LOGGER.info(String.format("The launch configuration %s has not been created for more than %d days",
                     lcName, launchConfigAgeThreshold));
             return true;
         }
-        LOGGER.info(String.format("The launch configuation %s has been created for more than %d days",
+        LOGGER.info(String.format("The launch configuration %s has been created for more than %d days",
                 lcName, launchConfigAgeThreshold));
 
         if (lastChangeDaysThreshold != null) {
