@@ -42,7 +42,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     private static final Logger LOGGER = LoggerFactory.getLogger(JanitorEmailNotifier.class);
     private static final String UNKNOWN_EMAIL = "UNKNOWN";
     /**
-     * If the sheduled termination date is within 2 hours of notification date + headsup days,
+     * If the scheduled termination date is within 2 hours of notification date + headsup days,
      * we don't need to extend the termination date.
      */
     private static final int HOURS_IN_MARGIN = 2;
