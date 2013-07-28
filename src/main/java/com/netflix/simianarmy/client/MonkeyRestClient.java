@@ -77,7 +77,7 @@ public abstract class MonkeyRestClient {
             ObjectMapper mapper = new ObjectMapper();
             result = mapper.readTree(jsonContent);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Error trying to parse json reponse from url %s, got: %s",
+            throw new RuntimeException(String.format("Error trying to parse json response from url %s, got: %s",
                     url, jsonContent), e);
         }
         return result;
