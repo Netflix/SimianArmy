@@ -46,7 +46,7 @@ public class EddaEBSSnapshotJanitorCrawler implements JanitorCrawler {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(EddaEBSSnapshotJanitorCrawler.class);
 
-    /** The name representing the additional field name of AMIs genreated using the snapshot. */
+    /** The name representing the additional field name of AMIs generated using the snapshot. */
     public static final String SNAPSHOT_FIELD_AMIS = "AMIs";
 
 
