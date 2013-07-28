@@ -55,7 +55,7 @@ public class InstanceIsHealthyInEureka implements ConformityRule {
         for (AutoScalingGroup asg : cluster.getAutoScalingGroups()) {
             // ignore suspended ASGs
             if (asg.isSuspended()) {
-                LOGGER.info(String.format("ASG %s is supspended, ingore.", asg.getName()));
+                LOGGER.info(String.format("ASG %s is suspended, ignore.", asg.getName()));
                 continue;
             }
             for (String instance : asg.getInstances()) {
