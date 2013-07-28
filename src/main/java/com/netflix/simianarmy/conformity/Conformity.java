@@ -29,22 +29,22 @@ import java.util.Collections;
 public class Conformity {
 
     private final String ruleId;
-    private final Collection<String> failedComponenets = Lists.newArrayList();
+    private final Collection<String> failedComponents = Lists.newArrayList();
 
     /**
      * Constructor.
      * @param ruleId
      *          the conformity rule id
-     * @param failedComponenets
+     * @param failedComponents
      *          the components that cause the conformity check to fail, if there is
-     *          no failed componenets, it means the conformity check passes.
+     *          no failed components, it means the conformity check passes.
      */
-    public Conformity(String ruleId, Collection<String> failedComponenets) {
+    public Conformity(String ruleId, Collection<String> failedComponents) {
         Validate.notNull(ruleId);
-        Validate.notNull(failedComponenets);
+        Validate.notNull(failedComponents);
         this.ruleId = ruleId;
-        for (String failedComponent : failedComponenets) {
-            this.failedComponenets.add(failedComponent);
+        for (String failedComponent : failedComponents) {
+            this.failedComponents.add(failedComponent);
         }
     }
 
