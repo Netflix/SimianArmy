@@ -29,9 +29,9 @@ public abstract class MonkeyRestClient {
 
     /**
      * Constructor.
-     * @param timeout the timeout in miliseconds
+     * @param timeout the timeout in milliseconds
      * @param maxRetries the max number of retries
-     * @param retryInterval the interval in milisends between retries
+     * @param retryInterval the interval in milliseconds between retries
      */
     public MonkeyRestClient(int timeout, int maxRetries, int retryInterval) {
         Validate.isTrue(timeout >= 0);
