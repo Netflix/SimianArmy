@@ -41,7 +41,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
 
     private final Map<String, AWSClient> regionToAwsClient = Maps.newHashMap();
     private static final String RULE_NAME = "SameZonesInElbAndAsg";
-    private static final String REASON = "Avaliability zones of ELB and ASG are different";
+    private static final String REASON = "Availability zones of ELB and ASG are different";
 
     @Override
     public Conformity check(Cluster cluster) {
