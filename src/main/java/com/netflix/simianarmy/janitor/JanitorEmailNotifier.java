@@ -215,7 +215,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
 
     /**
      * Decides if it is time for sending notification for the resource. This method can be
-     * overriden in subclasses so notifications can be send earlier or later.
+     * overridden in subclasses so notifications can be send earlier or later.
      * @param resource the resource
      * @return true if it is OK to send notification now, otherwise false.
      */
