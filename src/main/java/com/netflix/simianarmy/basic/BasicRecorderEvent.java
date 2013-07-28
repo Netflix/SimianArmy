@@ -55,7 +55,7 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      * @param eventType
      *            the event type
      * @param region
-     *            the region event occured in
+     *            the region event occurred in
      * @param id
      *            the event id
      */
@@ -75,7 +75,7 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      * @param eventType
      *            the event type
      * @param region
-     *            the region event occured in
+     *            the region event occurred in
      * @param id
      *            the event id
      * @param time

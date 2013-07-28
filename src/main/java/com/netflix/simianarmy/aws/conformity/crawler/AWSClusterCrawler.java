@@ -54,7 +54,7 @@ public class AWSClusterCrawler implements ClusterCrawler {
      * Instantiates a new cluster crawler.
      *
      * @param regionToAwsClient
-     *            the map from region to the correponding aws client for the region
+     *            the map from region to the corresponding aws client for the region
      */
     public AWSClusterCrawler(Map<String, AWSClient> regionToAwsClient, MonkeyConfiguration cfg) {
         Validate.notNull(regionToAwsClient);
@@ -92,7 +92,7 @@ public class AWSClusterCrawler implements ClusterCrawler {
 
                 for (SuspendedProcess sp : asg.getSuspendedProcesses()) {
                     if ("AddToLoadBalancer".equals(sp.getProcessName())) {
-                        LOGGER.info(String.format("ASG %s is suspeneded: %s", asg.getAutoScalingGroupName(),
+                        LOGGER.info(String.format("ASG %s is suspended: %s", asg.getAutoScalingGroupName(),
                                 asg.getSuspendedProcesses()));
                         conformityAsg.setSuspended(true);
                     }

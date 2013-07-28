@@ -16,9 +16,9 @@ public class EddaClient extends MonkeyRestClient {
     private final MonkeyConfiguration config;
     /**
      * Constructor.
-     * @param timeout the timeout in miliseconds
+     * @param timeout the timeout in milliseconds
      * @param maxRetries the max number of retries
-     * @param retryInterval the interval in milisends between retries
+     * @param retryInterval the interval in milliseconds between retries
      * @param config the monkey configuration
      */
     public EddaClient(int timeout, int maxRetries, int retryInterval, MonkeyConfiguration config) {

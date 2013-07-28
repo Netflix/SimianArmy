@@ -138,7 +138,7 @@ public class JanitorMonkeyResource {
             gen.writeStringField("message",
                     String.format("Failed to opt %s resource %s", op, resourceId));
         }
-        LOGGER.info(String.format("Opt %s operaction completed.", op));
+        LOGGER.info(String.format("Opt %s operation completed.", op));
         return responseStatus;
     }
 

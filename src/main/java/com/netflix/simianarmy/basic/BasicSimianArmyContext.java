@@ -82,7 +82,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
         for (String configFile : configFiles) {
             loadConfigurationFileIntoProperties(configFile);
         }
-        LOGGER.info("The folowing are properties in the context.");
+        LOGGER.info("The following are properties in the context.");
         for (Entry<Object, Object> prop : properties.entrySet()) {
             LOGGER.info(String.format("%s = %s", prop.getKey(), prop.getValue()));
         }

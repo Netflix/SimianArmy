@@ -53,7 +53,7 @@ public class LaunchConfigJanitor extends AbstractJanitor {
 
     @Override
     protected void cleanup(Resource resource) {
-        LOGGER.info(String.format("Deleting launch configurationt %s", resource.getId()));
+        LOGGER.info(String.format("Deleting launch configuration %s", resource.getId()));
         awsClient.deleteLaunchConfiguration(resource.getId());
     }
 
