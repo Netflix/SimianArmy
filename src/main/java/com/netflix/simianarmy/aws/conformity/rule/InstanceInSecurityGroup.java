@@ -97,7 +97,7 @@ public class InstanceInSecurityGroup implements ConformityRule {
 
     /**
      * Checks whether the collection of security group names are valid. The default implementation here is to check
-     * whether the security groups contain the required security groups. The method can be overriden for different
+     * whether the security groups contain the required security groups. The method can be overridden for different
      * rules.
      * @param sgNames
      *      The collection of security group names
@@ -116,7 +116,7 @@ public class InstanceInSecurityGroup implements ConformityRule {
 
     /**
      * Gets the security groups for a list of instance ids of the same region. The default implementation
-     * is using an AWS client. The method can be overriden in subclasses to get the security groups differently.
+     * is using an AWS client. The method can be overridden in subclasses to get the security groups differently.
      * @param region
      *      the region of the instances
      * @param instanceIds

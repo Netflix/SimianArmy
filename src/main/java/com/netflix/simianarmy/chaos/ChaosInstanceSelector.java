@@ -32,7 +32,7 @@ public interface ChaosInstanceSelector {
      * group. If the random number is higher than the provided probability then no instance will be selected and
      * <b>null</b> will be returned.
      *
-     * When the probability value is bigger than 1, say N + 0.x, it will first applies the algorithem described above
+     * When the probability value is bigger than 1, say N + 0.x, it will first applies the algorithm described above
      * with the probability value as 0.x to select possibly one instance, then it will randomly pick N instances.
      *
      * The probability is the run probability. If Chaos is running hourly between 9am and 3pm with an overall configured

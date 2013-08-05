@@ -82,7 +82,7 @@ public abstract class ConformityMonkey extends Monkey {
     private final Context ctx;
 
     /**
-     * Instantiates a new Coformity monkey.
+     * Instantiates a new Conformity monkey.
      *
      * @param ctx
      *            the context.

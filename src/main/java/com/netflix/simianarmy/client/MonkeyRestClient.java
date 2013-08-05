@@ -29,9 +29,9 @@ public abstract class MonkeyRestClient {
 
     /**
      * Constructor.
-     * @param timeout the timeout in miliseconds
+     * @param timeout the timeout in milliseconds
      * @param maxRetries the max number of retries
-     * @param retryInterval the interval in milisends between retries
+     * @param retryInterval the interval in milliseconds between retries
      */
     public MonkeyRestClient(int timeout, int maxRetries, int retryInterval) {
         Validate.isTrue(timeout >= 0);
@@ -77,7 +77,7 @@ public abstract class MonkeyRestClient {
             ObjectMapper mapper = new ObjectMapper();
             result = mapper.readTree(jsonContent);
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Error trying to parse json reponse from url %s, got: %s",
+            throw new RuntimeException(String.format("Error trying to parse json response from url %s, got: %s",
                     url, jsonContent), e);
         }
         return result;

@@ -130,7 +130,7 @@ public class NoGeneratedAMIRule implements Rule {
     }
 
     /**
-     * Gets the AMI created using the snapshot. This method can be overriden by subclasses
+     * Gets the AMI created using the snapshot. This method can be overridden by subclasses
      * if they use a different way to check this.
      * @param resource the snapshot resource
      * @return true if there are AMIs that are created using the snapshot, false otherwise

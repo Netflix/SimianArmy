@@ -132,7 +132,7 @@ public class VolumeTaggingMonkey extends Monkey {
                 tagVolumesWithLatestAttachment(awsClient);
             }
         } else {
-            LOGGER.info(String.format("Volume tagging monkey is not enabled. You can set %s to true to enalbe it.",
+            LOGGER.info(String.format("Volume tagging monkey is not enabled. You can set %s to true to enable it.",
                     prop));
         }
     }
@@ -149,7 +149,7 @@ public class VolumeTaggingMonkey extends Monkey {
             List<Tag> tags = volume.getTags();
 
             // The volume can have a special tag is it does not want to be changed/tagged
-            // by Jantior monkey.
+            // by Janitor monkey.
             if ("donotmark".equals(getTagValue(JanitorMonkey.JANITOR_TAG, tags))) {
                 LOGGER.info(String.format("The volume %s is tagged as not handled by Janitor",
                         volume.getVolumeId()));
@@ -245,7 +245,7 @@ public class VolumeTaggingMonkey extends Monkey {
         return metadata;
     }
 
-    /** Gets the domain name for the owner email. The method can be overriden in subclasses.
+    /** Gets the domain name for the owner email. The method can be overridden in subclasses.
      *
      * @return the domain name for the owner email.
      */

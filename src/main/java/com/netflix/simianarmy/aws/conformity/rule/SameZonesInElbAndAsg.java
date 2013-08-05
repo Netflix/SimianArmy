@@ -41,7 +41,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
 
     private final Map<String, AWSClient> regionToAwsClient = Maps.newHashMap();
     private static final String RULE_NAME = "SameZonesInElbAndAsg";
-    private static final String REASON = "Avaliability zones of ELB and ASG are different";
+    private static final String REASON = "Availability zones of ELB and ASG are different";
 
     @Override
     public Conformity check(Cluster cluster) {
@@ -75,7 +75,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
     }
 
     /**
-     * Gets the load blancer names of an ASG. Can be overriden in subclasses.
+     * Gets the load balancer names of an ASG. Can be overridden in subclasses.
      * @param region the region
      * @param asgName the ASG name
      * @return the list of load balancer names
@@ -92,7 +92,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
     }
 
     /**
-     * Gets the list of availability zones for an ASG. Can be overriden in subclasses.
+     * Gets the list of availability zones for an ASG. Can be overridden in subclasses.
      * @param region the region
      * @param asgName the ASG name.
      * @return the list of the availability zones that the ASG has.
@@ -109,7 +109,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
     }
 
     /**
-     * Gets the list of availability zones for a load balancer. Can be overriden in subclasses.
+     * Gets the list of availability zones for a load balancer. Can be overridden in subclasses.
      * @param region the region
      * @param lbName the load balancer name.
      * @return the list of the availability zones that the load balancer has.
