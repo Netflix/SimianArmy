@@ -27,6 +27,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -71,6 +74,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** The reported events. */
     private final LinkedList<Event> eventReport;
 
+    /** The AWS credentials provider to be used. */
+    private AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
+
     /** If configured, the ARN of Role to be assumed. */
     private final String assumeRoleArn;
 
@@ -100,6 +106,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
         assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
+        if (assumeRoleArn != null) {
+            this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn);
+        }
 
         // if credentials are set explicitly make them available to the AWS SDK
         if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
@@ -158,11 +167,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * @param clientRegion
      */
     protected void createClient(String clientRegion) {
-        if (assumeRoleArn == null) {
-            this.client = new AWSClient(clientRegion);
-        } else {
-            this.client = new AWSClient(clientRegion, new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn));
-        }
+        this.client = new AWSClient(clientRegion, awsCredentialsProvider);
         setCloudClient(this.client);
     }
 
