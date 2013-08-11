@@ -17,6 +17,8 @@
  */
 package com.netflix.simianarmy.aws.conformity.rule;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.ec2.model.GroupIdentifier;
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
@@ -48,12 +50,27 @@ public class InstanceInSecurityGroup implements ConformityRule {
 
     private final Collection<String> requiredSecurityGroupNames = Sets.newHashSet();
 
+    private AWSCredentialsProvider awsCredentialsProvider;
+
     /**
      * Constructor.
      * @param requiredSecurityGroupNames
      *      The security group names that are required to have for every instance of a cluster.
      */
     public InstanceInSecurityGroup(String... requiredSecurityGroupNames) {
+        this(new DefaultAWSCredentialsProviderChain(), requiredSecurityGroupNames);
+    }
+
+    /**
+     * Constructor.
+     * @param awsCredentialsProvider
+     *      The AWS credentials provider
+     * @param requiredSecurityGroupNames
+     *      The security group names that are required to have for every instance of a cluster.
+     */
+    public InstanceInSecurityGroup(AWSCredentialsProvider awsCredentialsProvider, String... requiredSecurityGroupNames)
+    {
+        this.awsCredentialsProvider = awsCredentialsProvider;
         Validate.notNull(requiredSecurityGroupNames);
         for (String sgName : requiredSecurityGroupNames) {
             Validate.notNull(sgName);
@@ -129,7 +146,7 @@ public class InstanceInSecurityGroup implements ConformityRule {
         if (instanceIds == null || instanceIds.length == 0) {
             return result;
         }
-        AWSClient awsClient = new AWSClient(region);
+        AWSClient awsClient = new AWSClient(region, awsCredentialsProvider);
         for (Instance instance : awsClient.describeInstances(instanceIds)) {
             // Ignore instances that are in VPC
             if (StringUtils.isNotEmpty(instance.getVpcId())) {

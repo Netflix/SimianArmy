@@ -35,7 +35,9 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyScheduler;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
+import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.client.aws.AWSClient;
+
 
 /**
  * The Class BasicSimianArmyContext.
@@ -69,6 +71,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** The reported events. */
     private final LinkedList<Event> eventReport;
 
+    /** If configured, the ARN of Role to be assumed. */
+    private final String assumeRoleArn;
+
     private final String account;
 
     private final String secret;
@@ -93,6 +98,8 @@ public class BasicSimianArmyContext implements Monkey.Context {
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
+
+        assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
 
         // if credentials are set explicitly make them available to the AWS SDK
         if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
@@ -138,12 +145,24 @@ public class BasicSimianArmyContext implements Monkey.Context {
             setRecorder(new SimpleDBRecorder(client, domain));
         }
     }
-
     /**
-     * Create the specific client. Override to provide your own client.
+     * Create the specific client with region taken from properties.
+     * Override to provide your own client.
      */
     protected void createClient() {
-        this.client = new AWSClient(region);
+        createClient(region);
+    }
+
+    /**
+     * Create the specific client within passed region, using the appropriate AWS credentials provider.
+     * @param clientRegion
+     */
+    protected void createClient(String clientRegion) {
+        if (assumeRoleArn == null) {
+            this.client = new AWSClient(clientRegion);
+        } else {
+            this.client = new AWSClient(clientRegion, new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn));
+        }
         setCloudClient(this.client);
     }
 
@@ -289,5 +308,13 @@ public class BasicSimianArmyContext implements Monkey.Context {
      */
     protected Properties getProperties() {
         return this.properties;
+    }
+
+    /**
+     * Gets the assume role arn.
+     * @return the assume role arn
+     */
+    public String getAssumeRoleArn() {
+        return assumeRoleArn;
     }
 }

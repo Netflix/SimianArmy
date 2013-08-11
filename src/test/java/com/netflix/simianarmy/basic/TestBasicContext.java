@@ -33,6 +33,8 @@ public class TestBasicContext {
         Assert.assertNotNull(ctx.chaosInstanceSelector());
 
         Assert.assertTrue(ctx.configuration().getBool("simianarmy.calendar.isMonkeyTime"));
+        Assert.assertEquals(ctx.configuration().getStr("simianarmy.client.aws.assumeRoleArn"),
+                                                        "arn:aws:iam::fakeAccount:role/fakeRole");
         // Verify that the property in chaos.properties overrides the same property in simianarmy.properties
         Assert.assertFalse(ctx.configuration().getBool("simianarmy.chaos.enabled"));
     }
