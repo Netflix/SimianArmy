@@ -1,5 +1,7 @@
 package com.netflix.simianarmy.aws.conformity.rule;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -9,6 +11,7 @@ import com.netflix.simianarmy.conformity.AutoScalingGroup;
 import com.netflix.simianarmy.conformity.Cluster;
 import com.netflix.simianarmy.conformity.Conformity;
 import com.netflix.simianarmy.conformity.ConformityRule;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +28,28 @@ public class InstanceInVPC implements ConformityRule {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstanceInVPC.class);
 
     private final Map<String, AWSClient> regionToAwsClient = Maps.newHashMap();
+
+    private AWSCredentialsProvider awsCredentialsProvider;
+
     private static final String RULE_NAME = "InstanceInVPC";
     private static final String REASON = "VPC_ID not defined";
+
+    /**
+     * Constructs an instance with the default AWS credentials provider chain.
+     * @see com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+     */
+    public InstanceInVPC() {
+        this(new DefaultAWSCredentialsProviderChain());
+    }
+
+    /**
+     * Constructs an instance with the passed AWS credentials provider.
+     * @param awsCredentialsProvider
+     *      The AWS credentials provider
+     */
+    public InstanceInVPC(AWSCredentialsProvider awsCredentialsProvider) {
+        this.awsCredentialsProvider = awsCredentialsProvider;
+    }
 
     @Override
     public Conformity check(Cluster cluster) {
@@ -58,7 +81,7 @@ public class InstanceInVPC implements ConformityRule {
     private AWSClient getAwsClient(String region) {
         AWSClient awsClient = regionToAwsClient.get(region);
         if (awsClient == null) {
-            awsClient = new AWSClient(region);
+            awsClient = new AWSClient(region, awsCredentialsProvider);
             regionToAwsClient.put(region, awsClient);
         }
         return awsClient;
