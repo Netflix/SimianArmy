@@ -41,7 +41,6 @@ import com.netflix.simianarmy.aws.SimpleDBRecorder;
 import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
-
 /**
  * The Class BasicSimianArmyContext.
  */
@@ -154,6 +153,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
             setRecorder(new SimpleDBRecorder(client, domain));
         }
     }
+
     /**
      * Create the specific client with region taken from properties.
      * Override to provide your own client.
