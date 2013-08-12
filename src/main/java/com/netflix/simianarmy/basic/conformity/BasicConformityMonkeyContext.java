@@ -17,14 +17,11 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.conformity;
 
-import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.DiscoveryManager;
-import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.aws.conformity.SimpleDBConformityClusterTracker;
 import com.netflix.simianarmy.aws.conformity.crawler.AWSClusterCrawler;
 import com.netflix.simianarmy.aws.conformity.rule.BasicConformityEurekaClient;
@@ -95,13 +92,6 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
         // By default, the monkey is leashed
         leashed = configuration().getBoolOrElse("simianarmy.conformity.leashed", true);
 
-        AWSCredentialsProvider awsCredentialsProvider;
-        if (getAssumeRoleArn() == null) {
-            awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
-        } else {
-            awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(getAssumeRoleArn());
-        }
-
         LOGGER.info(String.format("Conformity Monkey is running in: %s", regions));
 
         String sdbDomain = configuration().getStrOrElse("simianarmy.conformity.sdb.domain", "SIMIAN_ARMY");
@@ -136,7 +126,7 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
             String requiredSecurityGroups = configuration().getStr(
                     "simianarmy.conformity.rule.InstanceInSecurityGroup.requiredSecurityGroups");
             if (!StringUtils.isBlank(requiredSecurityGroups)) {
-                ruleEngine.addRule(new InstanceInSecurityGroup(awsCredentialsProvider,
+                ruleEngine.addRule(new InstanceInSecurityGroup(getAwsCredentialsProvider(),
                         StringUtils.split(requiredSecurityGroups, ",")));
             } else {
                 LOGGER.info("No required security groups is specified, "
@@ -146,18 +136,18 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.InstanceTooOld.enabled", false)) {
-                ruleEngine.addRule(new InstanceTooOld(awsCredentialsProvider, (int) configuration().getNumOrElse(
+                ruleEngine.addRule(new InstanceTooOld(getAwsCredentialsProvider(), (int) configuration().getNumOrElse(
                         "simianarmy.conformity.rule.InstanceTooOld.instanceAgeThreshold", 180)));
         }
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.SameZonesInElbAndAsg.enabled", false)) {
-            ruleEngine().addRule(new SameZonesInElbAndAsg(awsCredentialsProvider));
+            ruleEngine().addRule(new SameZonesInElbAndAsg(getAwsCredentialsProvider()));
         }
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.InstanceInVPC.enabled", false)) {
-                ruleEngine.addRule(new InstanceInVPC(awsCredentialsProvider));
+                ruleEngine.addRule(new InstanceInVPC(getAwsCredentialsProvider()));
         }
 
         createClient(region());

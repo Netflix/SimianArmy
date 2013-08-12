@@ -316,10 +316,10 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
-     * Gets the assume role arn.
-     * @return the assume role arn
+     * Gets the AWS credentials provider.
+     * @return the AWS credentials provider
      */
-    public String getAssumeRoleArn() {
-        return assumeRoleArn;
+    public AWSCredentialsProvider getAwsCredentialsProvider() {
+        return awsCredentialsProvider;
     }
 }
