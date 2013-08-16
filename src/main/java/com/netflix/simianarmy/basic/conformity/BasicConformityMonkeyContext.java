@@ -126,7 +126,8 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
             String requiredSecurityGroups = configuration().getStr(
                     "simianarmy.conformity.rule.InstanceInSecurityGroup.requiredSecurityGroups");
             if (!StringUtils.isBlank(requiredSecurityGroups)) {
-                ruleEngine.addRule(new InstanceInSecurityGroup(StringUtils.split(requiredSecurityGroups, ",")));
+                ruleEngine.addRule(new InstanceInSecurityGroup(getAwsCredentialsProvider(),
+                        StringUtils.split(requiredSecurityGroups, ",")));
             } else {
                 LOGGER.info("No required security groups is specified, "
                         + "the conformity rule InstanceInSecurityGroup is ignored.");
@@ -135,21 +136,23 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.InstanceTooOld.enabled", false)) {
-            ruleEngine.addRule(new InstanceTooOld((int) configuration().getNumOrElse(
-                    "simianarmy.conformity.rule.InstanceTooOld.instanceAgeThreshold", 180)));
+                ruleEngine.addRule(new InstanceTooOld(getAwsCredentialsProvider(), (int) configuration().getNumOrElse(
+                        "simianarmy.conformity.rule.InstanceTooOld.instanceAgeThreshold", 180)));
         }
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.SameZonesInElbAndAsg.enabled", false)) {
-            ruleEngine().addRule(new SameZonesInElbAndAsg());
+            ruleEngine().addRule(new SameZonesInElbAndAsg(getAwsCredentialsProvider()));
         }
 
         if (configuration().getBoolOrElse(
                 "simianarmy.conformity.rule.InstanceInVPC.enabled", false)) {
-            ruleEngine.addRule(new InstanceInVPC());
+                ruleEngine.addRule(new InstanceInVPC(getAwsCredentialsProvider()));
         }
 
-        regionToAwsClient.put(region(), new AWSClient(region()));
+        createClient(region());
+        regionToAwsClient.put(region(), awsClient());
+
         clusterCrawler = new AWSClusterCrawler(regionToAwsClient, configuration());
         sesClient = new AmazonSimpleEmailServiceClient();
         defaultEmail = configuration().getStrOrElse("simianarmy.conformity.notification.defaultEmail", null);

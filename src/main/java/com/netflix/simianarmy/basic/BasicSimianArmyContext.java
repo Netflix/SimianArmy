@@ -27,6 +27,9 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -35,6 +38,7 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyScheduler;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
+import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
 /**
@@ -69,6 +73,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** The reported events. */
     private final LinkedList<Event> eventReport;
 
+    /** The AWS credentials provider to be used. */
+    private AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
+
+    /** If configured, the ARN of Role to be assumed. */
+    private final String assumeRoleArn;
+
     private final String account;
 
     private final String secret;
@@ -93,6 +103,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
+
+        assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
+        if (assumeRoleArn != null) {
+            this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn);
+        }
 
         // if credentials are set explicitly make them available to the AWS SDK
         if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
@@ -140,10 +155,19 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
-     * Create the specific client. Override to provide your own client.
+     * Create the specific client with region taken from properties.
+     * Override to provide your own client.
      */
     protected void createClient() {
-        this.client = new AWSClient(region);
+        createClient(region);
+    }
+
+    /**
+     * Create the specific client within passed region, using the appropriate AWS credentials provider.
+     * @param clientRegion
+     */
+    protected void createClient(String clientRegion) {
+        this.client = new AWSClient(clientRegion, awsCredentialsProvider);
         setCloudClient(this.client);
     }
 
@@ -289,5 +313,13 @@ public class BasicSimianArmyContext implements Monkey.Context {
      */
     protected Properties getProperties() {
         return this.properties;
+    }
+
+    /**
+     * Gets the AWS credentials provider.
+     * @return the AWS credentials provider
+     */
+    public AWSCredentialsProvider getAwsCredentialsProvider() {
+        return awsCredentialsProvider;
     }
 }

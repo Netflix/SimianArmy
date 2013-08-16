@@ -17,6 +17,8 @@
  */
 package com.netflix.simianarmy.aws.conformity.rule;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.ec2.model.Instance;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -46,12 +48,26 @@ public class InstanceTooOld implements ConformityRule {
     private final String reason;
     private final int instanceAgeThreshold;
 
+    private AWSCredentialsProvider awsCredentialsProvider;
+
     /**
      * Constructor.
      * @param instanceAgeThreshold
      *      The age in days that makes an instance be considered too old.
      */
     public InstanceTooOld(int instanceAgeThreshold) {
+        this(new DefaultAWSCredentialsProviderChain(), instanceAgeThreshold);
+    }
+
+    /**
+     * Constructor.
+     * @param awsCredentialsProvider
+     *      The AWS credentials provider
+     * @param instanceAgeThreshold
+     *      The age in days that makes an instance be considered too old.
+     */
+    public InstanceTooOld(AWSCredentialsProvider awsCredentialsProvider, int instanceAgeThreshold) {
+        this.awsCredentialsProvider = awsCredentialsProvider;
         Validate.isTrue(instanceAgeThreshold > 0);
         this.instanceAgeThreshold = instanceAgeThreshold;
         this.reason = String.format("Instances are older than %d days", instanceAgeThreshold);
@@ -105,7 +121,7 @@ public class InstanceTooOld implements ConformityRule {
         if (instanceIds == null || instanceIds.length == 0) {
             return result;
         }
-        AWSClient awsClient = new AWSClient(region);
+        AWSClient awsClient = new AWSClient(region, awsCredentialsProvider);
         for (Instance instance : awsClient.describeInstances(instanceIds)) {
             if (instance.getLaunchTime() != null) {
                 result.put(instance.getInstanceId(), instance.getLaunchTime().getTime());

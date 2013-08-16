@@ -17,6 +17,8 @@
  */
 package com.netflix.simianarmy.aws.conformity.rule;
 
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -40,8 +42,27 @@ public class SameZonesInElbAndAsg implements ConformityRule {
     private static final Logger LOGGER = LoggerFactory.getLogger(InstanceHasStatusUrl.class);
 
     private final Map<String, AWSClient> regionToAwsClient = Maps.newHashMap();
+
+    private AWSCredentialsProvider awsCredentialsProvider;
+
     private static final String RULE_NAME = "SameZonesInElbAndAsg";
     private static final String REASON = "Availability zones of ELB and ASG are different";
+
+    /**
+     * Constructs an instance with the default AWS credentials provider chain.
+     * @see com.amazonaws.auth.DefaultAWSCredentialsProviderChain
+     */
+    public SameZonesInElbAndAsg() {
+        this(new DefaultAWSCredentialsProviderChain());
+    }
+
+    /**
+     * Constructs an instance with the passed AWS Credential Provider.
+     * @param awsCredentialsProvider
+     */
+    public SameZonesInElbAndAsg(AWSCredentialsProvider awsCredentialsProvider) {
+        this.awsCredentialsProvider = awsCredentialsProvider;
+    }
 
     @Override
     public Conformity check(Cluster cluster) {
@@ -128,7 +149,7 @@ public class SameZonesInElbAndAsg implements ConformityRule {
     private AWSClient getAwsClient(String region) {
         AWSClient awsClient = regionToAwsClient.get(region);
         if (awsClient == null) {
-            awsClient = new AWSClient(region);
+            awsClient = new AWSClient(region, awsCredentialsProvider);
             regionToAwsClient.put(region, awsClient);
         }
         return awsClient;
