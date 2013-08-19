@@ -66,25 +66,12 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     @Override
     public void sendTerminationGlobalNotification(InstanceGroup group, String instanceId) {
         String to = cfg.getStr("simianarmy.chaos.notification.global.receiverEmail");
-
         if (StringUtils.isBlank(to)) {
             LOGGER.warn("Global email address was not set, but global email notification was enabled!");
             return;
         }
-
-        String body = buildEmailBody(group, instanceId);
-
-        String subject;
-        boolean emailSubjectIsBody = cfg.getBoolOrElse(
-                "simianarmy.chaos.notification.subject.isBody", false);
-        if (emailSubjectIsBody) {
-            subject = body;
-        } else {
-            subject = buildEmailSubject(to);
-        }
-
         LOGGER.info("sending termination notification to global email address {}", to);
-        sendEmail(to, subject, body);
+        buildAndSendEmail(to, group, instanceId);
     }
 
     /**
@@ -96,20 +83,8 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     @Override
     public void sendTerminationNotification(InstanceGroup group, String instanceId) {
         String to = getOwnerEmail(group);
-
-        String body = buildEmailBody(group, instanceId);
-
-        String subject;
-        boolean emailSubjectIsBody = cfg.getBoolOrElse(
-                "simianarmy.chaos.notification.subject.isBody", false);
-        if (emailSubjectIsBody) {
-            subject = body;
-        } else {
-            subject = buildEmailSubject(to);
-        }
-
         LOGGER.info("sending termination notification to group owner email address {}", to);
-        sendEmail(to, subject, body);
+        buildAndSendEmail(to, group, instanceId);
     }
 
     /**
@@ -128,6 +103,30 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         } else {
             return ownerEmail;
         }
+    }
+
+    /**
+     * Builds the body and subject for the email, sends the email.
+     * @param group
+     *          the instance group
+     * @param instanceId
+     *          the instance id
+     * @param to
+     *          the email address to be sent to
+     */
+    public void buildAndSendEmail(String to, InstanceGroup group, String instanceId) {
+        String body = buildEmailBody(group, instanceId);
+
+        String subject;
+        boolean emailSubjectIsBody = cfg.getBoolOrElse(
+                "simianarmy.chaos.notification.subject.isBody", false);
+        if (emailSubjectIsBody) {
+            subject = body;
+        } else {
+            subject = buildEmailSubject(to);
+        }
+
+        sendEmail(to, subject, body);
     }
 
     @Override
