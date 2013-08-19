@@ -66,17 +66,12 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     @Override
     public void sendTerminationGlobalNotification(InstanceGroup group, String instanceId) {
         String to = cfg.getStr("simianarmy.chaos.notification.global.receiverEmail");
-
         if (StringUtils.isBlank(to)) {
             LOGGER.warn("Global email address was not set, but global email notification was enabled!");
             return;
         }
-
-        String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
-                    instanceId, group.type(), group.name());
-        String subject = buildEmailSubject(to);
         LOGGER.info("sending termination notification to global email address {}", to);
-        sendEmail(to, subject, body);
+        buildAndSendEmail(to, group, instanceId);
     }
 
     /**
@@ -88,11 +83,8 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     @Override
     public void sendTerminationNotification(InstanceGroup group, String instanceId) {
         String to = getOwnerEmail(group);
-        String body = String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
-                    instanceId, group.type(), group.name());
-        String subject = buildEmailSubject(to);
         LOGGER.info("sending termination notification to group owner email address {}", to);
-        sendEmail(to, subject, body);
+        buildAndSendEmail(to, group, instanceId);
     }
 
     /**
@@ -113,9 +105,52 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         }
     }
 
+    /**
+     * Builds the body and subject for the email, sends the email.
+     * @param group
+     *          the instance group
+     * @param instanceId
+     *          the instance id
+     * @param to
+     *          the email address to be sent to
+     */
+    public void buildAndSendEmail(String to, InstanceGroup group, String instanceId) {
+        String body = buildEmailBody(group, instanceId);
+
+        String subject;
+        boolean emailSubjectIsBody = cfg.getBoolOrElse(
+                "simianarmy.chaos.notification.subject.isBody", false);
+        if (emailSubjectIsBody) {
+            subject = body;
+        } else {
+            subject = buildEmailSubject(to);
+        }
+
+        sendEmail(to, subject, body);
+    }
+
     @Override
     public String buildEmailSubject(String to) {
-        return String.format("Chaos Monkey Termination Notification for %s", to);
+        String emailSubjectPrefix = cfg.getStrOrElse("simianarmy.chaos.notification.subject.prefix", "");
+        String emailSubjectSuffix = cfg.getStrOrElse("simianarmy.chaos.notification.subject.suffix", "");
+        return String.format("%sChaos Monkey Termination Notification for %s%s",
+                                                emailSubjectPrefix, to, emailSubjectSuffix);
+    }
+
+    /**
+     * Builds the body for the email.
+     * @param group
+     *          the instance group
+     * @param instanceId
+     *          the instance id
+     * @return the created string
+     */
+    public String buildEmailBody(InstanceGroup group, String instanceId) {
+        String emailBodyPrefix = cfg.getStrOrElse("simianarmy.chaos.notification.body.prefix", "");
+        String emailBodySuffix = cfg.getStrOrElse("simianarmy.chaos.notification.body.suffix", "");
+        String body = String.format("%sInstance %s of %s %s is being terminated by Chaos monkey.%s",
+                    emailBodyPrefix, instanceId, group.type(), group.name(), emailBodySuffix);
+        return body;
     }
 
     @Override
