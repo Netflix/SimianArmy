@@ -45,8 +45,11 @@ import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
+import com.amazonaws.services.ec2.model.DetachVolumeRequest;
+import com.amazonaws.services.ec2.model.EbsInstanceBlockDevice;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
@@ -58,8 +61,10 @@ import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRe
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import com.google.common.base.Strings;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
+
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -530,5 +535,50 @@ public class AWSClient implements CloudClient {
 
         LOGGER.info(String.format("Got %d AMIs in region %s.", images.size(), region));
         return images;
+    }
+
+
+    @Override
+    public void detachVolume(String instanceId, String volumeId, boolean force) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Detach volumes from instance %s in region %s.", instanceId, region));
+        try {
+            DetachVolumeRequest detachVolumeRequest = new DetachVolumeRequest();
+            detachVolumeRequest.setForce(force);
+            detachVolumeRequest.setInstanceId(instanceId);
+            detachVolumeRequest.setVolumeId(volumeId);
+            ec2Client().detachVolume(detachVolumeRequest);
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public List<String> listAttachedVolumes(String instanceId) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Listing volumes attached to instance %s in region %s.", instanceId, region));
+        try {
+            List<String> volumeIds = new ArrayList<String>();
+            for (Instance instance : describeInstances(instanceId)) {
+                for (InstanceBlockDeviceMapping ibdm : instance.getBlockDeviceMappings()) {
+                    EbsInstanceBlockDevice ebs = ibdm.getEbs();
+                    if (ebs == null) continue;
+
+                    String volumeId = ebs.getVolumeId();
+                    if (Strings.isNullOrEmpty(volumeId)) continue;
+
+                    volumeIds.add(volumeId);
+                }
+            }
+            return volumeIds;
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
     }
 }

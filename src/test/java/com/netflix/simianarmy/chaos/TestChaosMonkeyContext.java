@@ -223,6 +223,17 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
             }
+
+            @Override
+            public List<String> listAttachedVolumes(String instanceId) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void detachVolume(String instanceId, String volumeId,
+                    boolean force) {
+                throw new UnsupportedOperationException();
+            }
         };
     }
 

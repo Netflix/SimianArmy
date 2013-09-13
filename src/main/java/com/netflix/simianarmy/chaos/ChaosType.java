@@ -9,7 +9,8 @@ import com.netflix.simianarmy.CloudClient;
 public abstract class ChaosType {
     final String key;
 
-    public static ChaosType[] ALL = { ShutdownInstanceChaosType.INSTANCE };
+    public static ChaosType[] ALL = { ShutdownInstanceChaosType.INSTANCE,
+            DetachVolumesChaosType.INSTANCE };
 
     public static final ChaosType DEFAULT = ShutdownInstanceChaosType.INSTANCE;
 
@@ -44,6 +45,7 @@ public abstract class ChaosType {
                 return chaosType;
             }
         }
-        throw new IllegalArgumentException("Unknown chaos type: " + chaosTypeName);
+        throw new IllegalArgumentException("Unknown chaos type value: "
+                + chaosTypeName);
     }
 }
