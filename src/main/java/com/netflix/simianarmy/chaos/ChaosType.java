@@ -9,11 +9,6 @@ import com.netflix.simianarmy.CloudClient;
  */
 public abstract class ChaosType {
     /**
-     * Default ChaosType to use if none specified.
-     */
-    public static final ChaosType DEFAULT = ShutdownInstanceChaosType.INSTANCE;
-
-    /**
      * The unique key for the ChaosType.
      */
     private final String key;

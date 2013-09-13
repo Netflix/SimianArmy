@@ -89,7 +89,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         close.set(Calendar.HOUR, monkeyCalendar.closeHour());
 
         enabledChaosTypes = Lists.newArrayList();
-        enabledChaosTypes.add(ShutdownInstanceChaosType.DEFAULT);
+        enabledChaosTypes.add(ShutdownInstanceChaosType.INSTANCE);
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);

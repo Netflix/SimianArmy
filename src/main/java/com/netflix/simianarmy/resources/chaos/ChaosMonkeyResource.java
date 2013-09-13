@@ -52,6 +52,7 @@ import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
+import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
 
 /**
  * The Class ChaosMonkeyResource for json REST apis.
@@ -169,7 +170,7 @@ public class ChaosMonkeyResource {
         String groupName = getStringField(input, "groupName");
         String chaosTypeName = getStringField(input, "chaosType");
 
-        ChaosType chaosType = ChaosType.DEFAULT;
+        ChaosType chaosType = ShutdownInstanceChaosType.INSTANCE;
         if (!Strings.isNullOrEmpty(chaosTypeName)) {
             chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
         }
