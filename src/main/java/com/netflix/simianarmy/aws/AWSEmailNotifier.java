@@ -94,11 +94,14 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
         if (email == null) {
             return false;
         }
-        if (emailPattern.matcher(email).matches()) {
-            return true;
-        } else {
+        if (!emailPattern.matcher(email).matches()) {
             LOGGER.error(String.format("Invalid email address: %s", email));
             return false;
         }
+        if (email.equals("foo@bar.com")) {
+            LOGGER.error(String.format("Email address not changed from default; treating as invalid: %s", email));
+            return false;
+        }
+        return true;
     }
 }
