@@ -110,6 +110,11 @@ public class TestMonkeyContext implements Monkey.Context {
             }
 
             @Override
+            public void setSecurityGroups(String instanceId, List<String> groups) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
             public void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds) {
             }
 
