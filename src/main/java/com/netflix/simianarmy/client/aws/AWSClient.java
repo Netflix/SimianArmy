@@ -50,6 +50,7 @@ import com.amazonaws.services.ec2.model.EbsInstanceBlockDevice;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
+import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
@@ -437,6 +438,23 @@ public class AWSClient implements CloudClient {
         LOGGER.info(String.format("Terminating instance %s in region %s.", instanceId, region));
         try {
             ec2Client().terminateInstances(new TerminateInstancesRequest(Arrays.asList(instanceId)));
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void setSecurityGroups(String instanceId, List<String> groups) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Removing all security groups from instance %s in region %s.", instanceId, region));
+        try {
+            ModifyInstanceAttributeRequest request = new ModifyInstanceAttributeRequest();
+            request.setGroups(groups);
+            ec2Client().modifyInstanceAttribute(request);
         } catch (AmazonServiceException e) {
             if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
                 throw new NotFoundException("AWS instance " + instanceId + " not found", e);
