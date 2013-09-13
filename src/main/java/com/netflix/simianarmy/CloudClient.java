@@ -90,7 +90,6 @@ public interface CloudClient {
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
 
     /**
-<<<<<<< HEAD
      * Lists all EBS volumes attached to the specified instance.
      *
      * @param instanceId
