@@ -6,7 +6,9 @@ import com.netflix.simianarmy.CloudClient;
  * Shut-down the instance.  The classic Chaos Monkey strategy.
  */
 public class ShutdownInstanceChaosType extends ChaosType {
-
+    /**
+     * Singleton instance of this chaos type
+     */
     public static final ChaosType INSTANCE = new ShutdownInstanceChaosType();
 
     protected ShutdownInstanceChaosType() {

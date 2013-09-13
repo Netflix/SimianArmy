@@ -113,9 +113,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
-    Random random = new Random();
-
     private ChaosType pickChaosType(CloudClient cloudClient, String instanceId) {
+        Random random = new Random();
+
         List<ChaosType> applicable = Lists.newArrayList();
         for (ChaosType chaosType : ChaosType.ALL) {
             if (chaosType.canApply(cloudClient, instanceId)) {
