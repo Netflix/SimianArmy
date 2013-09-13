@@ -170,9 +170,11 @@ public class ChaosMonkeyResource {
         String groupName = getStringField(input, "groupName");
         String chaosTypeName = getStringField(input, "chaosType");
 
-        ChaosType chaosType = ShutdownInstanceChaosType.INSTANCE;
+        ChaosType chaosType;
         if (!Strings.isNullOrEmpty(chaosTypeName)) {
             chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
+        } else {
+            chaosType = new ShutdownInstanceChaosType(monkey.context().configuration());
         }
 
         Response.Status responseStatus;
