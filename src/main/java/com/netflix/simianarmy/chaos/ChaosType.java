@@ -3,24 +3,46 @@ package com.netflix.simianarmy.chaos;
 import java.util.List;
 
 import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
  * A strategy pattern for different types of chaos the chaos monkey can cause.
  */
 public abstract class ChaosType {
     /**
+     * Configuration for this chaos type
+     */
+    private final MonkeyConfiguration config;
+
+    /**
      * The unique key for the ChaosType.
      */
     private final String key;
 
     /**
+     * Is this strategy enabled?
+     */
+    private final boolean enabled;
+
+    /**
      * Protected constructor (abstract class).
      *
+     * @param config
+     *            Configuration to use
      * @param key
      *            Unique key for the ChaosType strategy
      */
-    protected ChaosType(String key) {
+    protected ChaosType(MonkeyConfiguration config, String key) {
+        this.config = config;
         this.key = key;
+        this.enabled = config.getBoolOrElse(getConfigurationPrefix() + "enabled", false);
+    }
+
+    /**
+     * Returns the configuration key prefix to use for this strategy.
+     */
+    protected String getConfigurationPrefix() {
+        return "simianarmy.chaos." + key.toLowerCase() + ".";
     }
 
     /**
@@ -33,11 +55,11 @@ public abstract class ChaosType {
     /**
      * Checks if this chaos type can be applied to the given instance.
      *
-     * For example, if the strategy was to detach all the EBS volumes, that only
-     * makes sense if there are EBS volumes to detach.
+     * For example, if the strategy was to detach all the EBS volumes, that only makes sense if there are EBS volumes to
+     * detach.
      */
     public boolean canApply(CloudClient cloudClient, String instanceId) {
-        return true;
+        return enabled;
     }
 
     /**
