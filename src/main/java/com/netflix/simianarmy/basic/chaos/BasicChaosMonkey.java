@@ -23,12 +23,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -38,6 +41,7 @@ import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.chaos.ChaosType;
 
 /**
  * The Class BasicChaosMonkey.
@@ -102,14 +106,32 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 double prob = getEffectiveProbability(group);
                 Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 for (String inst : instances) {
-                    terminateInstance(group, inst);
+                    ChaosType chaosType = pickChaosType(context().cloudClient(), inst);
+                    terminateInstance(group, inst, chaosType);
                 }
             }
         }
     }
 
+    Random random = new Random();
+
+    private ChaosType pickChaosType(CloudClient cloudClient, String instanceId) {
+        List<ChaosType> applicable = Lists.newArrayList();
+        for (ChaosType chaosType : ChaosType.ALL) {
+            if (chaosType.canApply(cloudClient, instanceId)) {
+                applicable.add(chaosType);
+            }
+        }
+
+        // The shutdown strategy is always applicable
+        assert !applicable.isEmpty();
+
+        int index = random.nextInt(applicable.size());
+        return applicable.get(index);
+    }
+
     @Override
-    public Event terminateNow(String type, String name)
+    public Event terminateNow(String type, String name, ChaosType chaosType)
             throws FeatureNotEnabledException, InstanceGroupNotFoundException {
         Validate.notNull(type);
         Validate.notNull(name);
@@ -129,7 +151,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             Collection<String> instances = context().chaosInstanceSelector().select(group, 1.0);
             Validate.isTrue(instances.size() <= 1);
             if (instances.size() == 1) {
-                return terminateInstance(group, instances.iterator().next());
+                return terminateInstance(group, instances.iterator().next(), chaosType);
             } else {
                 throw new NotFoundException(String.format("No instance is found in group %s [type %s]",
                         name, type));
@@ -161,10 +183,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
     /** {@inheritDoc} */
     @Override
-    public Event recordTermination(InstanceGroup group, String instance) {
+    public Event recordTermination(InstanceGroup group, String instance, ChaosType chaosType) {
         Event evt = context().recorder().newEvent(Type.CHAOS, EventTypes.CHAOS_TERMINATION, group.region(), instance);
         evt.addField("groupType", group.type().name());
         evt.addField("groupName", group.name());
+        evt.addField("chaosType", chaosType.getKey());
         context().recorder().recordEvent(evt);
         return evt;
     }
@@ -304,7 +327,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return null;
     }
 
-    private Event terminateInstance(InstanceGroup group, String inst) {
+    private Event terminateInstance(InstanceGroup group, String inst, ChaosType chaosType) {
         Validate.notNull(group);
         Validate.notEmpty(inst);
         String prop = NS + "leashed";
@@ -315,7 +338,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             return null;
         } else {
             try {
-                Event evt = recordTermination(group, inst);
+                Event evt = recordTermination(group, inst, chaosType);
                 sendTerminationNotification(group, inst);
                 context().cloudClient().terminateInstance(inst);
                 LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
