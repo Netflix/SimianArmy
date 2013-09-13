@@ -565,10 +565,14 @@ public class AWSClient implements CloudClient {
             for (Instance instance : describeInstances(instanceId)) {
                 for (InstanceBlockDeviceMapping ibdm : instance.getBlockDeviceMappings()) {
                     EbsInstanceBlockDevice ebs = ibdm.getEbs();
-                    if (ebs == null) continue;
+                    if (ebs == null) {
+                        continue;
+                    }
 
                     String volumeId = ebs.getVolumeId();
-                    if (Strings.isNullOrEmpty(volumeId)) continue;
+                    if (Strings.isNullOrEmpty(volumeId)) {
+                        continue;
+                    }
 
                     volumeIds.add(volumeId);
                 }

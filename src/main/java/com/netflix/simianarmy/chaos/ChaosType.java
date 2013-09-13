@@ -9,7 +9,7 @@ public abstract class ChaosType {
     /**
      * All ChaosType patterns must be added to this array to be considered.
      */
-    public static final ChaosType[] ALL = { ShutdownInstanceChaosType.INSTANCE,
+    public static final ChaosType[] ALL = {ShutdownInstanceChaosType.INSTANCE,
             DetachVolumesChaosType.INSTANCE };
 
     /**

@@ -6,24 +6,36 @@ import com.netflix.simianarmy.CloudClient;
 
 /**
  * We force-detach all the EBS volumes.
- * 
- * This is supposed to simulate a catastrophic failure of EBS, however the instance
- * will (possibly) still keep running; e.g. it should continue to respond to pings.
  *
+ * This is supposed to simulate a catastrophic failure of EBS, however the
+ * instance will (possibly) still keep running; e.g. it should continue to
+ * respond to pings.
  */
 public class DetachVolumesChaosType extends ChaosType {
+    /**
+     * Singleton instance of this chaos type.
+     */
     public static final DetachVolumesChaosType INSTANCE = new DetachVolumesChaosType();
 
+    /**
+     * Constructor.
+     */
     protected DetachVolumesChaosType() {
         super("DetachVolumes");
     }
 
+    /**
+     * Strategy can be applied iff there are any EBS volumes attached.
+     */
     @Override
     public boolean canApply(CloudClient cloudClient, String instanceId) {
         List<String> volumes = cloudClient.listAttachedVolumes(instanceId);
         return !volumes.isEmpty();
     }
 
+    /**
+     * Force-detaches all attached EBS volumes from the instance.
+     */
     @Override
     public void apply(CloudClient cloudClient, String instanceId) {
         // IDEA: We could have a strategy where we detach some of the volumes...
