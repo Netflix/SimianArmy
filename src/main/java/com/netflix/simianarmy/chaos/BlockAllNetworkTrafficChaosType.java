@@ -30,7 +30,7 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
      *            Configuration to use
      */
     public BlockAllNetworkTrafficChaosType(MonkeyConfiguration config) {
-        super("BlockAllNetworkTraffic");
+        super(config, "BlockAllNetworkTraffic");
 
         this.blockedSecurityGroup = config.getStr("simianarmy.chaos.blockallnetworktraffic.group");
     }
@@ -44,7 +44,7 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
             LOGGER.debug("Can't apply strategy: security group not configured");
             return false;
         }
-        return true;
+        return super.canApply(cloudClient, instanceId);
     }
 
     /**

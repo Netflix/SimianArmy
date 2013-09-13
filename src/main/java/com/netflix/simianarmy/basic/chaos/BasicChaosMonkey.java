@@ -90,8 +90,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
         close.set(Calendar.HOUR, monkeyCalendar.closeHour());
 
         enabledChaosTypes = Lists.newArrayList();
+<<<<<<< HEAD
         enabledChaosTypes.add(ShutdownInstanceChaosType.INSTANCE);
         enabledChaosTypes.add(new BlockAllNetworkTrafficChaosType(cfg));
+=======
+        enabledChaosTypes.add(new ShutdownInstanceChaosType(cfg));
+>>>>>>> pluggable_chaos_type
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
@@ -115,6 +119,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                 for (String inst : instances) {
                     ChaosType chaosType = pickChaosType(context().cloudClient(), inst);
+                    if (chaosType == null) {
+                        // This is surprising ... normally we can always just terminate it
+                        LOGGER.warn("No chaos type was applicable to the instance: {}", inst);
+                        continue;
+                    }
                     terminateInstance(group, inst, chaosType);
                 }
             }
@@ -131,8 +140,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
             }
         }
 
-        // The shutdown strategy is always applicable
-        assert !applicable.isEmpty();
+        if (applicable.isEmpty()) {
+            return null;
+        }
 
         int index = random.nextInt(applicable.size());
         return applicable.get(index);
