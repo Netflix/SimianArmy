@@ -171,7 +171,7 @@ public class ChaosMonkeyResource {
 
         ChaosType chaosType = ChaosType.DEFAULT;
         if (!Strings.isNullOrEmpty(chaosTypeName)) {
-            chaosType = ChaosType.parse(chaosTypeName);
+            chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
         }
 
         Response.Status responseStatus;
@@ -200,7 +200,8 @@ public class ChaosMonkeyResource {
         return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
     }
 
-    private Response.Status addTerminationEvent(String groupType, String groupName, ChaosType chaosType, JsonGenerator gen)
+    private Response.Status addTerminationEvent(String groupType,
+            String groupName, ChaosType chaosType, JsonGenerator gen)
             throws IOException {
         LOGGER.info("Running on-demand termination for instance group type '{}' and name '{}'",
                 groupType, groupName);

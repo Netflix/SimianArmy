@@ -42,6 +42,8 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
+import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
+import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
 
 /**
  * The Class BasicChaosMonkey.
@@ -69,6 +71,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
     // the value below is used as the termination probability.
     private static final double DEFAULT_MANDATORY_TERMINATION_PROBABILITY = 0.5;
 
+    private final List<ChaosType> enabledChaosTypes;
+
     /**
      * Instantiates a new basic chaos monkey.
      * @param ctx
@@ -84,6 +88,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
         Calendar close = monkeyCalendar.now();
         open.set(Calendar.HOUR, monkeyCalendar.openHour());
         close.set(Calendar.HOUR, monkeyCalendar.closeHour());
+
+        enabledChaosTypes = Lists.newArrayList();
+        enabledChaosTypes.add(ShutdownInstanceChaosType.DEFAULT);
+        enabledChaosTypes.add(DetachVolumesChaosType.DEFAULT);
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
@@ -113,11 +121,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
         }
     }
 
-    Random random = new Random();
-
     private ChaosType pickChaosType(CloudClient cloudClient, String instanceId) {
+        Random random = new Random();
+
         List<ChaosType> applicable = Lists.newArrayList();
-        for (ChaosType chaosType : ChaosType.ALL) {
+        for (ChaosType chaosType : enabledChaosTypes) {
             if (chaosType.canApply(cloudClient, instanceId)) {
                 applicable.add(chaosType);
             }
@@ -411,5 +419,13 @@ public class BasicChaosMonkey extends ChaosMonkey {
         if (cfg.getBoolOrElse(propEmailGlobalEnabled, false)) {
             notifier.sendTerminationGlobalNotification(group, instance);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<ChaosType> getChaosTypes() {
+        return Lists.newArrayList(enabledChaosTypes);
     }
 }
