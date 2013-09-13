@@ -225,7 +225,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public List<String> listAttachedVolumes(String instanceId) {
+            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
                 throw new UnsupportedOperationException();
             }
 

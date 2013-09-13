@@ -29,7 +29,7 @@ public class DetachVolumesChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(CloudClient cloudClient, String instanceId) {
-        List<String> volumes = cloudClient.listAttachedVolumes(instanceId);
+        List<String> volumes = cloudClient.listAttachedVolumes(instanceId, false);
         return !volumes.isEmpty();
     }
 
@@ -40,7 +40,7 @@ public class DetachVolumesChaosType extends ChaosType {
     public void apply(CloudClient cloudClient, String instanceId) {
         // IDEA: We could have a strategy where we detach some of the volumes...
         boolean force = true;
-        for (String volumeId : cloudClient.listAttachedVolumes(instanceId)) {
+        for (String volumeId : cloudClient.listAttachedVolumes(instanceId, false)) {
             cloudClient.detachVolume(instanceId, volumeId, force);
         }
     }

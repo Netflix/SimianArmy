@@ -134,7 +134,7 @@ public class TestMonkeyContext implements Monkey.Context {
             }
 
             @Override
-            public List<String> listAttachedVolumes(String instanceId) {
+            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
                 throw new UnsupportedOperationException();
             }
 
