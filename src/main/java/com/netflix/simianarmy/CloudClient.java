@@ -19,6 +19,9 @@ package com.netflix.simianarmy;
 
 import java.util.Map;
 
+import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.ssh.SshClient;
+
 
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
@@ -88,4 +91,13 @@ public interface CloudClient {
      */
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
 
+    /**
+     * Returns the JClouds node for a given instance id, or null if the instance cannot be found
+     */
+    NodeMetadata findJcloudsNode(String instanceId);
+
+    /**
+     * Returns an SSH client for the given JClouds node
+     */
+    SshClient getJcloudsSsh(NodeMetadata node);
 }
