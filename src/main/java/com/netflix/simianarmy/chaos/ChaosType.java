@@ -37,7 +37,7 @@ public abstract class ChaosType {
 
     /**
      * Checks if this chaos type can be applied to the given instance.
-     * 
+     *
      * For example, if the strategy was to detach all the EBS volumes, that only
      * makes sense if there are EBS volumes to detach.
      */
