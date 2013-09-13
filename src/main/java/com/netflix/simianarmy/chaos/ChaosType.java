@@ -1,17 +1,13 @@
 package com.netflix.simianarmy.chaos;
 
+import java.util.List;
+
 import com.netflix.simianarmy.CloudClient;
 
 /**
  * A strategy pattern for different types of chaos the chaos monkey can cause.
  */
 public abstract class ChaosType {
-    /**
-     * All ChaosType patterns must be added to this array to be considered.
-     */
-    public static final ChaosType[] ALL = {ShutdownInstanceChaosType.INSTANCE,
-            DetachVolumesChaosType.INSTANCE };
-
     /**
      * Default ChaosType to use if none specified.
      */
@@ -20,8 +16,14 @@ public abstract class ChaosType {
     /**
      * The unique key for the ChaosType.
      */
-    final String key;
+    private final String key;
 
+    /**
+     * Protected constructor (abstract class).
+     *
+     * @param key
+     *            Unique key for the ChaosType strategy
+     */
     protected ChaosType(String key) {
         this.key = key;
     }
@@ -51,8 +53,8 @@ public abstract class ChaosType {
     /**
      * Returns the ChaosType with the matching key.
      */
-    public static ChaosType parse(String chaosTypeName) {
-        for (ChaosType chaosType : ALL) {
+    public static ChaosType parse(List<ChaosType> all, String chaosTypeName) {
+        for (ChaosType chaosType : all) {
             if (chaosType.getKey().equalsIgnoreCase(chaosTypeName)) {
                 return chaosType;
             }
