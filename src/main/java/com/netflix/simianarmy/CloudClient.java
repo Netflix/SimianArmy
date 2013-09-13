@@ -17,6 +17,7 @@
  */
 package com.netflix.simianarmy;
 
+import java.util.List;
 import java.util.Map;
 
 
@@ -88,4 +89,31 @@ public interface CloudClient {
      */
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
 
+    /**
+     * Lists all EBS volumes attached to the specified instance
+     *
+     * @param instanceId
+     *            the instance id
+     *
+     * @throws NotFoundException
+     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
+     *             should get a NotFoundException
+     */
+    List<String> listAttachedVolumes(String instanceId);
+
+    /**
+     * Detaches an EBS volumes from the specified instance
+     *
+     * @param instanceId
+     *            the instance id
+     * @param volumeId
+     *            the volume id
+     * @param force
+     *            if we should force-detach the volume.  Probably best not to use on high-value volumes.
+     *
+     * @throws NotFoundException
+     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
+     *             should get a NotFoundException
+     */
+    void detachVolume(String instanceId, String volumeId, boolean force);
 }
