@@ -171,7 +171,7 @@ public class ChaosMonkeyResource {
 
         ChaosType chaosType = ChaosType.DEFAULT;
         if (!Strings.isNullOrEmpty(chaosTypeName)) {
-            chaosType = ChaosType.parse(chaosTypeName);
+            chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
         }
 
         Response.Status responseStatus;

@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.chaos;
 
 import java.util.Date;
+import java.util.List;
 
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
@@ -156,4 +157,9 @@ public abstract class ChaosMonkey extends Monkey {
      *            the instance
      */
     public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance);
+
+    /**
+     * Gets a list of all enabled chaos types for this ChaosMonkey.
+     */
+    public abstract List<ChaosType> getChaosTypes();
 }
