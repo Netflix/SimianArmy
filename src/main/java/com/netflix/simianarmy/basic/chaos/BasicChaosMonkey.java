@@ -341,7 +341,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
                 Event evt = recordTermination(group, inst, chaosType);
                 sendTerminationNotification(group, inst);
                 context().cloudClient().terminateInstance(inst);
-                LOGGER.info("Terminated {} from group {} [{}]", new Object[]{inst, group.name(), group.type()});
+                LOGGER.info("Terminated {} from group {} [{}] with {}",
+                        new Object[]{inst, group.name(), group.type(), chaosType.getKey() });
                 reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, inst);
                 return evt;
             } catch (NotFoundException e) {
