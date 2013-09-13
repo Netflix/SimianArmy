@@ -583,4 +583,9 @@ public class AWSClient implements CloudClient {
         SshClient ssh = utils.sshForNode().apply(node);
         return ssh;
     }
+
+    @Override
+    public ComputeService getJcloudsComputeService() {
+        return jcloudsComputeService;
+    }
 }
