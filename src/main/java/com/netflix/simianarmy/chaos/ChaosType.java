@@ -19,8 +19,14 @@ public abstract class ChaosType {
     /**
      * The unique key for the ChaosType.
      */
-    final String key;
+    private final String key;
 
+    /**
+     * Protected constructor (abstract class).
+     *
+     * @param key
+     *            Unique key for the ChaosType strategy
+     */
     protected ChaosType(String key) {
         this.key = key;
     }
