@@ -453,6 +453,7 @@ public class AWSClient implements CloudClient {
         LOGGER.info(String.format("Removing all security groups from instance %s in region %s.", instanceId, region));
         try {
             ModifyInstanceAttributeRequest request = new ModifyInstanceAttributeRequest();
+            request.setInstanceId(instanceId);
             request.setGroups(groups);
             ec2Client().modifyInstanceAttribute(request);
         } catch (AmazonServiceException e) {
