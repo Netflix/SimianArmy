@@ -95,12 +95,14 @@ public interface CloudClient {
      *
      * @param instanceId
      *            the instance id
+     * @param includeRoot
+     *            if the root volume is on EBS, should we include it?
      *
      * @throws NotFoundException
      *             if the instance no longer exists or was already terminated after the crawler discovered it then you
      *             should get a NotFoundException
      */
-    List<String> listAttachedVolumes(String instanceId);
+    List<String> listAttachedVolumes(String instanceId, boolean includeRoot);
 
     /**
      * Detaches an EBS volumes from the specified instance.

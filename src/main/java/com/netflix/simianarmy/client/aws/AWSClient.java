@@ -575,12 +575,14 @@ public class AWSClient implements CloudClient {
     }
 
     @Override
-    public List<String> listAttachedVolumes(String instanceId) {
+    public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
         Validate.notEmpty(instanceId);
         LOGGER.info(String.format("Listing volumes attached to instance %s in region %s.", instanceId, region));
         try {
             List<String> volumeIds = new ArrayList<String>();
             for (Instance instance : describeInstances(instanceId)) {
+                String rootDeviceName = instance.getRootDeviceName();
+
                 for (InstanceBlockDeviceMapping ibdm : instance.getBlockDeviceMappings()) {
                     EbsInstanceBlockDevice ebs = ibdm.getEbs();
                     if (ebs == null) {
@@ -590,6 +592,12 @@ public class AWSClient implements CloudClient {
                     String volumeId = ebs.getVolumeId();
                     if (Strings.isNullOrEmpty(volumeId)) {
                         continue;
+                    }
+
+                    if (!includeRoot && rootDeviceName != null) {
+                        if (rootDeviceName.equals(ibdm.getDeviceName())) {
+                            continue;
+                        }
                     }
 
                     volumeIds.add(volumeId);
