@@ -42,6 +42,7 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
+import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
 import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
 
 /**
@@ -90,6 +91,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
         enabledChaosTypes = Lists.newArrayList();
         enabledChaosTypes.add(ShutdownInstanceChaosType.DEFAULT);
+        enabledChaosTypes.add(DetachVolumesChaosType.DEFAULT);
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
