@@ -31,7 +31,7 @@ import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.AmazonServiceException;
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.model.Attribute;
 import com.amazonaws.services.simpledb.model.CreateDomainRequest;
@@ -41,7 +41,6 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
-import com.google.common.base.Strings;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -254,15 +253,9 @@ public class SimpleDBRecorder implements MonkeyRecorder {
     }
 
     /**
-     * Creates the SimpleDB domain, if it does not already exist
+     * Creates the SimpleDB domain, if it does not already exist.
      */
     public void init() {
-        if (Strings.isNullOrEmpty(this.region)) {
-            // It's a fake AWS client (e.g. VSphereClient)
-            LOGGER.info("AWS region not configured; skipping SimpleDB domain auto-create");
-            return;
-        }
-
         try {
             ListDomainsResult listDomains = sdbClient().listDomains();
             for (String d : listDomains.getDomainNames()) {
@@ -275,7 +268,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
             CreateDomainRequest createDomainRequest = new CreateDomainRequest(
                     domain);
             sdbClient().createDomain(createDomainRequest);
-        } catch (AmazonServiceException e) {
+        } catch (AmazonClientException e) {
             LOGGER.warn("Error while trying to auto-create SimpleDB domain", e);
         }
     }
