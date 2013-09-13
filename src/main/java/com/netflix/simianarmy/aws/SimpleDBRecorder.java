@@ -40,6 +40,7 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.google.common.base.Strings;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -255,6 +256,12 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      * Creates the SimpleDB domain, if it does not already exist
      */
     public void init() {
+        if (Strings.isNullOrEmpty(this.region)) {
+            // It's a fake AWS client (e.g. VSphereClient)
+            LOGGER.info("AWS region not configured; skipping SimpleDB domain auto-create");
+            return;
+        }
+
         ListDomainsResult listDomains = sdbClient().listDomains();
         for (String d : listDomains.getDomainNames()) {
             if (d.equals(domain)) {
