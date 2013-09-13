@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 
 /**
@@ -19,15 +20,13 @@ public class DetachVolumesChaosType extends ChaosType {
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosMonkey.class);
 
     /**
-     * Singleton instance of this chaos type.
-     */
-    public static final DetachVolumesChaosType INSTANCE = new DetachVolumesChaosType();
-
-    /**
      * Constructor.
+     *
+     * @param config
+     *            Configuration to use
      */
-    protected DetachVolumesChaosType() {
-        super("DetachVolumes");
+    public DetachVolumesChaosType(MonkeyConfiguration config) {
+        super(config, "DetachVolumes");
     }
 
     /**
@@ -38,8 +37,9 @@ public class DetachVolumesChaosType extends ChaosType {
         List<String> volumes = cloudClient.listAttachedVolumes(instanceId, false);
         if (volumes.isEmpty()) {
             LOGGER.debug("Can't apply strategy: no non-root EBS volumes");
+            return false;
         }
-        return !volumes.isEmpty();
+        return super.canApply(cloudClient, instanceId);
     }
 
     /**

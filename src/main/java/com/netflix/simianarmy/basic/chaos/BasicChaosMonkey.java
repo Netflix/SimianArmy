@@ -91,13 +91,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
         close.set(Calendar.HOUR, monkeyCalendar.closeHour());
 
         enabledChaosTypes = Lists.newArrayList();
-<<<<<<< HEAD
-        enabledChaosTypes.add(ShutdownInstanceChaosType.INSTANCE);
-        enabledChaosTypes.add(DetachVolumesChaosType.INSTANCE);
-        enabledChaosTypes.add(new BlockAllNetworkTrafficChaosType(cfg));
-=======
         enabledChaosTypes.add(new ShutdownInstanceChaosType(cfg));
->>>>>>> pluggable_chaos_type
+        enabledChaosTypes.add(new BlockAllNetworkTrafficChaosType(cfg));
+        enabledChaosTypes.add(new DetachVolumesChaosType(cfg));
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
