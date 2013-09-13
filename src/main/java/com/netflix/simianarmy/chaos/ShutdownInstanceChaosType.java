@@ -3,8 +3,9 @@ package com.netflix.simianarmy.chaos;
 import com.netflix.simianarmy.CloudClient;
 
 /**
- * The class ChaosType: Shuts down the instance using the cloud instance
- * termination API
+ * Shuts down the instance using the cloud instance-termination API.
+ *
+ * This is the classic chaos-monkey strategy.
  */
 public class ShutdownInstanceChaosType extends ChaosType {
     /**
