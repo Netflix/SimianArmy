@@ -31,7 +31,7 @@ import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.AmazonServiceException;
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.model.Attribute;
 import com.amazonaws.services.simpledb.model.CreateDomainRequest;
@@ -268,7 +268,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
             CreateDomainRequest createDomainRequest = new CreateDomainRequest(
                     domain);
             sdbClient().createDomain(createDomainRequest);
-        } catch (AmazonServiceException e) {
+        } catch (AmazonClientException e) {
             LOGGER.warn("Error while trying to auto-create SimpleDB domain", e);
         }
     }
