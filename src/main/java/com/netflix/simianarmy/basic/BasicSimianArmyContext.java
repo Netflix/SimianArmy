@@ -150,7 +150,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
     private void createRecorder() {
         String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
         if (client != null) {
-            setRecorder(new SimpleDBRecorder(client, domain));
+            SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, domain);
+            simpleDbRecorder.init();
+            setRecorder(simpleDbRecorder);
         }
     }
 

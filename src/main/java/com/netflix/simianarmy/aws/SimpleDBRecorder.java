@@ -28,10 +28,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.CreateDomainRequest;
 import com.amazonaws.services.simpledb.model.Item;
+import com.amazonaws.services.simpledb.model.ListDomainsResult;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
@@ -45,6 +49,8 @@ import com.netflix.simianarmy.client.aws.AWSClient;
  */
 @SuppressWarnings("serial")
 public class SimpleDBRecorder implements MonkeyRecorder {
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDBRecorder.class);
 
     private final AmazonSimpleDB simpleDBClient;
 
@@ -243,5 +249,21 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         copy.put(Keys.eventType.name(), enumToValue(eventType));
         return findEvents(copy, after);
+    }
+
+    /**
+     * Creates the SimpleDB domain, if it does not already exist
+     */
+    public void init() {
+        ListDomainsResult listDomains = sdbClient().listDomains();
+        for (String d : listDomains.getDomainNames()) {
+            if (d.equals(domain)) {
+                LOGGER.debug("SimpleDB domain found: {}", domain);
+                return;
+            }
+        }
+        LOGGER.info("Creating SimpleDB domain: {}", domain);
+        CreateDomainRequest createDomainRequest = new CreateDomainRequest(domain);
+        sdbClient().createDomain(createDomainRequest);
     }
 }
