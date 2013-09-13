@@ -348,7 +348,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
             try {
                 Event evt = recordTermination(group, inst, chaosType);
                 sendTerminationNotification(group, inst);
-                context().cloudClient().terminateInstance(inst);
+                chaosType.apply(context().cloudClient(), inst);
                 LOGGER.info("Terminated {} from group {} [{}] with {}",
                         new Object[]{inst, group.name(), group.type(), chaosType.getKey() });
                 reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, inst);
