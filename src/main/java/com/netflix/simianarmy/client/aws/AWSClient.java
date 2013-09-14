@@ -103,7 +103,7 @@ public class AWSClient implements CloudClient {
 
     private final AWSCredentialsProvider awsCredentialsProvider;
 
-    private final ComputeService jcloudsComputeService;
+    private ComputeService jcloudsComputeService;
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -140,7 +140,6 @@ public class AWSClient implements CloudClient {
     public AWSClient(String region) {
         this.region = region;
         this.awsCredentialsProvider = null;
-        this.jcloudsComputeService = null;
     }
 
     /**
@@ -153,20 +152,6 @@ public class AWSClient implements CloudClient {
     public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider) {
         this.region = region;
         this.awsCredentialsProvider = awsCredentialsProvider;
-
-        String username = awsCredentialsProvider.getCredentials()
-                .getAWSAccessKeyId();
-        String password = awsCredentialsProvider.getCredentials()
-                .getAWSSecretKey();
-        ComputeServiceContext jcloudsContext = ContextBuilder
-                .newBuilder("ec2")
-                .credentials(username, password)
-                .modules(
-                        ImmutableSet.<Module>of(new SLF4JLoggingModule(),
-                                new JschSshClientModule()))
-                .buildView(ComputeServiceContext.class);
-
-        this.jcloudsComputeService = jcloudsContext.getComputeService();
     }
 
     /**
@@ -725,7 +710,17 @@ public class AWSClient implements CloudClient {
 
     /** {@inheritDoc} */
     @Override
-    public ComputeService getJcloudsComputeService() {
+    public synchronized ComputeService getJcloudsComputeService() {
+        if (jcloudsComputeService == null) {
+            String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
+            String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
+            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("ec2").credentials(username, password)
+                    .modules(ImmutableSet.<Module> of(new SLF4JLoggingModule(), new JschSshClientModule()))
+                    .buildView(ComputeServiceContext.class);
+
+            this.jcloudsComputeService = jcloudsContext.getComputeService();
+        }
+
         return jcloudsComputeService;
     }
 
