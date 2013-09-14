@@ -110,7 +110,7 @@ public class TestMonkeyContext implements Monkey.Context {
             }
 
             @Override
-            public void setSecurityGroups(String instanceId, List<String> groups) {
+            public void setInstanceSecurityGroups(String instanceId, List<String> groups) {
                 throw new UnsupportedOperationException();
             }
 
