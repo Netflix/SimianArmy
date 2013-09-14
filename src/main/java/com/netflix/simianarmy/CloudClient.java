@@ -94,7 +94,6 @@ public interface CloudClient {
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
 
     /**
-<<<<<<< HEAD
      * Lists all EBS volumes attached to the specified instance.
      *
      * @param instanceId
@@ -125,18 +124,12 @@ public interface CloudClient {
     void detachVolume(String instanceId, String volumeId, boolean force);
 
     /**
-     * Returns the jClouds node for a given instance id, or null if the instance cannot be found.
-     */
-    NodeMetadata findJcloudsNode(String instanceId);
-
-    /**
-     * Returns an SSH client for the given jClouds node.
-     */
-    SshClient getJcloudsSsh(NodeMetadata node);
-
-    /**
-     * Returns the jClouds compute service instance.
-     * @return
+     * Returns the jClouds compute service.
      */
     ComputeService getJcloudsComputeService();
+
+    /**
+     * Returns the jClouds node id for an instance id on this CloudClient.
+     */
+    String getJcloudsId(String instanceId);
 }

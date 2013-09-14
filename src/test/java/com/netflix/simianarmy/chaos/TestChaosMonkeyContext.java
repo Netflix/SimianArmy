@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jclouds.compute.ComputeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -232,6 +233,16 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public void detachVolume(String instanceId, String volumeId,
                     boolean force) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public ComputeService getJcloudsComputeService() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getJcloudsId(String instanceId) {
                 throw new UnsupportedOperationException();
             }
         };
