@@ -73,6 +73,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -572,8 +573,8 @@ public class AWSClient implements CloudClient {
     /**
      * Describe a set of security groups
      * 
-     * @param instanceIds the instance ids
-     * @return the instances
+     * @param groupNames the names of the groups to find
+     * @return a list of matching groups
      */
     public List<SecurityGroup> describeSecurityGroups(String... groupNames) {
         AmazonEC2 ec2Client = ec2Client();
@@ -581,13 +582,22 @@ public class AWSClient implements CloudClient {
 
         if (groupNames == null || groupNames.length == 0) {
             LOGGER.info(String.format("Getting all EC2 security groups in region %s.", region));
-            request.withGroupNames(groupNames);
         } else {
             LOGGER.info(String.format("Getting EC2 security groups for %d names in region %s.", groupNames.length,
                     region));
+            request.withGroupNames(groupNames);
         }
 
-        DescribeSecurityGroupsResult result = ec2Client.describeSecurityGroups(request);
+        DescribeSecurityGroupsResult result;
+        try {
+            result = ec2Client.describeSecurityGroups(request);
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidGroup.NotFound")) {
+                LOGGER.info("Got InvalidGroup.NotFound error for security groups; returning empty list");
+                return Collections.emptyList();
+            }
+            throw e;
+        }
 
         List<SecurityGroup> securityGroups = result.getSecurityGroups();
         LOGGER.info(String.format("Got %d EC2 security groups in region %s.", securityGroups.size(), region));
@@ -603,15 +613,33 @@ public class AWSClient implements CloudClient {
      *            Description of group to create
      * @return ID of created group
      */
-    public String createSecurityGroup(String name, String description) {
+    public String createSecurityGroup(String vpcId, String name, String description) {
         AmazonEC2 ec2Client = ec2Client();
         CreateSecurityGroupRequest request = new CreateSecurityGroupRequest();
         request.setGroupName(name);
         request.setDescription(description);
+        request.setVpcId(vpcId);
 
         LOGGER.info(String.format("Creating EC2 security group %s.", name));
 
         CreateSecurityGroupResult result = ec2Client.createSecurityGroup(request);
         return result.getGroupId();
+    }
+
+    /**
+     * Convenience wrapper around describeInstances, for a single instance id.
+     *
+     * @param instanceId id of instance to find
+     * @return the instance info, or null if instance not found
+     */
+    public Instance describeInstance(String instanceId) {
+        Instance instance = null;
+        for (Instance i : describeInstances(instanceId)) {
+            if (instance != null) {
+                throw new IllegalStateException("Duplicate instance: " + instanceId);
+            }
+            instance = i;
+        }
+        return instance;
     }
 }
