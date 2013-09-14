@@ -40,6 +40,7 @@ import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.BlockAllNetworkTrafficChaosType;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.chaos.BurnCpuChaosType;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
@@ -94,6 +95,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         allChaosTypes.add(new ShutdownInstanceChaosType(cfg));
         allChaosTypes.add(new BlockAllNetworkTrafficChaosType(cfg));
         allChaosTypes.add(new DetachVolumesChaosType(cfg));
+        allChaosTypes.add(new BurnCpuChaosType(cfg));
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
