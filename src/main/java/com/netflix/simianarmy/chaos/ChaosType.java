@@ -35,7 +35,17 @@ public abstract class ChaosType {
     protected ChaosType(MonkeyConfiguration config, String key) {
         this.config = config;
         this.key = key;
-        this.enabled = config.getBoolOrElse(getConfigurationPrefix() + "enabled", false);
+        this.enabled = config.getBoolOrElse(getConfigurationPrefix() + "enabled", getEnabledDefault());
+    }
+
+    /**
+     * If not specified, controls whether we default to enabled.
+     *
+     * Most ChaosTypes should be disabled by default, not least for legacy compatibility, but we want at least one
+     * strategy to be available.
+     */
+    protected boolean getEnabledDefault() {
+        return false;
     }
 
     /**
