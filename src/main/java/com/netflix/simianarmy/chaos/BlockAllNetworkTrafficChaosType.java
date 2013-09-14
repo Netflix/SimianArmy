@@ -5,12 +5,12 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.google.common.collect.Iterables;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
 /**
@@ -21,7 +21,7 @@ import com.netflix.simianarmy.client.aws.AWSClient;
  */
 public class BlockAllNetworkTrafficChaosType extends ChaosType {
     /** The Constant LOGGER. */
-    private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosMonkey.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockAllNetworkTrafficChaosType.class);
 
     private final String blockedSecurityGroupName;
 
@@ -42,12 +42,8 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(CloudClient cloudClient, String instanceId) {
-        if (blockedSecurityGroupName == null) {
-            LOGGER.debug("Can't apply strategy: security group not configured");
-            return false;
-        }
-        if (cloudClient instanceof AWSClient) {
-            LOGGER.debug("Not an AWSClient, can't use security groups");
+        if (!(cloudClient instanceof AWSClient)) {
+            LOGGER.warn("Not an AWSClient, can't use security groups");
             return false;
         }
         return super.canApply(cloudClient, instanceId);
@@ -62,17 +58,34 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
             throw new IllegalStateException("canApply should have returned false");
         }
 
-        String groupId;
-
         AWSClient awsClient = (AWSClient) cloudClient;
+
+        Instance instance = awsClient.describeInstance(instanceId);
+
+        String vpcId = instance.getVpcId();
+
+        SecurityGroup found = null;
         List<SecurityGroup> securityGroups = awsClient.describeSecurityGroups(blockedSecurityGroupName);
-        if (securityGroups.isEmpty()) {
-            String description = "Empty security group for blocked instances";
-            groupId = awsClient.createSecurityGroup(blockedSecurityGroupName, description);
-        } else {
-            SecurityGroup securityGroup = Iterables.getOnlyElement(securityGroups);
-            groupId = securityGroup.getGroupId();
+        for (SecurityGroup sg : securityGroups) {
+            if (Objects.equal(vpcId, sg.getVpcId())) {
+                if (found != null) {
+                    throw new IllegalStateException("Duplicate security groups found");
+                }
+                found = sg;
+            }
         }
+
+        String groupId;
+        if (found == null) {
+            LOGGER.info("Auto-creating security group {}", blockedSecurityGroupName);
+
+            String description = "Empty security group for blocked instances";
+            groupId = awsClient.createSecurityGroup(vpcId, blockedSecurityGroupName, description);
+        } else {
+            groupId = found.getGroupId();
+        }
+
+        LOGGER.info("Blocking network traffic by applying security group {} to instance {}", groupId, instanceId);
 
         List<String> groups = Lists.newArrayList();
         groups.add(groupId);
