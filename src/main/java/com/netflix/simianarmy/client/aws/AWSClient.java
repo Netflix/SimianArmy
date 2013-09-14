@@ -634,10 +634,8 @@ public class AWSClient implements CloudClient {
                         continue;
                     }
 
-                    if (!includeRoot && rootDeviceName != null) {
-                        if (rootDeviceName.equals(ibdm.getDeviceName())) {
-                            continue;
-                        }
+                    if (!includeRoot && rootDeviceName != null && rootDeviceName.equals(ibdm.getDeviceName())) {
+                        continue;
                     }
 
                     volumeIds.add(volumeId);
