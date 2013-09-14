@@ -27,4 +27,12 @@ public class ShutdownInstanceChaosType extends ChaosType {
         cloudClient.terminateInstance(instanceId);
     }
 
+    /**
+     * We want to default to enabled.
+     */
+    @Override
+    protected boolean getEnabledDefault() {
+        return true;
+    }
+
 }
