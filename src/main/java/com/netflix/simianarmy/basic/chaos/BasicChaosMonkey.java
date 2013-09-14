@@ -70,7 +70,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
     // the value below is used as the termination probability.
     private static final double DEFAULT_MANDATORY_TERMINATION_PROBABILITY = 0.5;
 
-    private final List<ChaosType> enabledChaosTypes;
+    private final List<ChaosType> allChaosTypes;
 
     /**
      * Instantiates a new basic chaos monkey.
@@ -88,8 +88,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
         open.set(Calendar.HOUR, monkeyCalendar.openHour());
         close.set(Calendar.HOUR, monkeyCalendar.closeHour());
 
-        enabledChaosTypes = Lists.newArrayList();
-        enabledChaosTypes.add(new ShutdownInstanceChaosType(cfg));
+        allChaosTypes = Lists.newArrayList();
+        allChaosTypes.add(new ShutdownInstanceChaosType(cfg));
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
@@ -128,7 +128,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         Random random = new Random();
 
         List<ChaosType> applicable = Lists.newArrayList();
-        for (ChaosType chaosType : enabledChaosTypes) {
+        for (ChaosType chaosType : allChaosTypes) {
             if (chaosType.canApply(cloudClient, instanceId)) {
                 applicable.add(chaosType);
             }
@@ -430,6 +430,6 @@ public class BasicChaosMonkey extends ChaosMonkey {
      */
     @Override
     public List<ChaosType> getChaosTypes() {
-        return Lists.newArrayList(enabledChaosTypes);
+        return Lists.newArrayList(allChaosTypes);
     }
 }
