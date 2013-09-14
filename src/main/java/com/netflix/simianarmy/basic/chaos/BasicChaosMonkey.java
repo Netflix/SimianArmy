@@ -46,6 +46,7 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
 import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
 import com.netflix.simianarmy.chaos.KillProcessesChaosType;
+import com.netflix.simianarmy.chaos.NullRouteChaosType;
 import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
 
 /**
@@ -98,6 +99,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         allChaosTypes.add(new DetachVolumesChaosType(cfg));
         allChaosTypes.add(new BurnCpuChaosType(cfg));
         allChaosTypes.add(new KillProcessesChaosType(cfg));
+        allChaosTypes.add(new NullRouteChaosType(cfg));
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
