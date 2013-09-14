@@ -201,11 +201,6 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public void setInstanceSecurityGroups(String instanceId, List<String> groups) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
             public void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds) {
             }
 
