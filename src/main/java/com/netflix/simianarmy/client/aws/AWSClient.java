@@ -33,6 +33,8 @@ import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResu
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeleteSnapshotRequest;
 import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
@@ -41,6 +43,8 @@ import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
@@ -52,6 +56,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
 import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
@@ -446,9 +451,19 @@ public class AWSClient implements CloudClient {
         }
     }
 
-    /** {@inheritDoc} */
-    @Override
-    public void setSecurityGroups(String instanceId, List<String> groups) {
+    /**
+     * Sets the security groups for an instance.
+     *
+     * Note this is only valid for VPC instances.
+     *
+     * @param instanceId
+     *            the instance id
+     *
+     * @throws NotFoundException
+     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
+     *             should get a NotFoundException
+     */
+    public void setInstanceSecurityGroups(String instanceId, List<String> groups) {
         Validate.notEmpty(instanceId);
         LOGGER.info(String.format("Removing all security groups from instance %s in region %s.", instanceId, region));
         try {
@@ -556,7 +571,6 @@ public class AWSClient implements CloudClient {
         return images;
     }
 
-
     @Override
     public void detachVolume(String instanceId, String volumeId, boolean force) {
         Validate.notEmpty(instanceId);
@@ -611,5 +625,51 @@ public class AWSClient implements CloudClient {
             }
             throw e;
         }
+    }
+
+    /**
+     * Describe a set of security groups
+     * 
+     * @param instanceIds the instance ids
+     * @return the instances
+     */
+    public List<SecurityGroup> describeSecurityGroups(String... groupNames) {
+        AmazonEC2 ec2Client = ec2Client();
+        DescribeSecurityGroupsRequest request = new DescribeSecurityGroupsRequest();
+
+        if (groupNames == null || groupNames.length == 0) {
+            LOGGER.info(String.format("Getting all EC2 security groups in region %s.", region));
+            request.withGroupNames(groupNames);
+        } else {
+            LOGGER.info(String.format("Getting EC2 security groups for %d names in region %s.", groupNames.length,
+                    region));
+        }
+
+        DescribeSecurityGroupsResult result = ec2Client.describeSecurityGroups(request);
+
+        List<SecurityGroup> securityGroups = result.getSecurityGroups();
+        LOGGER.info(String.format("Got %d EC2 security groups in region %s.", securityGroups.size(), region));
+        return securityGroups;
+    }
+
+    /**
+     * Create an (empty) EC2 security group.
+     * 
+     * @param name
+     *            Name of group to create
+     * @param description
+     *            Description of group to create
+     * @return ID of created group
+     */
+    public String createSecurityGroup(String name, String description) {
+        AmazonEC2 ec2Client = ec2Client();
+        CreateSecurityGroupRequest request = new CreateSecurityGroupRequest();
+        request.setGroupName(name);
+        request.setDescription(description);
+
+        LOGGER.info(String.format("Creating EC2 security group %s.", name));
+
+        CreateSecurityGroupResult result = ec2Client.createSecurityGroup(request);
+        return result.getGroupId();
     }
 }

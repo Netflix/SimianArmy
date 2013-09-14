@@ -118,18 +118,4 @@ public interface CloudClient {
      *             should get a NotFoundException
      */
     void detachVolume(String instanceId, String volumeId, boolean force);
-
-    /**
-     * Sets the security groups for an instance.
-     *
-     * Note this is only valid for VPC instances.
-     *
-     * @param instanceId
-     *            the instance id
-     *
-     * @throws NotFoundException
-     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
-     *             should get a NotFoundException
-     */
-    void setSecurityGroups(String instanceId, List<String> groups);
 }
