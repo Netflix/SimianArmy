@@ -77,6 +77,13 @@ public abstract class ChaosType {
      * detach.
      */
     public boolean canApply(CloudClient cloudClient, String instanceId) {
+        return isEnabled();
+    }
+
+    /**
+     * Returns whether we are enabled.
+     */
+    public boolean isEnabled() {
         return enabled;
     }
 

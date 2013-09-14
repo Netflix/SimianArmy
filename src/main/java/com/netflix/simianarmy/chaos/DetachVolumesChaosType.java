@@ -34,11 +34,18 @@ public class DetachVolumesChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(CloudClient cloudClient, String instanceId) {
+        // The test mocks don't implement listAttachedVolumes
+        // so check for enabled first
+        if (!isEnabled()) {
+            return false;
+        }
+
         List<String> volumes = cloudClient.listAttachedVolumes(instanceId, false);
         if (volumes.isEmpty()) {
             LOGGER.debug("Can't apply strategy: no non-root EBS volumes");
             return false;
         }
+
         return super.canApply(cloudClient, instanceId);
     }
 
