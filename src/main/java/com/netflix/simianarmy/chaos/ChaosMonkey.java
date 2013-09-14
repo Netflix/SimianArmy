@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.chaos;
 
 import java.util.Date;
+import java.util.List;
 
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
@@ -132,7 +133,7 @@ public abstract class ChaosMonkey extends Monkey {
      *            the instance
      * @return the termination event
      */
-    public abstract Event recordTermination(ChaosCrawler.InstanceGroup group, String instance);
+    public abstract Event recordTermination(ChaosCrawler.InstanceGroup group, String instance, ChaosType chaosType);
 
     /**
      * Terminates one instance right away from an instance group when there are available instances.
@@ -144,7 +145,7 @@ public abstract class ChaosMonkey extends Monkey {
      * @throws FeatureNotEnabledException
      * @throws InstanceGroupNotFoundException
      */
-    public abstract Event terminateNow(String type, String name)
+    public abstract Event terminateNow(String type, String name, ChaosType chaosType)
             throws FeatureNotEnabledException, InstanceGroupNotFoundException;
 
     /**
@@ -156,4 +157,9 @@ public abstract class ChaosMonkey extends Monkey {
      *            the instance
      */
     public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance);
+
+    /**
+     * Gets a list of all enabled chaos types for this ChaosMonkey.
+     */
+    public abstract List<ChaosType> getChaosTypes();
 }

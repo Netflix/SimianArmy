@@ -17,8 +17,10 @@
  */
 package com.netflix.simianarmy;
 
+import java.util.List;
 import java.util.Map;
 
+import org.jclouds.compute.ComputeService;
 
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
@@ -88,4 +90,43 @@ public interface CloudClient {
      */
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
 
+    /**
+     * Lists all EBS volumes attached to the specified instance.
+     *
+     * @param instanceId
+     *            the instance id
+     * @param includeRoot
+     *            if the root volume is on EBS, should we include it?
+     *
+     * @throws NotFoundException
+     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
+     *             should get a NotFoundException
+     */
+    List<String> listAttachedVolumes(String instanceId, boolean includeRoot);
+
+    /**
+     * Detaches an EBS volumes from the specified instance.
+     *
+     * @param instanceId
+     *            the instance id
+     * @param volumeId
+     *            the volume id
+     * @param force
+     *            if we should force-detach the volume.  Probably best not to use on high-value volumes.
+     *
+     * @throws NotFoundException
+     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
+     *             should get a NotFoundException
+     */
+    void detachVolume(String instanceId, String volumeId, boolean force);
+
+    /**
+     * Returns the jClouds compute service.
+     */
+    ComputeService getJcloudsComputeService();
+
+    /**
+     * Returns the jClouds node id for an instance id on this CloudClient.
+     */
+    String getJcloudsId(String instanceId);
 }
