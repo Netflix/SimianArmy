@@ -2,6 +2,9 @@ package com.netflix.simianarmy.chaos;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
@@ -9,6 +12,9 @@ import com.netflix.simianarmy.MonkeyConfiguration;
  * A strategy pattern for different types of chaos the chaos monkey can cause.
  */
 public abstract class ChaosType {
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosType.class);
+
     /**
      * Configuration for this chaos type
      */
@@ -36,6 +42,8 @@ public abstract class ChaosType {
         this.config = config;
         this.key = key;
         this.enabled = config.getBoolOrElse(getConfigurationPrefix() + "enabled", getEnabledDefault());
+
+        LOGGER.info("ChaosType: {}: enabled={}", key, enabled);
     }
 
     /**
