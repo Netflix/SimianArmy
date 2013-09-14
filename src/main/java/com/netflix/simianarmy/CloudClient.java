@@ -88,4 +88,5 @@ public interface CloudClient {
      *          the list of resource ids
      */
     void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds);
+
 }
