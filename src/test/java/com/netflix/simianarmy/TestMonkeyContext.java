@@ -132,6 +132,17 @@ public class TestMonkeyContext implements Monkey.Context {
             @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
             }
+
+            @Override
+            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void detachVolume(String instanceId, String volumeId,
+                    boolean force) {
+                throw new UnsupportedOperationException();
+            }
         };
     }
 
