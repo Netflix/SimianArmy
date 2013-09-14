@@ -118,4 +118,5 @@ public interface CloudClient {
      *             should get a NotFoundException
      */
     void detachVolume(String instanceId, String volumeId, boolean force);
+
 }
