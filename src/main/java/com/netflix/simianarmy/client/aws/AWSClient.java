@@ -77,10 +77,7 @@ import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
-import org.jclouds.compute.Utils;
-import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
-import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -165,7 +162,7 @@ public class AWSClient implements CloudClient {
                 .newBuilder("ec2")
                 .credentials(username, password)
                 .modules(
-                        ImmutableSet.<Module> of(new SLF4JLoggingModule(),
+                        ImmutableSet.<Module>of(new SLF4JLoggingModule(),
                                 new JschSshClientModule()))
                 .buildView(ComputeServiceContext.class);
 
@@ -656,8 +653,8 @@ public class AWSClient implements CloudClient {
     }
 
     /**
-     * Describe a set of security groups
-     * 
+     * Describe a set of security groups.
+     *
      * @param groupNames the names of the groups to find
      * @return a list of matching groups
      */
@@ -691,7 +688,7 @@ public class AWSClient implements CloudClient {
 
     /**
      * Create an (empty) EC2 security group.
-     * 
+     *
      * @param name
      *            Name of group to create
      * @param description
@@ -728,11 +725,13 @@ public class AWSClient implements CloudClient {
         return instance;
     }
 
+    /** {@inheritDoc} */
     @Override
     public ComputeService getJcloudsComputeService() {
         return jcloudsComputeService;
     }
 
+    /** {@inheritDoc} */
     @Override
     public String getJcloudsId(String instanceId) {
         return this.region + "/" + instanceId;

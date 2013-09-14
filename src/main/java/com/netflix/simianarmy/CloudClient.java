@@ -21,9 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jclouds.compute.ComputeService;
-import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.ssh.SshClient;
-
 
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with

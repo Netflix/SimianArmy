@@ -16,7 +16,7 @@ public abstract class ChaosType {
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosType.class);
 
     /**
-     * Configuration for this chaos type
+     * Configuration for this chaos type.
      */
     private final MonkeyConfiguration config;
 

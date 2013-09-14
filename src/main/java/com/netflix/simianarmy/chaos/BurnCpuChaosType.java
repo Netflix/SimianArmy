@@ -27,18 +27,21 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
  * Executes a CPU intensive program on the node, using up all available CPU.
- * 
+ *
  * This simulates either a noisy CPU neighbor on the box or just a general issue with the CPU.
  */
 public class BurnCpuChaosType extends ChaosType {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BurnCpuChaosType.class);
 
+    /**
+     * The SSH credentials to log on to an instance.
+     */
     private final LoginCredentials sshCredentials;
 
     /**
      * Constructor.
-     * 
+     *
      * @param config
      *            Configuration to use
      * @throws IOException
@@ -80,7 +83,7 @@ public class BurnCpuChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(CloudClient cloudClient, String instanceId) {
-        // TODO: Check that SSH works?
+        // TODO: Check that SSH connection works here?
 
         if (this.sshCredentials == null) {
             LOGGER.info("Strategy disabled because SSH credentials not set");
@@ -107,7 +110,7 @@ public class BurnCpuChaosType extends ChaosType {
                 nodes.add((NodeMetadata) n);
             }
         }
-        
+
         if (nodes.isEmpty()) {
             LOGGER.warn("Unable to jclouds node: {}", jcloudsId);
             for (ComputeMetadata n : computeService.listNodes()) {
@@ -125,7 +128,7 @@ public class BurnCpuChaosType extends ChaosType {
         SshClient ssh = utils.sshForNode().apply(node);
 
         ssh.connect();
-        
+
         URL url = Resources.getResource("/scripts/burncpu.sh");
         String script;
         try {
