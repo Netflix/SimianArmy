@@ -46,7 +46,7 @@ import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
 import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
-import com.netflix.simianarmy.chaos.FailApiChaosType;
+import com.netflix.simianarmy.chaos.FailEc2ChaosType;
 import com.netflix.simianarmy.chaos.FailDnsChaosType;
 import com.netflix.simianarmy.chaos.FailDynamoDbChaosType;
 import com.netflix.simianarmy.chaos.FailS3ChaosType;
@@ -110,7 +110,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         allChaosTypes.add(new BurnIoChaosType(cfg));
         allChaosTypes.add(new KillProcessesChaosType(cfg));
         allChaosTypes.add(new NullRouteChaosType(cfg));
-        allChaosTypes.add(new FailApiChaosType(cfg));
+        allChaosTypes.add(new FailEc2ChaosType(cfg));
         allChaosTypes.add(new FailDnsChaosType(cfg));
         allChaosTypes.add(new FailDynamoDbChaosType(cfg));
         allChaosTypes.add(new FailS3ChaosType(cfg));
