@@ -124,20 +124,14 @@ public class SimplerDbRecorder implements MonkeyRecorder {
         for (Event evt : eventMap.tailMap(toKey(after)).values()) {
             boolean matched = true;
             for (Map.Entry<String, String> pair : query.entrySet()) {
-                if (pair.getKey().equals("id")) {
-                    if (! evt.id().equals(pair.getValue())) {
-                        matched = false;
-                    }
+                if (pair.getKey().equals("id") && !evt.id().equals(pair.getValue())) {
+                    matched = false;
                 }
-                if (pair.getKey().equals("monkeyType")) {
-                    if (! evt.monkeyType().toString().equals(pair.getValue())) {
-                        matched = false;
-                    }
+                if (pair.getKey().equals("monkeyType") && ! evt.monkeyType().toString().equals(pair.getValue())) {
+                    matched = false;
                 }
-                if (pair.getKey().equals("eventType")) {
-                    if (! evt.eventType().toString().equals(pair.getValue())) {
-                        matched = false;
-                    }
+                if (pair.getKey().equals("eventType") && !evt.eventType().toString().equals(pair.getValue())) {
+                    matched = false;
                 }
             }
             if (matched) {
