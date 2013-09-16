@@ -63,6 +63,7 @@ public class SimplerDbRecorder implements MonkeyRecorder {
         if (configuration != null) {
             dbFilename = configuration.getStrOrElse("simianarmy.db.file", null);
             max_events = configuration.getNumOrElse("simianarmy.db.max_events", MAX_EVENTS);
+            dbpassword = configuration.getStrOrElse("simianarmy.db.password", null);
         }
     }
 
@@ -247,7 +248,7 @@ public class SimplerDbRecorder implements MonkeyRecorder {
          */
         @Override
         public Date eventTime() {
-            return date;
+            return new Date(date.getTime());
         }
 
         /* (non-Javadoc)
