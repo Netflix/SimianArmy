@@ -157,7 +157,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
         if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
             String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
             if (client != null) {
-                setRecorder(new SimpleDBRecorder(client, domain));
+                SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, domain);
+                simpleDbRecorder.init();
+                setRecorder(simpleDbRecorder);
             }
         } else {
             setRecorder( (MonkeyRecorder) factory(recorderClass, config));
