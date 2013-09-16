@@ -44,37 +44,30 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
  */
 public class SimplerDbRecorder implements MonkeyRecorder {
 
-    DB db = null;
-    Atomic.Long nextId = null;
-    ConcurrentNavigableMap<Fun.Tuple2<Long, Long>, Event> eventMap = null;
+    private static DB db = null;
+    private static Atomic.Long nextId = null;
+    private static ConcurrentNavigableMap<Fun.Tuple2<Long, Long>, Event> eventMap = null;
 
     // Upper bound, so we don't fill the disk with monkey events
-    private int MAX_EVENTS = 10000;
+    private static final double MAX_EVENTS = 10000;
+    private double max_events = MAX_EVENTS;
 
     private String dbFilename = "simianarmy_events";
 
     private String dbpassword = null;
 
-    private boolean initialized = false;
-
-    private static SimplerDbRecorder instance = null;
-
-    public static SimplerDbRecorder getInstance(MonkeyConfiguration configuration) {
-        if (instance == null) {
-            instance = new SimplerDbRecorder(configuration);
-        }
-        return instance;
-    }
-
     /**
      *
      */
-    private SimplerDbRecorder(MonkeyConfiguration configuration) {
-        dbFilename = configuration.getStrOrElse("simianarmy.db.file", null);
+    public SimplerDbRecorder(MonkeyConfiguration configuration) {
+        if (configuration != null) {
+            dbFilename = configuration.getStrOrElse("simianarmy.db.file", null);
+            max_events = configuration.getNumOrElse("simianarmy.db.max_events", MAX_EVENTS);
+        }
     }
 
-    private void init() {
-        if (initialized) {
+    private synchronized void init() {
+        if (nextId != null) {
             return;
         }
         File dbFile = null;
@@ -91,7 +84,6 @@ public class SimplerDbRecorder implements MonkeyRecorder {
         }
         eventMap = db.getTreeMap("eventMap");
         nextId = db.createAtomicLong("next", 1);
-        initialized = true;
     }
 
     /* (non-Javadoc)
@@ -114,7 +106,7 @@ public class SimplerDbRecorder implements MonkeyRecorder {
         Fun.Tuple2<Long, Long> id = Fun.t2(evt.eventTime().getTime(),
                 nextId.incrementAndGet());
 
-        if (eventMap.size()+1 > MAX_EVENTS) {
+        if (eventMap.size()+1 > max_events) {
             eventMap.remove(eventMap.firstKey());
         }
         eventMap.put(id, evt);
@@ -314,7 +306,6 @@ public class SimplerDbRecorder implements MonkeyRecorder {
     public static void main(String[] args) {
         SimplerDbRecorder r = new SimplerDbRecorder(null);
         r.init();
-        System.out.println("Pre-check:" + r.eventMap.size());
         List<Event> events2 = r.findEvents(new HashMap<String, String>(), new Date(0));
         for (Event event : events2) {
             System.out.println("Got:" + event + ": " + event.eventTime().getTime());
@@ -326,7 +317,6 @@ public class SimplerDbRecorder implements MonkeyRecorder {
             System.out.println("Added:" + event + ": " + event.eventTime().getTime());
         }
         List<Event> events = r.findEvents(new HashMap<String, String>(), new Date(0));
-        System.out.println("Helloooo");
         for (Event event : events) {
             System.out.println("Got:" + event + ": " + event.eventTime().getTime());
         }
