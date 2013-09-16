@@ -1,19 +1,21 @@
 /*
- * TopStack (c) Copyright 2012-2013 Transcend Computing, Inc.
  *
- * Licensed under the Apache License, Version 2.0 (the License);
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  Copyright 2012 Netflix, Inc.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ *     Licensed under the Apache License, Version 2.0 (the "License");
+ *     you may not use this file except in compliance with the License.
+ *     You may obtain a copy of the License at
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an AS IS BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *         http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *     Unless required by applicable law or agreed to in writing, software
+ *     distributed under the License is distributed on an "AS IS" BASIS,
+ *     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *     See the License for the specific language governing permissions and
+ *     limitations under the License.
+ *
  */
-package org.topstack.simianarmy.basic;
+package com.netflix.simianarmy.basic;
 
 import java.io.File;
 import java.io.Serializable;
@@ -37,7 +39,7 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
- * Replacement for SimpleDB on non-AWS: use a embedded db.
+ * Replacement for SimpleDB on non-AWS: use an embedded db.
  *
  * @author jgardner
  *
