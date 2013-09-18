@@ -268,9 +268,17 @@ public class BasicCalendar implements MonkeyCalendar {
         Validate.isTrue(n >= 0);
         Calendar calendar = now();
         calendar.setTime(date);
-        while (isHoliday(calendar) || isWeekend(calendar) || n-- > 0) {
-            calendar.add(Calendar.DATE, 1);
+        while(n>0)
+        {
+            if(!isWeekend(calendar) && !isHoliday(calendar)) {
+                calendar.add(Calendar.DATE, 1);
+                n--;
+            }
+            else {
+                calendar.add(Calendar.DATE, 1);
+            }
         }
+        
         return calendar.getTime();
     }
 
