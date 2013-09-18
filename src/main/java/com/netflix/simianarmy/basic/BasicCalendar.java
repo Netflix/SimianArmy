@@ -268,17 +268,28 @@ public class BasicCalendar implements MonkeyCalendar {
         Validate.isTrue(n >= 0);
         Calendar calendar = now();
         calendar.setTime(date);
-        while(n>0)
-        {
-            if(!isWeekend(calendar) && !isHoliday(calendar)) {
-                calendar.add(Calendar.DATE, 1);
+        
+        while(n > 0) {
+            if(!isWeekend(calendar)) {
+            	if(calendar.get(Calendar.DAY_OF_WEEK)!= Calendar.FRIDAY) {
+            		calendar.add(Calendar.DATE, 1);
+            	}
+            	else {
+            		calendar.add(Calendar.DATE, 3);
+            	}
+            	
+            	if(isHoliday(calendar)) {
+            		calendar.add(Calendar.DATE, 1);
+            	}
                 n--;
             }
             else {
-                calendar.add(Calendar.DATE, 1);
+            	if(calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+            		n--;
+            	}
+            	calendar.add(Calendar.DATE, 1);
             }
         }
-        
         return calendar.getTime();
     }
 
