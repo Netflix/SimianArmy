@@ -84,7 +84,10 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
                     new Object[] {group.name(), group.type(), probability});
             return null;
         }
-        double rand = Math.random();
+        
+        Random randomValue = new Random();
+        double rand = randomValue.nextDouble();
+        
         if (rand > probability || group.instances().isEmpty()) {
             logger().info("Group {} [type {}] got lucky: {} > {}",
                     new Object[] {group.name(), group.type(), rand, probability});
@@ -92,4 +95,5 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
         }
         return group.instances().get(RANDOM.nextInt(group.instances().size()));
     }
+    
 }
