@@ -44,7 +44,7 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
  * @author jgardner
  *
  */
-public class SimplerDbRecorder implements MonkeyRecorder {
+public class LocalDbRecorder implements MonkeyRecorder {
 
     private static DB db = null;
     private static Atomic.Long nextId = null;
@@ -61,11 +61,11 @@ public class SimplerDbRecorder implements MonkeyRecorder {
     /**
      *
      */
-    public SimplerDbRecorder(MonkeyConfiguration configuration) {
+    public LocalDbRecorder(MonkeyConfiguration configuration) {
         if (configuration != null) {
-            dbFilename = configuration.getStrOrElse("simianarmy.db.file", null);
-            max_events = configuration.getNumOrElse("simianarmy.db.max_events", MAX_EVENTS);
-            dbpassword = configuration.getStrOrElse("simianarmy.db.password", null);
+            dbFilename = configuration.getStrOrElse("simianarmy.recorder.localdb.file", null);
+            max_events = configuration.getNumOrElse("simianarmy.recorder.localdb.max_events", MAX_EVENTS);
+            dbpassword = configuration.getStrOrElse("simianarmy.recorder.localdb.password", null);
         }
     }
 
@@ -301,7 +301,7 @@ public class SimplerDbRecorder implements MonkeyRecorder {
     }
 
     public static void main(String[] args) {
-        SimplerDbRecorder r = new SimplerDbRecorder(null);
+        LocalDbRecorder r = new LocalDbRecorder(null);
         r.init();
         List<Event> events2 = r.findEvents(new HashMap<String, String>(), new Date(0));
         for (Event event : events2) {
