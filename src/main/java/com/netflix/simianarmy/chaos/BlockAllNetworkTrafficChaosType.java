@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -63,6 +64,10 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
             LOGGER.warn("Not an AWSClient, can't use security groups");
             return false;
         }
+        if (getVpcId(cloudClient, instanceId) == null) {
+            LOGGER.info("Not a VPC instance, can't change security groups");
+            return false;
+        }
         return super.canApply(cloudClient, instanceId);
     }
 
@@ -71,15 +76,13 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
      */
     @Override
     public void apply(CloudClient cloudClient, String instanceId) {
-        if (!(cloudClient instanceof AWSClient)) {
+        String vpcId = getVpcId(cloudClient, instanceId);
+
+        if (vpcId == null) {
             throw new IllegalStateException("canApply should have returned false");
         }
 
         AWSClient awsClient = (AWSClient) cloudClient;
-
-        Instance instance = awsClient.describeInstance(instanceId);
-
-        String vpcId = instance.getVpcId();
 
         SecurityGroup found = null;
         List<SecurityGroup> securityGroups = awsClient.describeSecurityGroups(blockedSecurityGroupName);
@@ -107,5 +110,30 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
         List<String> groups = Lists.newArrayList();
         groups.add(groupId);
         awsClient.setInstanceSecurityGroups(instanceId, groups);
+    }
+
+    /**
+     * Gets the VPC id for the given instance
+     *
+     * @param cloudClient
+     *            cloud client
+     * @param instanceId
+     *            instance id
+     * @return vpc id, or null if not a vpc instance
+     */
+    String getVpcId(CloudClient cloudClient, String instanceId) {
+        if (!(cloudClient instanceof AWSClient)) {
+            return null;
+        }
+
+        AWSClient awsClient = (AWSClient) cloudClient;
+        Instance instance = awsClient.describeInstance(instanceId);
+
+        String vpcId = instance.getVpcId();
+        if (Strings.isNullOrEmpty(vpcId)) {
+            return null;
+        }
+
+        return vpcId;
     }
 }
