@@ -157,7 +157,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
 
         List<ChaosType> applicable = Lists.newArrayList();
         for (ChaosType chaosType : allChaosTypes) {
-            if (chaosType.canApply(cloudClient, instanceId)) {
+            if (chaosType.isEnabled() && chaosType.canApply(cloudClient, instanceId)) {
                 applicable.add(chaosType);
             }
         }
