@@ -43,6 +43,7 @@ import com.netflix.simianarmy.chaos.BurnIoChaosType;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.BurnCpuChaosType;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
+import com.netflix.simianarmy.chaos.ChaosInstance;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
 import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
@@ -57,6 +58,7 @@ import com.netflix.simianarmy.chaos.NetworkLatencyChaosType;
 import com.netflix.simianarmy.chaos.NetworkLossChaosType;
 import com.netflix.simianarmy.chaos.NullRouteChaosType;
 import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
+import com.netflix.simianarmy.chaos.SshConfig;
 
 /**
  * The Class BasicChaosMonkey.
@@ -155,9 +157,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
     private ChaosType pickChaosType(CloudClient cloudClient, String instanceId) {
         Random random = new Random();
 
+        SshConfig sshConfig = new SshConfig(cfg);
+        ChaosInstance instance = new ChaosInstance(cloudClient, instanceId, sshConfig);
+
         List<ChaosType> applicable = Lists.newArrayList();
         for (ChaosType chaosType : allChaosTypes) {
-            if (chaosType.isEnabled() && chaosType.canApply(cloudClient, instanceId)) {
+            if (chaosType.isEnabled() && chaosType.canApply(instance)) {
                 applicable.add(chaosType);
             }
         }
@@ -380,7 +385,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
             try {
                 Event evt = recordTermination(group, inst, chaosType);
                 sendTerminationNotification(group, inst);
-                chaosType.apply(context().cloudClient(), inst);
+                SshConfig sshConfig = new SshConfig(cfg);
+                ChaosInstance chaosInstance = new ChaosInstance(context().cloudClient(), inst, sshConfig);
+                chaosType.apply(chaosInstance);
                 LOGGER.info("Terminated {} from group {} [{}] with {}",
                         new Object[]{inst, group.name(), group.type(), chaosType.getKey() });
                 reportEventForSummary(EventTypes.CHAOS_TERMINATION, group, inst);

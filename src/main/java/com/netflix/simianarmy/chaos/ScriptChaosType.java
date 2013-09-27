@@ -50,99 +50,46 @@ public abstract class ScriptChaosType extends ChaosType {
     private static final Logger LOGGER = LoggerFactory.getLogger(ScriptChaosType.class);
 
     /**
-     * The SSH credentials to log on to an instance.
-     */
-    private final LoginCredentials sshCredentials;
-
-    /**
      * Constructor.
-     * 
+     *
      * @param config
      *            Configuration to use
+     * @param key
+     *            Key for the chaos money
      * @throws IOException
      */
     public ScriptChaosType(MonkeyConfiguration config, String key) {
         super(config, key);
-
-        String sshUser = config.getStrOrElse("simianarmy.chaos.ssh.user", "root");
-        String privateKey = null;
-
-        String sshKeyPath = config.getStrOrElse("simianarmy.chaos.ssh.key", null);
-        if (sshKeyPath != null) {
-            sshKeyPath = sshKeyPath.trim();
-            if (sshKeyPath.startsWith("~/")) {
-                String home = System.getProperty("user.home");
-                if (!Strings.isNullOrEmpty(home)) {
-                    if (!home.endsWith("/")) {
-                        home += "/";
-                    }
-                    sshKeyPath = home + sshKeyPath.substring(2);
-                }
-            }
-            try {
-                privateKey = Files.toString(new File(sshKeyPath), Charsets.UTF_8);
-            } catch (IOException e) {
-                throw new IllegalStateException("Unable to read the specified SSH key: " + sshKeyPath, e);
-            }
-        }
-
-        if (privateKey == null) {
-            this.sshCredentials = null;
-        } else {
-            this.sshCredentials = LoginCredentials.builder().user(sshUser).privateKey(privateKey).build();
-        }
     }
 
     /**
      * We can apply the strategy iff we can SSH to the instance.
      */
     @Override
-    public boolean canApply(CloudClient cloudClient, String instanceId) {
+    public boolean canApply(ChaosInstance instance) {
         // TODO: Check that SSH connection works here?
 
-        if (this.sshCredentials == null) {
+        if (!instance.getSshConfig().isEnabled()) {
             LOGGER.info("Strategy disabled because SSH credentials not set");
             return false;
         }
 
-        return super.canApply(cloudClient, instanceId);
+        if (!instance.canConnectSsh(instance)) {
+            LOGGER.warn("Strategy disabled because SSH credentials failed");
+            return false;
+        }
+
+        return super.canApply(instance);
     }
 
     /**
      * Runs the script.
      */
     @Override
-    public void apply(CloudClient cloudClient, String instanceId) {
-        ComputeService computeService = cloudClient.getJcloudsComputeService();
+    public void apply(ChaosInstance instance) {
+        LOGGER.info("Running script for {} on instance {}", getKey(), instance.getInstanceId());
 
-        String jcloudsId = cloudClient.getJcloudsId(instanceId);
-
-        // Work around a jclouds bug / documentation issue...
-        // Set<NodeMetadata> nodes = computeService.listNodesByIds(Collections.singletonList(jcloudsId));
-        Set<NodeMetadata> nodes = Sets.newHashSet();
-        for (ComputeMetadata n : computeService.listNodes()) {
-            if (jcloudsId.equals(n.getId())) {
-                nodes.add((NodeMetadata) n);
-            }
-        }
-
-        if (nodes.isEmpty()) {
-            LOGGER.warn("Unable to jclouds node: {}", jcloudsId);
-            for (ComputeMetadata n : computeService.listNodes()) {
-                LOGGER.info("Did find node: {}", n);
-            }
-            throw new IllegalStateException("Unable to find node using jclouds: " + jcloudsId);
-        }
-        NodeMetadata node = Iterables.getOnlyElement(nodes);
-
-        node = NodeMetadataBuilder.fromNodeMetadata(node).credentials(sshCredentials).build();
-
-        LOGGER.info("Running script for {} on instance {}", getKey(), instanceId);
-
-        Utils utils = computeService.getContext().getUtils();
-        SshClient ssh = utils.sshForNode().apply(node);
-
-        ssh.connect();
+        SshClient ssh = instance.connectSsh();
 
         String filename = getKey().toLowerCase() + ".sh";
         URL url = Resources.getResource("/scripts/" + filename);

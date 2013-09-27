@@ -93,7 +93,7 @@ public abstract class ChaosType {
      * For example, if the strategy was to detach all the EBS volumes, that only makes sense if there are EBS volumes to
      * detach.
      */
-    public boolean canApply(CloudClient cloudClient, String instanceId) {
+    public boolean canApply(ChaosInstance instance) {
         return isEnabled();
     }
 
@@ -107,7 +107,7 @@ public abstract class ChaosType {
     /**
      * Applies this chaos type to the specified instance.
      */
-    public abstract void apply(CloudClient cloudClient, String instanceId);
+    public abstract void apply(ChaosInstance instance);
 
     /**
      * Returns the ChaosType with the matching key.

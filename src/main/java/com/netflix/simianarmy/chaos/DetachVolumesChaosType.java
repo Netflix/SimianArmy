@@ -50,21 +50,27 @@ public class DetachVolumesChaosType extends ChaosType {
      * Strategy can be applied iff there are any EBS volumes attached.
      */
     @Override
-    public boolean canApply(CloudClient cloudClient, String instanceId) {
+    public boolean canApply(ChaosInstance instance) {
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
+
         List<String> volumes = cloudClient.listAttachedVolumes(instanceId, false);
         if (volumes.isEmpty()) {
             LOGGER.debug("Can't apply strategy: no non-root EBS volumes");
             return false;
         }
 
-        return super.canApply(cloudClient, instanceId);
+        return super.canApply(instance);
     }
 
     /**
      * Force-detaches all attached EBS volumes from the instance.
      */
     @Override
-    public void apply(CloudClient cloudClient, String instanceId) {
+    public void apply(ChaosInstance instance) {
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
+
         // IDEA: We could have a strategy where we detach some of the volumes...
         boolean force = true;
         for (String volumeId : cloudClient.listAttachedVolumes(instanceId, false)) {

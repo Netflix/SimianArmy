@@ -40,7 +40,10 @@ public class ShutdownInstanceChaosType extends ChaosType {
      * Shuts down the instance.
      */
     @Override
-    public void apply(CloudClient cloudClient, String instanceId) {
+    public void apply(ChaosInstance instance) {
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
+
         cloudClient.terminateInstance(instanceId);
     }
 
