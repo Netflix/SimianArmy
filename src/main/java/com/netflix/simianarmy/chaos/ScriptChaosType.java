@@ -76,7 +76,7 @@ public abstract class ScriptChaosType extends ChaosType {
         SshClient ssh = instance.connectSsh();
 
         String filename = getKey().toLowerCase() + ".sh";
-        URL url = Resources.getResource("/scripts/" + filename);
+        URL url = Resources.getResource(ScriptChaosType.class, "/scripts/" + filename);
         String script;
         try {
             script = Resources.toString(url, Charsets.UTF_8);
