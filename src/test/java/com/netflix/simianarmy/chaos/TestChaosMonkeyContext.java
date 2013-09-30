@@ -34,6 +34,7 @@ import org.jclouds.compute.ComputeService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.TestMonkeyContext;
@@ -46,8 +47,12 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     private final BasicConfiguration cfg;
 
     public TestChaosMonkeyContext() {
+        this(new Properties());
+    }
+
+    protected TestChaosMonkeyContext(Properties properties) {
         super(ChaosMonkey.Type.CHAOS);
-        cfg = new BasicConfiguration(new Properties());
+        cfg = new BasicConfiguration(properties);
     }
 
     public TestChaosMonkeyContext(String propFile) {
@@ -248,8 +253,18 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         };
     }
 
-    private int groupNotified = 0;
-    private int globallyNotified = 0;
+    private List<Notification> groupNotified = Lists.newArrayList();
+    private List<Notification> globallyNotified = Lists.newArrayList();
+
+    static class Notification {
+        public String instance;
+        public ChaosType chaosType;
+
+        public Notification(String instance, ChaosType chaosType) {
+            this.instance = instance;
+            this.chaosType = chaosType;
+        }
+    }
 
     @Override
     public ChaosEmailNotifier chaosEmailNotifier() {
@@ -270,23 +285,30 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public void sendTerminationNotification(InstanceGroup group, String instance) {
-                groupNotified++;
+            public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+                groupNotified.add(new Notification(instance, chaosType));
             }
 
             @Override
-            public void sendTerminationGlobalNotification(InstanceGroup group, String instance) {
-                globallyNotified++;
+            public void sendTerminationGlobalNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+                globallyNotified.add(new Notification(instance, chaosType));
             }
         };
     }
 
     public int getNotified() {
-        return groupNotified;
+        return groupNotified.size();
     }
 
     public int getGloballyNotified() {
-        return globallyNotified;
+        return globallyNotified.size();
     }
 
+    public List<Notification> getNotifiedList() {
+        return groupNotified;
+    }
+
+    public List<Notification> getGloballyNotifiedList() {
+        return globallyNotified;
+    }
 }

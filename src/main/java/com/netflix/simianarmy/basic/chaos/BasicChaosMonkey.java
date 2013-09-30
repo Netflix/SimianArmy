@@ -384,7 +384,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         } else {
             try {
                 Event evt = recordTermination(group, inst, chaosType);
-                sendTerminationNotification(group, inst);
+                sendTerminationNotification(group, inst, chaosType);
                 SshConfig sshConfig = new SshConfig(cfg);
                 ChaosInstance chaosInstance = new ChaosInstance(context().cloudClient(), inst, sshConfig);
                 chaosType.apply(chaosInstance);
@@ -442,7 +442,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     @Override
-    public void sendTerminationNotification(InstanceGroup group, String instance) {
+    public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
         String propEmailGlobalEnabled = "simianarmy.chaos.notification.global.enabled";
         String propEmailGroupEnabled = String.format("%s%s.%s.notification.enabled", NS, group.type(), group.name());
 
@@ -453,10 +453,10 @@ public class BasicChaosMonkey extends ChaosMonkey {
             throw new RuntimeException(msg);
         }
         if (cfg.getBoolOrElse(propEmailGroupEnabled, false)) {
-            notifier.sendTerminationNotification(group, instance);
+            notifier.sendTerminationNotification(group, instance, chaosType);
         }
         if (cfg.getBoolOrElse(propEmailGlobalEnabled, false)) {
-            notifier.sendTerminationGlobalNotification(group, instance);
+            notifier.sendTerminationGlobalNotification(group, instance, chaosType);
         }
     }
 
