@@ -201,7 +201,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     }
 
     private final List<String> terminated = new LinkedList<String>();
-    private final List<String> selected = new LinkedList<String>();
+    private final List<String> selected = Lists.newArrayList();
+    private final List<String> detachedVolumes = Lists.newArrayList();
 
     public List<String> terminated() {
         return terminated;
@@ -241,12 +242,15 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
             @Override
             public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
-                throw new UnsupportedOperationException();
+                List<String> volumes = Lists.newArrayList();
+                volumes.add("volume-1");
+                volumes.add("volume-2");
+                return volumes;
             }
 
             @Override
             public void detachVolume(String instanceId, String volumeId, boolean force) {
-                throw new UnsupportedOperationException();
+                detachedVolumes.add(instanceId + ":" + volumeId);
             }
 
             @Override
@@ -432,5 +436,9 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
     public List<SshAction> getSshActions() {
         return sshActions;
+    }
+
+    public List<String> getDetachedVolumes() {
+        return detachedVolumes;
     }
 }

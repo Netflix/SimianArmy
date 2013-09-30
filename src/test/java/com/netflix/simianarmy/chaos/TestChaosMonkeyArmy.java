@@ -147,10 +147,12 @@ public class TestChaosMonkeyArmy {
 
         checkNotifications(ctx, key);
 
-        List<String> terminated = ctx.terminated();
-        Assert.assertEquals(terminated.size(), 2);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
-        Assert.assertEquals(terminated.get(1), "1:i-123456781");
+        List<String> detachedVolumes = ctx.getDetachedVolumes();
+        Assert.assertEquals(detachedVolumes.size(), 4);
+        Assert.assertEquals(detachedVolumes.get(0), "0:i-123456780:volume-1");
+        Assert.assertEquals(detachedVolumes.get(1), "0:i-123456780:volume-2");
+        Assert.assertEquals(detachedVolumes.get(2), "1:i-123456781:volume-1");
+        Assert.assertEquals(detachedVolumes.get(3), "1:i-123456781:volume-2");
     }
 
     @Test
