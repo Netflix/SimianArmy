@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script for BurnCpu Chaos Monkey
 
 cat << EOF > /tmp/infiniteburn.sh
 #!/bin/bash
