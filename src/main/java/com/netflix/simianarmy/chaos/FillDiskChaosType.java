@@ -24,6 +24,14 @@ import com.netflix.simianarmy.MonkeyConfiguration;
  */
 public class FillDiskChaosType extends ScriptChaosType {
     /**
+     * TODO: As with BurnIoChaosType, it would be nice to randomize the volume.
+     *
+     * coryb suggested this, and proposed this script:
+     *
+     * nohup dd if=/dev/urandom of=/burn bs=1M count=$(df -ml /burn  | awk '/\//{print $2}') iflag=fullblock &
+     */
+
+    /**
      * Constructor.
      *
      * @param config

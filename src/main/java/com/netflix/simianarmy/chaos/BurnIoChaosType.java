@@ -26,6 +26,29 @@ import com.netflix.simianarmy.MonkeyConfiguration;
  */
 public class BurnIoChaosType extends ScriptChaosType {
     /**
+     * TODO: It would be nice to target other devices than the root disk.
+     *
+     * Considerations:
+     * 1) EBS activity costs money.
+     * 2) The root may be on EBS anyway.
+     * 3) If it's costing money, we might want to stop after a while to stop runaway charges.
+     *
+     * coryb suggested this, and proposed something like this:
+     *
+     * tmp=$(mktemp)
+     * df -hl -x tmpfs | awk '/\//{print $6}' > $tmp
+     * mount=$(sed -n $((RANDOM%$(wc -l < $tmp)+1))p $tmp)
+     * rm $tmp
+     *
+     * And then of=$mount/burn
+     *
+     * An alternative might be to run df over SSH, parse it here, and then pass the desired
+     * path to the script.  This keeps the script simpler.  I don't think there's an easy way
+     * to tell the difference between an EBS volume and an instance volume other than from the
+     * EC2 API.
+     */
+
+    /**
      * Constructor.
      *
      * @param config
