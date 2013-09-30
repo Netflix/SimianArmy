@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script for BurnIO Chaos Monkey
 
 cat << EOF > /tmp/loopburnio.sh
 #!/bin/bash

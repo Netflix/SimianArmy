@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script for FailS3 Chaos Monkey
 
 # See http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
 

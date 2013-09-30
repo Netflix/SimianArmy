@@ -83,9 +83,63 @@ public class TestChaosMonkeyArmy {
         Assert.assertEquals(notifications.get(1).getChaosType().getKey(), key);
     }
 
+    private void checkSshActions(TestChaosMonkeyContext ctx, String key) {
+        List<SshAction> sshActions = ctx.getSshActions();
+        Assert.assertEquals(sshActions.size(), 4);
+
+        Assert.assertEquals(sshActions.get(0).getMethod(), "put");
+        Assert.assertEquals(sshActions.get(0).getInstanceId(), "0:i-123456780");
+
+        // We require that each script include the name of the chaos type
+        // This makes testing easier, and also means the scripts show where they came from
+        Assert.assertTrue(sshActions.get(0).getContents().toLowerCase().contains(key.toLowerCase()));
+
+        Assert.assertEquals(sshActions.get(1).getMethod(), "exec");
+        Assert.assertEquals(sshActions.get(1).getInstanceId(), "0:i-123456780");
+
+        Assert.assertEquals(sshActions.get(2).getMethod(), "put");
+        Assert.assertEquals(sshActions.get(2).getInstanceId(), "1:i-123456781");
+        Assert.assertTrue(sshActions.get(2).getContents().contains(key));
+
+        Assert.assertEquals(sshActions.get(3).getMethod(), "exec");
+        Assert.assertEquals(sshActions.get(3).getInstanceId(), "1:i-123456781");
+    }
+
     @Test
     public void testShutdownInstance() {
         String key = "ShutdownInstance";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+
+        checkNotifications(ctx, key);
+
+        List<String> terminated = ctx.terminated();
+        Assert.assertEquals(terminated.size(), 2);
+        Assert.assertEquals(terminated.get(0), "0:i-123456780");
+        Assert.assertEquals(terminated.get(1), "1:i-123456781");
+    }
+
+    @Test
+    public void testBlockAllNetworkTraffic() {
+        String key = "BlockAllNetworkTraffic";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+
+        checkNotifications(ctx, key);
+
+        List<String> terminated = ctx.terminated();
+        Assert.assertEquals(terminated.size(), 2);
+        Assert.assertEquals(terminated.get(0), "0:i-123456780");
+        Assert.assertEquals(terminated.get(1), "1:i-123456781");
+    }
+
+    @Test
+    public void testDetachVolumes() {
+        String key = "DetachVolumes";
 
         TestChaosMonkeyContext ctx = runChaosMonkey(key);
 
@@ -106,23 +160,133 @@ public class TestChaosMonkeyArmy {
         TestChaosMonkeyContext ctx = runChaosMonkey(key);
 
         checkSelected(ctx);
-
         checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
 
-        List<SshAction> sshActions = ctx.getSshActions();
-        Assert.assertEquals(sshActions.size(), 4);
+    @Test
+    public void testBurnIo() {
+        String key = "BurnIO";
 
-        Assert.assertEquals(sshActions.get(0).getMethod(), "put");
-        Assert.assertTrue(sshActions.get(0).getContents().toLowerCase().contains(key.toLowerCase()));
-        Assert.assertEquals(sshActions.get(0).getInstanceId(), "0:i-123456780");
-        Assert.assertEquals(sshActions.get(1).getMethod(), "exec");
-        Assert.assertEquals(sshActions.get(1).getInstanceId(), "0:i-123456780");
+        // TODO: Fix up BurnIO script to target multiple drives?
 
-        Assert.assertEquals(sshActions.get(2).getMethod(), "put");
-        Assert.assertTrue(sshActions.get(2).getContents().contains(key));
-        Assert.assertEquals(sshActions.get(2).getInstanceId(), "1:i-123456781");
-        Assert.assertEquals(sshActions.get(3).getMethod(), "exec");
-        Assert.assertEquals(sshActions.get(3).getInstanceId(), "1:i-123456781");
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFailDns() {
+        String key = "FailDns";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFailDynamoDb() {
+        String key = "FailDynamoDb";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFailEc2() {
+        String key = "FailEc2";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFailS3() {
+        String key = "FailS3";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFillDisk() {
+        String key = "FillDisk";
+
+        // TODO: Update script to target multiple drives
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testKillProcess() {
+        String key = "KillProcesses";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testNetworkCorruption() {
+        String key = "NetworkCorruption";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testNetworkLatency() {
+        String key = "NetworkLatency";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testNetworkLoss() {
+        String key = "NetworkLoss";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testNullRoute() {
+        String key = "NullRoute";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
     }
 
 }

@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script for FailDynamoDb Chaos Monkey
 
 # Block well-known Amazon DynamoDB API endpoints
 echo "127.0.0.1 dynamodb.us-east-1.amazonaws.com" >> /etc/hosts

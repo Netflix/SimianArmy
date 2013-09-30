@@ -1,4 +1,5 @@
 #!/bin/bash
+# Script for FailEc2 Chaos Monkey
 
 # Block well-known Amazon EC2 API endpoints
 echo "127.0.0.1 ec2.us-east-1.amazonaws.com" >> /etc/hosts
