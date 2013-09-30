@@ -171,8 +171,6 @@ public class TestChaosMonkeyArmy {
     public void testBurnIo() {
         String key = "BurnIO";
 
-        // TODO: Fix up BurnIO script to target multiple drives?
-
         TestChaosMonkeyContext ctx = runChaosMonkey(key);
 
         checkSelected(ctx);
@@ -227,8 +225,6 @@ public class TestChaosMonkeyArmy {
     @Test
     public void testFillDisk() {
         String key = "FillDisk";
-
-        // TODO: Update script to target multiple drives
 
         TestChaosMonkeyContext ctx = runChaosMonkey(key);
 
