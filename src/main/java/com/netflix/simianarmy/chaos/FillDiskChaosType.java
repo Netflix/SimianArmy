@@ -30,7 +30,7 @@ public class FillDiskChaosType extends ScriptChaosType {
     private static final Logger LOGGER = LoggerFactory.getLogger(FillDiskChaosType.class);
 
     /**
-     * TODO: As with BurnIoChaosType, it would be nice to randomize the volume.
+     * Enhancement: As with BurnIoChaosType, it would be nice to randomize the volume.
      *
      * coryb suggested this, and proposed this script:
      *

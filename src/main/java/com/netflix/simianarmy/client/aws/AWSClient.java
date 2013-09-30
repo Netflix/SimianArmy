@@ -75,7 +75,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
-import com.netflix.simianarmy.chaos.ChaosInstance;
 
 import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
@@ -790,7 +789,7 @@ public class AWSClient implements CloudClient {
     /**
      * Gets the VPC id for the given instance.
      *
-     * @param instance
+     * @param instanceId
      *            instance we're checking
      * @return vpc id, or null if not a vpc instance
      */

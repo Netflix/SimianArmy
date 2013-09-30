@@ -32,7 +32,7 @@ public class BurnIoChaosType extends ScriptChaosType {
     private static final Logger LOGGER = LoggerFactory.getLogger(BurnIoChaosType.class);
 
     /**
-     * TODO: It would be nice to target other devices than the root disk.
+     * Enhancement: It would be nice to target other devices than the root disk.
      *
      * Considerations:
      * 1) EBS activity costs money.
