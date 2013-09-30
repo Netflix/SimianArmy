@@ -222,7 +222,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
      *            the exception
      */
     protected void handleTerminationError(String instance, Throwable e) {
-        LOGGER.error("failed to terminate instance " + instance, e.getMessage());
+        LOGGER.error("failed to terminate instance " + instance, e);
         throw new RuntimeException("failed to terminate instance " + instance, e);
     }
 
