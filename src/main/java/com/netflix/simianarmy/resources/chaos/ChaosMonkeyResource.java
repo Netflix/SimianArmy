@@ -32,8 +32,10 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import com.google.common.base.Strings;
 import com.netflix.simianarmy.Monkey;
 import com.sun.jersey.spi.resource.Singleton;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -49,6 +51,8 @@ import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
+import com.netflix.simianarmy.chaos.ChaosType;
+import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
 
 /**
  * The Class ChaosMonkeyResource for json REST apis.
@@ -164,6 +168,14 @@ public class ChaosMonkeyResource {
         String eventType = getStringField(input, "eventType");
         String groupType = getStringField(input, "groupType");
         String groupName = getStringField(input, "groupName");
+        String chaosTypeName = getStringField(input, "chaosType");
+
+        ChaosType chaosType;
+        if (!Strings.isNullOrEmpty(chaosTypeName)) {
+            chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
+        } else {
+            chaosType = new ShutdownInstanceChaosType(monkey.context().configuration());
+        }
 
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -172,13 +184,14 @@ public class ChaosMonkeyResource {
         gen.writeStringField("eventType", eventType);
         gen.writeStringField("groupType", groupType);
         gen.writeStringField("groupName", groupName);
+        gen.writeStringField("chaosType", chaosType.getKey());
 
         if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(groupType) || StringUtils.isEmpty(groupName)) {
             responseStatus = Response.Status.BAD_REQUEST;
             gen.writeStringField("message", "eventType, groupType, and groupName parameters are all required");
         } else {
             if (eventType.equals("CHAOS_TERMINATION")) {
-                responseStatus = addTerminationEvent(groupType, groupName, gen);
+                responseStatus = addTerminationEvent(groupType, groupName, chaosType, gen);
             } else {
                 responseStatus = Response.Status.BAD_REQUEST;
                 gen.writeStringField("message", String.format("Unrecognized event type: %s", eventType));
@@ -190,13 +203,14 @@ public class ChaosMonkeyResource {
         return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
     }
 
-    private Response.Status addTerminationEvent(String groupType, String groupName, JsonGenerator gen)
+    private Response.Status addTerminationEvent(String groupType,
+            String groupName, ChaosType chaosType, JsonGenerator gen)
             throws IOException {
         LOGGER.info("Running on-demand termination for instance group type '{}' and name '{}'",
                 groupType, groupName);
         Response.Status responseStatus;
         try {
-            Event evt = monkey.terminateNow(groupType, groupName);
+            Event evt = monkey.terminateNow(groupType, groupName, chaosType);
             if (evt != null) {
                 responseStatus = Response.Status.OK;
                 gen.writeStringField("monkeyType", evt.monkeyType().name());

@@ -257,6 +257,11 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      */
     public void init() {
         try {
+            if (this.region == null || this.region.equals("region-null")) {
+                // This is a mock with an invalid region; avoid a slow timeout
+                LOGGER.debug("Region=null; skipping SimpleDB domain creation");
+                return;
+            }
             ListDomainsResult listDomains = sdbClient().listDomains();
             for (String d : listDomains.getDomainNames()) {
                 if (d.equals(domain)) {

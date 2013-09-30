@@ -33,6 +33,8 @@ import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResu
 import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
+import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
 import com.amazonaws.services.ec2.model.CreateTagsRequest;
 import com.amazonaws.services.ec2.model.DeleteSnapshotRequest;
 import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
@@ -41,13 +43,20 @@ import com.amazonaws.services.ec2.model.DescribeImagesRequest;
 import com.amazonaws.services.ec2.model.DescribeImagesResult;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
 import com.amazonaws.services.ec2.model.DescribeInstancesResult;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
+import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
 import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
 import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
 import com.amazonaws.services.ec2.model.DescribeVolumesResult;
+import com.amazonaws.services.ec2.model.DetachVolumeRequest;
+import com.amazonaws.services.ec2.model.EbsInstanceBlockDevice;
 import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
+import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
 import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.SecurityGroup;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
@@ -58,17 +67,37 @@ import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRe
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import com.google.common.base.Objects;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
+
 import org.apache.commons.lang.Validate;
+import org.jclouds.ContextBuilder;
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.ComputeServiceContext;
+import org.jclouds.compute.Utils;
+import org.jclouds.compute.domain.ComputeMetadata;
+import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.NodeMetadataBuilder;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
+import org.jclouds.ssh.SshClient;
+import org.jclouds.ssh.jsch.config.JschSshClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -83,6 +112,8 @@ public class AWSClient implements CloudClient {
     private final String region;
 
     private final AWSCredentialsProvider awsCredentialsProvider;
+
+    private ComputeService jcloudsComputeService;
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -440,6 +471,23 @@ public class AWSClient implements CloudClient {
         }
     }
 
+    /** {@inheritDoc} */
+    public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Removing all security groups from instance %s in region %s.", instanceId, region));
+        try {
+            ModifyInstanceAttributeRequest request = new ModifyInstanceAttributeRequest();
+            request.setInstanceId(instanceId);
+            request.setGroups(groupIds);
+            ec2Client().modifyInstanceAttribute(request);
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
+    }
+
     /**
      * Describe a set of specific EBS volumes.
      *
@@ -530,5 +578,235 @@ public class AWSClient implements CloudClient {
 
         LOGGER.info(String.format("Got %d AMIs in region %s.", images.size(), region));
         return images;
+    }
+
+    @Override
+    public void detachVolume(String instanceId, String volumeId, boolean force) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Detach volumes from instance %s in region %s.", instanceId, region));
+        try {
+            DetachVolumeRequest detachVolumeRequest = new DetachVolumeRequest();
+            detachVolumeRequest.setForce(force);
+            detachVolumeRequest.setInstanceId(instanceId);
+            detachVolumeRequest.setVolumeId(volumeId);
+            ec2Client().detachVolume(detachVolumeRequest);
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
+    }
+
+    @Override
+    public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
+        Validate.notEmpty(instanceId);
+        LOGGER.info(String.format("Listing volumes attached to instance %s in region %s.", instanceId, region));
+        try {
+            List<String> volumeIds = new ArrayList<String>();
+            for (Instance instance : describeInstances(instanceId)) {
+                String rootDeviceName = instance.getRootDeviceName();
+
+                for (InstanceBlockDeviceMapping ibdm : instance.getBlockDeviceMappings()) {
+                    EbsInstanceBlockDevice ebs = ibdm.getEbs();
+                    if (ebs == null) {
+                        continue;
+                    }
+
+                    String volumeId = ebs.getVolumeId();
+                    if (Strings.isNullOrEmpty(volumeId)) {
+                        continue;
+                    }
+
+                    if (!includeRoot && rootDeviceName != null && rootDeviceName.equals(ibdm.getDeviceName())) {
+                        continue;
+                    }
+
+                    volumeIds.add(volumeId);
+                }
+            }
+            return volumeIds;
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
+                throw new NotFoundException("AWS instance " + instanceId + " not found", e);
+            }
+            throw e;
+        }
+    }
+
+    /**
+     * Describe a set of security groups.
+     *
+     * @param groupNames the names of the groups to find
+     * @return a list of matching groups
+     */
+    public List<SecurityGroup> describeSecurityGroups(String... groupNames) {
+        AmazonEC2 ec2Client = ec2Client();
+        DescribeSecurityGroupsRequest request = new DescribeSecurityGroupsRequest();
+
+        if (groupNames == null || groupNames.length == 0) {
+            LOGGER.info(String.format("Getting all EC2 security groups in region %s.", region));
+        } else {
+            LOGGER.info(String.format("Getting EC2 security groups for %d names in region %s.", groupNames.length,
+                    region));
+            request.withGroupNames(groupNames);
+        }
+
+        DescribeSecurityGroupsResult result;
+        try {
+            result = ec2Client.describeSecurityGroups(request);
+        } catch (AmazonServiceException e) {
+            if (e.getErrorCode().equals("InvalidGroup.NotFound")) {
+                LOGGER.info("Got InvalidGroup.NotFound error for security groups; returning empty list");
+                return Collections.emptyList();
+            }
+            throw e;
+        }
+
+        List<SecurityGroup> securityGroups = result.getSecurityGroups();
+        LOGGER.info(String.format("Got %d EC2 security groups in region %s.", securityGroups.size(), region));
+        return securityGroups;
+    }
+
+    /** {@inheritDoc} */
+    public String createSecurityGroup(String instanceId, String name, String description) {
+        String vpcId = getVpcId(instanceId);
+
+        AmazonEC2 ec2Client = ec2Client();
+        CreateSecurityGroupRequest request = new CreateSecurityGroupRequest();
+        request.setGroupName(name);
+        request.setDescription(description);
+        request.setVpcId(vpcId);
+
+        LOGGER.info(String.format("Creating EC2 security group %s.", name));
+
+        CreateSecurityGroupResult result = ec2Client.createSecurityGroup(request);
+        return result.getGroupId();
+    }
+
+    /**
+     * Convenience wrapper around describeInstances, for a single instance id.
+     *
+     * @param instanceId id of instance to find
+     * @return the instance info, or null if instance not found
+     */
+    public Instance describeInstance(String instanceId) {
+        Instance instance = null;
+        for (Instance i : describeInstances(instanceId)) {
+            if (instance != null) {
+                throw new IllegalStateException("Duplicate instance: " + instanceId);
+            }
+            instance = i;
+        }
+        return instance;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public synchronized ComputeService getJcloudsComputeService() {
+        if (jcloudsComputeService == null) {
+            String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
+            String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
+            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("ec2").credentials(username, password)
+                    .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
+                    .buildView(ComputeServiceContext.class);
+
+            this.jcloudsComputeService = jcloudsContext.getComputeService();
+        }
+
+        return jcloudsComputeService;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String getJcloudsId(String instanceId) {
+        return this.region + "/" + instanceId;
+    }
+
+    @Override
+    public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+        ComputeService computeService = getJcloudsComputeService();
+
+        String jcloudsId = getJcloudsId(instanceId);
+        NodeMetadata node = getJcloudsNode(computeService, jcloudsId);
+
+        node = NodeMetadataBuilder.fromNodeMetadata(node).credentials(credentials).build();
+
+        Utils utils = computeService.getContext().getUtils();
+        SshClient ssh = utils.sshForNode().apply(node);
+
+        ssh.connect();
+
+        return ssh;
+    }
+
+    private NodeMetadata getJcloudsNode(ComputeService computeService, String jcloudsId) {
+        // Work around a jclouds bug / documentation issue...
+        // TODO: Figure out what's broken, and eliminate this function
+
+        // This should work (?):
+        // Set<NodeMetadata> nodes = computeService.listNodesByIds(Collections.singletonList(jcloudsId));
+
+        Set<NodeMetadata> nodes = Sets.newHashSet();
+        for (ComputeMetadata n : computeService.listNodes()) {
+            if (jcloudsId.equals(n.getId())) {
+                nodes.add((NodeMetadata) n);
+            }
+        }
+
+        if (nodes.isEmpty()) {
+            LOGGER.warn("Unable to find jclouds node: {}", jcloudsId);
+            for (ComputeMetadata n : computeService.listNodes()) {
+                LOGGER.info("Did find node: {}", n);
+            }
+            throw new IllegalStateException("Unable to find node using jclouds: " + jcloudsId);
+        }
+        NodeMetadata node = Iterables.getOnlyElement(nodes);
+        return node;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String findSecurityGroup(String instanceId, String groupName) {
+        String vpcId = getVpcId(instanceId);
+
+        SecurityGroup found = null;
+        List<SecurityGroup> securityGroups = describeSecurityGroups(vpcId, groupName);
+        for (SecurityGroup sg : securityGroups) {
+            if (Objects.equal(vpcId, sg.getVpcId())) {
+                if (found != null) {
+                    throw new IllegalStateException("Duplicate security groups found");
+                }
+                found = sg;
+            }
+        }
+        if (found == null) {
+            return null;
+        }
+        return found.getGroupId();
+    }
+
+    /**
+     * Gets the VPC id for the given instance.
+     *
+     * @param instanceId
+     *            instance we're checking
+     * @return vpc id, or null if not a vpc instance
+     */
+    String getVpcId(String instanceId) {
+        Instance awsInstance = describeInstance(instanceId);
+
+        String vpcId = awsInstance.getVpcId();
+        if (Strings.isNullOrEmpty(vpcId)) {
+            return null;
+        }
+
+        return vpcId;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canChangeInstanceSecurityGroups(String instanceId) {
+        return null != getVpcId(instanceId);
     }
 }
