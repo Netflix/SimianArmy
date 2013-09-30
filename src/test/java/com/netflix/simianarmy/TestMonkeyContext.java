@@ -161,6 +161,26 @@ public class TestMonkeyContext implements Monkey.Context {
             public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
                 throw new UnsupportedOperationException();
             }
+
+            @Override
+            public String findSecurityGroup(String instanceId, String groupName) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String createSecurityGroup(String instanceId, String groupName, String description) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public boolean canChangeInstanceSecurityGroups(String instanceId) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
+                throw new UnsupportedOperationException();
+            }
         };
     }
 

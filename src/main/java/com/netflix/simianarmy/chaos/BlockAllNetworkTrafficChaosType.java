@@ -60,14 +60,14 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(ChaosInstance instance) {
-        if (!(instance.getCloudClient() instanceof AWSClient)) {
-            LOGGER.warn("Not an AWSClient, can't use security groups");
-            return false;
-        }
-        if (getVpcId(instance) == null) {
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
+
+        if (!cloudClient.canChangeInstanceSecurityGroups(instanceId)) {
             LOGGER.info("Not a VPC instance, can't change security groups");
             return false;
         }
+
         return super.canApply(instance);
     }
 
@@ -76,66 +76,26 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
      */
     @Override
     public void apply(ChaosInstance instance) {
-        String vpcId = getVpcId(instance);
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
 
-        if (vpcId == null) {
+        if (!cloudClient.canChangeInstanceSecurityGroups(instanceId)) {
             throw new IllegalStateException("canApply should have returned false");
         }
 
-        AWSClient awsClient = (AWSClient) instance.getCloudClient();
+        String groupId = cloudClient.findSecurityGroup(instance.getInstanceId(), blockedSecurityGroupName);
 
-        SecurityGroup found = null;
-        List<SecurityGroup> securityGroups = awsClient.describeSecurityGroups(blockedSecurityGroupName);
-        for (SecurityGroup sg : securityGroups) {
-            if (Objects.equal(vpcId, sg.getVpcId())) {
-                if (found != null) {
-                    throw new IllegalStateException("Duplicate security groups found");
-                }
-                found = sg;
-            }
-        }
-
-        String groupId;
-        if (found == null) {
+        if (groupId == null) {
             LOGGER.info("Auto-creating security group {}", blockedSecurityGroupName);
 
             String description = "Empty security group for blocked instances";
-            groupId = awsClient.createSecurityGroup(vpcId, blockedSecurityGroupName, description);
-        } else {
-            groupId = found.getGroupId();
+            groupId = cloudClient.createSecurityGroup(instance.getInstanceId(), blockedSecurityGroupName, description);
         }
 
-        String instanceId = instance.getInstanceId();
         LOGGER.info("Blocking network traffic by applying security group {} to instance {}", groupId, instanceId);
 
         List<String> groups = Lists.newArrayList();
         groups.add(groupId);
-        awsClient.setInstanceSecurityGroups(instanceId, groups);
-    }
-
-    /**
-     * Gets the VPC id for the given instance.
-     *
-     * @param instance
-     *            instance we're checking
-     * @return vpc id, or null if not a vpc instance
-     */
-    String getVpcId(ChaosInstance instance) {
-        CloudClient cloudClient = instance.getCloudClient();
-        String instanceId = instance.getInstanceId();
-
-        if (!(cloudClient instanceof AWSClient)) {
-            return null;
-        }
-
-        AWSClient awsClient = (AWSClient) cloudClient;
-        Instance awsInstance = awsClient.describeInstance(instanceId);
-
-        String vpcId = awsInstance.getVpcId();
-        if (Strings.isNullOrEmpty(vpcId)) {
-            return null;
-        }
-
-        return vpcId;
+        cloudClient.setInstanceSecurityGroups(instanceId, groups);
     }
 }

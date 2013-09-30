@@ -67,6 +67,7 @@ import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRe
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
+import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -74,6 +75,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
+import com.netflix.simianarmy.chaos.ChaosInstance;
 
 import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
@@ -470,25 +472,14 @@ public class AWSClient implements CloudClient {
         }
     }
 
-    /**
-     * Sets the security groups for an instance.
-     *
-     * Note this is only valid for VPC instances.
-     *
-     * @param instanceId
-     *            the instance id
-     *
-     * @throws NotFoundException
-     *             if the instance no longer exists or was already terminated after the crawler discovered it then you
-     *             should get a NotFoundException
-     */
-    public void setInstanceSecurityGroups(String instanceId, List<String> groups) {
+    /** {@inheritDoc} */
+    public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
         Validate.notEmpty(instanceId);
         LOGGER.info(String.format("Removing all security groups from instance %s in region %s.", instanceId, region));
         try {
             ModifyInstanceAttributeRequest request = new ModifyInstanceAttributeRequest();
             request.setInstanceId(instanceId);
-            request.setGroups(groups);
+            request.setGroups(groupIds);
             ec2Client().modifyInstanceAttribute(request);
         } catch (AmazonServiceException e) {
             if (e.getErrorCode().equals("InvalidInstanceID.NotFound")) {
@@ -678,16 +669,10 @@ public class AWSClient implements CloudClient {
         return securityGroups;
     }
 
-    /**
-     * Create an (empty) EC2 security group.
-     *
-     * @param name
-     *            Name of group to create
-     * @param description
-     *            Description of group to create
-     * @return ID of created group
-     */
-    public String createSecurityGroup(String vpcId, String name, String description) {
+    /** {@inheritDoc} */
+    public String createSecurityGroup(String instanceId, String name, String description) {
+        String vpcId = getVpcId(instanceId);
+
         AmazonEC2 ec2Client = ec2Client();
         CreateSecurityGroupRequest request = new CreateSecurityGroupRequest();
         request.setGroupName(name);
@@ -779,5 +764,50 @@ public class AWSClient implements CloudClient {
         }
         NodeMetadata node = Iterables.getOnlyElement(nodes);
         return node;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public String findSecurityGroup(String instanceId, String groupName) {
+        String vpcId = getVpcId(instanceId);
+
+        SecurityGroup found = null;
+        List<SecurityGroup> securityGroups = describeSecurityGroups(vpcId, groupName);
+        for (SecurityGroup sg : securityGroups) {
+            if (Objects.equal(vpcId, sg.getVpcId())) {
+                if (found != null) {
+                    throw new IllegalStateException("Duplicate security groups found");
+                }
+                found = sg;
+            }
+        }
+        if (found == null) {
+            return null;
+        }
+        return found.getGroupId();
+    }
+
+    /**
+     * Gets the VPC id for the given instance.
+     *
+     * @param instance
+     *            instance we're checking
+     * @return vpc id, or null if not a vpc instance
+     */
+    String getVpcId(String instanceId) {
+        Instance awsInstance = describeInstance(instanceId);
+
+        String vpcId = awsInstance.getVpcId();
+        if (Strings.isNullOrEmpty(vpcId)) {
+            return null;
+        }
+
+        return vpcId;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public boolean canChangeInstanceSecurityGroups(String instanceId) {
+        return null != getVpcId(instanceId);
     }
 }

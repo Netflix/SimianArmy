@@ -39,7 +39,9 @@ import org.jclouds.ssh.SshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.TestMonkeyContext;
@@ -202,11 +204,13 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
     private final List<String> terminated = new LinkedList<String>();
     private final List<String> selected = Lists.newArrayList();
-    private final List<String> detachedVolumes = Lists.newArrayList();
+    private final List<String> cloudActions = Lists.newArrayList();
 
     public List<String> terminated() {
         return terminated;
     }
+
+    final Map<String, String> securityGroupNames = Maps.newHashMap();
 
     @Override
     public CloudClient cloudClient() {
@@ -250,7 +254,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
             @Override
             public void detachVolume(String instanceId, String volumeId, boolean force) {
-                detachedVolumes.add(instanceId + ":" + volumeId);
+                cloudActions.add("detach:" + instanceId + ":" + volumeId);
             }
 
             @Override
@@ -266,6 +270,29 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
                 return new MockSshClient(instanceId, credentials);
+            }
+
+            @Override
+            public String findSecurityGroup(String instanceId, String groupName) {
+                return securityGroupNames.get(groupName);
+            }
+
+            @Override
+            public String createSecurityGroup(String instanceId, String groupName, String description) {
+                String id = "sg-" + (securityGroupNames.size() + 1);
+                securityGroupNames.put(groupName, id);
+                cloudActions.add("createSecurityGroup:" + instanceId + ":" + groupName);
+                return id;
+            }
+
+            @Override
+            public boolean canChangeInstanceSecurityGroups(String instanceId) {
+                return true;
+            }
+
+            @Override
+            public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
+                cloudActions.add("setInstanceSecurityGroups:" + instanceId + ":" + Joiner.on(',').join(groupIds));
             }
         };
     }
@@ -438,7 +465,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         return sshActions;
     }
 
-    public List<String> getDetachedVolumes() {
-        return detachedVolumes;
+    public List<String> getCloudActions() {
+        return cloudActions;
     }
 }

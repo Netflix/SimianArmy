@@ -131,10 +131,11 @@ public class TestChaosMonkeyArmy {
 
         checkNotifications(ctx, key);
 
-        List<String> terminated = ctx.terminated();
-        Assert.assertEquals(terminated.size(), 2);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
-        Assert.assertEquals(terminated.get(1), "1:i-123456781");
+        List<String> cloudActions = ctx.getCloudActions();
+        Assert.assertEquals(cloudActions.size(), 3);
+        Assert.assertEquals(cloudActions.get(0), "createSecurityGroup:0:i-123456780:blocked-network");
+        Assert.assertEquals(cloudActions.get(1), "setInstanceSecurityGroups:0:i-123456780:sg-1");
+        Assert.assertEquals(cloudActions.get(2), "setInstanceSecurityGroups:1:i-123456781:sg-1");
     }
 
     @Test
@@ -147,12 +148,12 @@ public class TestChaosMonkeyArmy {
 
         checkNotifications(ctx, key);
 
-        List<String> detachedVolumes = ctx.getDetachedVolumes();
-        Assert.assertEquals(detachedVolumes.size(), 4);
-        Assert.assertEquals(detachedVolumes.get(0), "0:i-123456780:volume-1");
-        Assert.assertEquals(detachedVolumes.get(1), "0:i-123456780:volume-2");
-        Assert.assertEquals(detachedVolumes.get(2), "1:i-123456781:volume-1");
-        Assert.assertEquals(detachedVolumes.get(3), "1:i-123456781:volume-2");
+        List<String> cloudActions = ctx.getCloudActions();
+        Assert.assertEquals(cloudActions.size(), 4);
+        Assert.assertEquals(cloudActions.get(0), "detach:0:i-123456780:volume-1");
+        Assert.assertEquals(cloudActions.get(1), "detach:0:i-123456780:volume-2");
+        Assert.assertEquals(cloudActions.get(2), "detach:1:i-123456781:volume-1");
+        Assert.assertEquals(cloudActions.get(3), "detach:1:i-123456781:volume-2");
     }
 
     @Test
