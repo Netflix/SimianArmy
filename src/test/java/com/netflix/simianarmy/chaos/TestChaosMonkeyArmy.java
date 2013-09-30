@@ -46,11 +46,17 @@ public class TestChaosMonkeyArmy {
     }
 
     private TestChaosMonkeyContext runChaosMonkey(String key) {
+        return runChaosMonkey(key, true);
+    }
+
+    private TestChaosMonkeyContext runChaosMonkey(String key, boolean burnMoney) {
         Properties properties = new Properties();
         properties.setProperty("simianarmy.chaos.enabled", "true");
         properties.setProperty("simianarmy.chaos.leashed", "false");
         properties.setProperty("simianarmy.chaos.TYPE_A.enabled", "true");
         properties.setProperty("simianarmy.chaos.notification.global.enabled", "true");
+
+        properties.setProperty("simianarmy.chaos.burnmoney", Boolean.toString(burnMoney));
 
         properties.setProperty("simianarmy.chaos.shutdowninstance.enabled", "false");
         properties.setProperty("simianarmy.chaos." + key.toLowerCase() + ".enabled", "true");
@@ -179,6 +185,48 @@ public class TestChaosMonkeyArmy {
     }
 
     @Test
+    public void testBurnIoWithoutBurnMoney() {
+        String key = "BurnIO";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key, false);
+
+        checkSelected(ctx);
+
+        List<Notification> notifications = ctx.getGloballyNotifiedList();
+        Assert.assertEquals(notifications.size(), 0);
+
+        List<SshAction> sshActions = ctx.getSshActions();
+        Assert.assertEquals(sshActions.size(), 0);
+    }
+
+    @Test
+    public void testFillDisk() {
+        String key = "FillDisk";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+        checkNotifications(ctx, key);
+        checkSshActions(ctx, key);
+    }
+
+    @Test
+    public void testFillDiskWithoutBurnMoney() {
+        String key = "FillDisk";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key, false);
+
+        checkSelected(ctx);
+
+        List<Notification> notifications = ctx.getGloballyNotifiedList();
+        Assert.assertEquals(notifications.size(), 0);
+
+        List<SshAction> sshActions = ctx.getSshActions();
+        Assert.assertEquals(sshActions.size(), 0);
+    }
+
+
+    @Test
     public void testFailDns() {
         String key = "FailDns";
 
@@ -214,17 +262,6 @@ public class TestChaosMonkeyArmy {
     @Test
     public void testFailS3() {
         String key = "FailS3";
-
-        TestChaosMonkeyContext ctx = runChaosMonkey(key);
-
-        checkSelected(ctx);
-        checkNotifications(ctx, key);
-        checkSshActions(ctx, key);
-    }
-
-    @Test
-    public void testFillDisk() {
-        String key = "FillDisk";
 
         TestChaosMonkeyContext ctx = runChaosMonkey(key);
 

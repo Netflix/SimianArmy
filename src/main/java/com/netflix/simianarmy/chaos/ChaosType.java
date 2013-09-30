@@ -22,6 +22,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
@@ -119,5 +120,28 @@ public abstract class ChaosType {
         }
         throw new IllegalArgumentException("Unknown chaos type value: "
                 + chaosTypeName);
+    }
+
+    /**
+     * Returns whether chaos types that cost money are allowed.
+     */
+    protected boolean isBurnMoneyEnabled() {
+        return config.getBoolOrElse("simianarmy.chaos.burnmoney", false);
+    }
+
+    /**
+     * Checks whether the root volume of the specified instance is on EBS.
+     *
+     * @param instance id of instance
+     * @return true iff root is on EBS
+     */
+    protected boolean isRootVolumeEbs(ChaosInstance instance) {
+        CloudClient cloudClient = instance.getCloudClient();
+        String instanceId = instance.getInstanceId();
+
+        List<String> withRoot = cloudClient.listAttachedVolumes(instanceId, true);
+        List<String> withoutRoot = cloudClient.listAttachedVolumes(instanceId, false);
+
+        return (withRoot.size() != withoutRoot.size());
     }
 }

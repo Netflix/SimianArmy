@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy.chaos;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
@@ -25,6 +28,9 @@ import com.netflix.simianarmy.MonkeyConfiguration;
  * This simulates either a noisy neighbor on the box or just a general issue with the disk.
  */
 public class BurnIoChaosType extends ScriptChaosType {
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BurnIoChaosType.class);
+
     /**
      * TODO: It would be nice to target other devices than the root disk.
      *
@@ -57,5 +63,21 @@ public class BurnIoChaosType extends ScriptChaosType {
      */
     public BurnIoChaosType(MonkeyConfiguration config) {
         super(config, "BurnIO");
+    }
+
+    @Override
+    public boolean canApply(ChaosInstance instance) {
+        if (!super.canApply(instance)) {
+            return false;
+        }
+
+        if (isRootVolumeEbs(instance)) {
+            if (!isBurnMoneyEnabled()) {
+                LOGGER.debug("Root volume is EBS so BurnIO would cost money; skipping");
+                return false;
+            }
+        }
+
+        return true;
     }
 }

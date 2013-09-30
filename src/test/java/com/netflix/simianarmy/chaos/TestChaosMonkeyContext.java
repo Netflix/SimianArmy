@@ -247,6 +247,9 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
                 List<String> volumes = Lists.newArrayList();
+                if (includeRoot) {
+                    volumes.add("volume-0");
+                }
                 volumes.add("volume-1");
                 volumes.add("volume-2");
                 return volumes;

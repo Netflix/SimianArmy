@@ -17,12 +17,18 @@
  */
 package com.netflix.simianarmy.chaos;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
  * Creates a huge file on the root device so that the disk fills up.
  */
 public class FillDiskChaosType extends ScriptChaosType {
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(FillDiskChaosType.class);
+
     /**
      * TODO: As with BurnIoChaosType, it would be nice to randomize the volume.
      *
@@ -40,5 +46,21 @@ public class FillDiskChaosType extends ScriptChaosType {
      */
     public FillDiskChaosType(MonkeyConfiguration config) {
         super(config, "FillDisk");
+    }
+
+    @Override
+    public boolean canApply(ChaosInstance instance) {
+        if (!super.canApply(instance)) {
+            return false;
+        }
+
+        if (isRootVolumeEbs(instance)) {
+            if (!isBurnMoneyEnabled()) {
+                LOGGER.debug("Root volume is EBS so FillDisk would cost money; skipping");
+                return false;
+            }
+        }
+
+        return true;
     }
 }
