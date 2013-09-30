@@ -69,6 +69,8 @@ import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
@@ -77,7 +79,13 @@ import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
+import org.jclouds.compute.Utils;
+import org.jclouds.compute.domain.ComputeMetadata;
+import org.jclouds.compute.domain.NodeMetadata;
+import org.jclouds.compute.domain.NodeMetadataBuilder;
+import org.jclouds.domain.LoginCredentials;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
+import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +96,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -728,5 +737,47 @@ public class AWSClient implements CloudClient {
     @Override
     public String getJcloudsId(String instanceId) {
         return this.region + "/" + instanceId;
+    }
+
+    @Override
+    public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+        ComputeService computeService = getJcloudsComputeService();
+
+        String jcloudsId = getJcloudsId(instanceId);
+        NodeMetadata node = getJcloudsNode(computeService, jcloudsId);
+
+        node = NodeMetadataBuilder.fromNodeMetadata(node).credentials(credentials).build();
+
+        Utils utils = computeService.getContext().getUtils();
+        SshClient ssh = utils.sshForNode().apply(node);
+
+        ssh.connect();
+
+        return ssh;
+    }
+
+    private NodeMetadata getJcloudsNode(ComputeService computeService, String jcloudsId) {
+        // Work around a jclouds bug / documentation issue...
+        // TODO: Figure out what's broken, and eliminate this function
+
+        // This should work (?):
+        // Set<NodeMetadata> nodes = computeService.listNodesByIds(Collections.singletonList(jcloudsId));
+
+        Set<NodeMetadata> nodes = Sets.newHashSet();
+        for (ComputeMetadata n : computeService.listNodes()) {
+            if (jcloudsId.equals(n.getId())) {
+                nodes.add((NodeMetadata) n);
+            }
+        }
+
+        if (nodes.isEmpty()) {
+            LOGGER.warn("Unable to find jclouds node: {}", jcloudsId);
+            for (ComputeMetadata n : computeService.listNodes()) {
+                LOGGER.info("Did find node: {}", n);
+            }
+            throw new IllegalStateException("Unable to find node using jclouds: " + jcloudsId);
+        }
+        NodeMetadata node = Iterables.getOnlyElement(nodes);
+        return node;
     }
 }

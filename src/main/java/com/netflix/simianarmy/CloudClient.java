@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.jclouds.compute.ComputeService;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.ssh.SshClient;
 
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
@@ -129,4 +131,13 @@ public interface CloudClient {
      * Returns the jClouds node id for an instance id on this CloudClient.
      */
     String getJcloudsId(String instanceId);
+
+    /**
+     * Opens an SSH connection to an instance.
+     *
+     * @param instanceId instance id to connect to
+     * @param credentials SSH credentials to use
+     * @return {@link SshClient}, in connected state
+     */
+    SshClient connectSsh(String instanceId, LoginCredentials credentials);
 }

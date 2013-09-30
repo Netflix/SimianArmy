@@ -27,6 +27,8 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import org.jclouds.compute.ComputeService;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.ssh.SshClient;
 import org.testng.Assert;
 
 import com.netflix.simianarmy.MonkeyRecorder.Event;
@@ -152,6 +154,11 @@ public class TestMonkeyContext implements Monkey.Context {
 
             @Override
             public String getJcloudsId(String instanceId) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
                 throw new UnsupportedOperationException();
             }
         };

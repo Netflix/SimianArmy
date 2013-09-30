@@ -31,6 +31,11 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.domain.ExecChannel;
+import org.jclouds.compute.domain.ExecResponse;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.io.Payload;
+import org.jclouds.ssh.SshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -164,8 +169,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                     if (ig == null) {
                         continue;
                     }
-                    for (String instanceId : terminated) {
-                        // Remove terminated instances from crawler list
+                    for (String instanceId : selected) {
+                        // Remove selected instances from crawler list
                         TestInstanceGroup testIg = (TestInstanceGroup) ig;
                         testIg.deleteInstance(instanceId);
                     }
@@ -175,6 +180,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
         };
     }
+
     private final List<InstanceGroup> selectedOn = new LinkedList<InstanceGroup>();
 
     public List<InstanceGroup> selectedOn() {
@@ -187,12 +193,15 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public Collection<String> select(InstanceGroup group, double probability) {
                 selectedOn.add(group);
-                return super.select(group, probability);
+                Collection<String> instances = super.select(group, probability);
+                selected.addAll(instances);
+                return instances;
             }
         };
     }
 
     private final List<String> terminated = new LinkedList<String>();
+    private final List<String> selected = new LinkedList<String>();
 
     public List<String> terminated() {
         return terminated;
@@ -236,8 +245,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public void detachVolume(String instanceId, String volumeId,
-                    boolean force) {
+            public void detachVolume(String instanceId, String volumeId, boolean force) {
                 throw new UnsupportedOperationException();
             }
 
@@ -250,7 +258,89 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             public String getJcloudsId(String instanceId) {
                 throw new UnsupportedOperationException();
             }
+
+            @Override
+            public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+                return new MockSshClient(instanceId, credentials);
+            }
         };
+    }
+
+    final List<SshAction> sshActions = Lists.newArrayList();
+
+    public static class SshAction {
+        public String instanceId;
+        public String method;
+        public String path;
+        public String contents;
+        public String command;
+    }
+
+    private class MockSshClient implements SshClient {
+        final String instanceId;
+        final LoginCredentials credentials;
+
+        public MockSshClient(String instanceId, LoginCredentials credentials) {
+            this.instanceId = instanceId;
+            this.credentials = credentials;
+        }
+
+        @Override
+        public String getUsername() {
+            return credentials.getUser();
+        }
+
+        @Override
+        public String getHostAddress() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void put(String path, Payload contents) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Payload get(String path) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ExecResponse exec(String command) {
+            SshAction action = new SshAction();
+            action.method = "exec";
+            action.instanceId = instanceId;
+            action.command = command;
+            sshActions.add(action);
+
+            String output = "";
+            String error = "";
+            int exitStatus = 0;
+            return new ExecResponse(output, error, exitStatus);
+        }
+
+        @Override
+        public ExecChannel execChannel(String command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void connect() {
+        }
+
+        @Override
+        public void disconnect() {
+        }
+
+        @Override
+        public void put(String path, String contents) {
+            SshAction action = new SshAction();
+            action.method = "put";
+            action.instanceId = instanceId;
+            action.path = path;
+            action.contents = contents;
+            sshActions.add(action);
+        }
     }
 
     private List<Notification> groupNotified = Lists.newArrayList();
@@ -310,5 +400,9 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
     public List<Notification> getGloballyNotifiedList() {
         return globallyNotified;
+    }
+
+    public List<SshAction> getSshActions() {
+        return sshActions;
     }
 }

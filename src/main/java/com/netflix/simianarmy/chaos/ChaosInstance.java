@@ -128,45 +128,9 @@ public class ChaosInstance {
             throw new IllegalStateException();
         }
 
-        ComputeService computeService = cloudClient.getJcloudsComputeService();
-
-        String jcloudsId = cloudClient.getJcloudsId(instanceId);
-        NodeMetadata node = getJcloudsNode(computeService, jcloudsId);
-
         LoginCredentials credentials = sshConfig.getCredentials();
-        node = NodeMetadataBuilder.fromNodeMetadata(node).credentials(credentials).build();
-
-        Utils utils = computeService.getContext().getUtils();
-        SshClient ssh = utils.sshForNode().apply(node);
-
-        ssh.connect();
+        SshClient ssh = cloudClient.connectSsh(instanceId, credentials);
 
         return ssh;
     }
-
-    private NodeMetadata getJcloudsNode(ComputeService computeService, String jcloudsId) {
-        // Work around a jclouds bug / documentation issue...
-        // TODO: Figure out what's broken, and eliminate this function
-
-        // This should work (?):
-        // Set<NodeMetadata> nodes = computeService.listNodesByIds(Collections.singletonList(jcloudsId));
-
-        Set<NodeMetadata> nodes = Sets.newHashSet();
-        for (ComputeMetadata n : computeService.listNodes()) {
-            if (jcloudsId.equals(n.getId())) {
-                nodes.add((NodeMetadata) n);
-            }
-        }
-
-        if (nodes.isEmpty()) {
-            LOGGER.warn("Unable to find jclouds node: {}", jcloudsId);
-            for (ComputeMetadata n : computeService.listNodes()) {
-                LOGGER.info("Did find node: {}", n);
-            }
-            throw new IllegalStateException("Unable to find node using jclouds: " + jcloudsId);
-        }
-        NodeMetadata node = Iterables.getOnlyElement(nodes);
-        return node;
-    }
-
 }

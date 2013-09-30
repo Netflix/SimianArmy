@@ -18,57 +18,113 @@
  */
 package com.netflix.simianarmy.chaos;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
 import org.testng.Assert;
+import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext.Notification;
+import com.netflix.simianarmy.chaos.TestChaosMonkeyContext.SshAction;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestChaosMonkeyArmy {
-    @Test
-    public void testBurnCpu() {
+    File sshKey;
+
+    @BeforeTest
+    public void createSshKey() throws IOException {
+        sshKey = File.createTempFile("tmp", "key");
+        Files.write("fakekey", sshKey, Charsets.UTF_8);
+        sshKey.deleteOnExit();
+    }
+
+    private TestChaosMonkeyContext runChaosMonkey(String key) {
         Properties properties = new Properties();
         properties.setProperty("simianarmy.chaos.enabled", "true");
         properties.setProperty("simianarmy.chaos.leashed", "false");
         properties.setProperty("simianarmy.chaos.TYPE_A.enabled", "true");
         properties.setProperty("simianarmy.chaos.notification.global.enabled", "true");
 
-        String key = "ShutdownInstance";
-
-        properties.setProperty("simianarmy.chaos.shutdowninstance.enabled", "true");
+        properties.setProperty("simianarmy.chaos.shutdowninstance.enabled", "false");
         properties.setProperty("simianarmy.chaos." + key.toLowerCase() + ".enabled", "true");
+
+        properties.setProperty("simianarmy.chaos.ssh.key", sshKey.getAbsolutePath());
 
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext(properties);
 
         ChaosMonkey chaos = new BasicChaosMonkey(ctx);
         chaos.start();
         chaos.stop();
+        return ctx;
+    }
 
+    private void checkSelected(TestChaosMonkeyContext ctx) {
         List<InstanceGroup> selectedOn = ctx.selectedOn();
-        List<Notification> notifications = ctx.getGloballyNotifiedList();
-        
         Assert.assertEquals(selectedOn.size(), 2);
         Assert.assertEquals(selectedOn.get(0).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
         Assert.assertEquals(selectedOn.get(0).name(), "name0");
         Assert.assertEquals(selectedOn.get(1).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
         Assert.assertEquals(selectedOn.get(1).name(), "name1");
+    }
 
+    private void checkNotifications(TestChaosMonkeyContext ctx, String key) {
+        List<Notification> notifications = ctx.getGloballyNotifiedList();
         Assert.assertEquals(notifications.size(), 2);
         Assert.assertEquals(notifications.get(0).instance, "0:i-123456780");
         Assert.assertEquals(notifications.get(0).chaosType.getKey(), key);
         Assert.assertEquals(notifications.get(1).instance, "1:i-123456781");
         Assert.assertEquals(notifications.get(1).chaosType.getKey(), key);
-        
+    }
+
+    @Test
+    public void testShutdownInstance() {
+        String key = "ShutdownInstance";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+
+        checkNotifications(ctx, key);
+
         List<String> terminated = ctx.terminated();
         Assert.assertEquals(terminated.size(), 2);
         Assert.assertEquals(terminated.get(0), "0:i-123456780");
         Assert.assertEquals(terminated.get(1), "1:i-123456781");
     }
+
+    @Test
+    public void testBurnCpu() {
+        String key = "BurnCpu";
+
+        TestChaosMonkeyContext ctx = runChaosMonkey(key);
+
+        checkSelected(ctx);
+
+        checkNotifications(ctx, key);
+
+        List<SshAction> sshActions = ctx.getSshActions();
+        Assert.assertEquals(sshActions.size(), 4);
+
+        Assert.assertEquals(sshActions.get(0).method, "put");
+        Assert.assertTrue(sshActions.get(0).contents.toLowerCase().contains(key.toLowerCase()));
+        Assert.assertEquals(sshActions.get(0).instanceId, "0:i-123456780");
+        Assert.assertEquals(sshActions.get(1).method, "exec");
+        Assert.assertEquals(sshActions.get(1).instanceId, "0:i-123456780");
+
+        Assert.assertEquals(sshActions.get(2).method, "put");
+        Assert.assertTrue(sshActions.get(2).contents.contains(key));
+        Assert.assertEquals(sshActions.get(2).instanceId, "1:i-123456781");
+        Assert.assertEquals(sshActions.get(3).method, "exec");
+        Assert.assertEquals(sshActions.get(3).instanceId, "1:i-123456781");
+    }
+
 }
