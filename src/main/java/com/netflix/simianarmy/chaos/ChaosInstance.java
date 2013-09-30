@@ -40,9 +40,9 @@ public class ChaosInstance {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosInstance.class);
 
-    final CloudClient cloudClient;
-    final String instanceId;
-    final SshConfig sshConfig;
+    private final CloudClient cloudClient;
+    private final String instanceId;
+    private final SshConfig sshConfig;
 
     /**
      * Constructor.
@@ -61,7 +61,7 @@ public class ChaosInstance {
     }
 
     /**
-     * Gets the {@link SshConfig} used to SSH to the instance
+     * Gets the {@link SshConfig} used to SSH to the instance.
      *
      * @return the {@link SshConfig}
      */
@@ -70,7 +70,7 @@ public class ChaosInstance {
     }
 
     /**
-     * Gets the {@link CloudClient} used to access the cloud
+     * Gets the {@link CloudClient} used to access the cloud.
      *
      * @return the {@link CloudClient}
      */
@@ -79,21 +79,24 @@ public class ChaosInstance {
     }
 
     /**
-     * Returns the instance id to identify the instance to the cloud client
-     * 
+     * Returns the instance id to identify the instance to the cloud client.
+     *
      * @return instance id
      */
     public String getInstanceId() {
         return instanceId;
     }
 
-    Boolean canConnectSsh = null;
+    /**
+     * Memoize canConnectSsh function.
+     */
+    private Boolean canConnectSsh = null;
 
     /**
      * Check if the SSH credentials are working.
-     * 
+     *
      * This is cached for the duration of this object.
-     * 
+     *
      * @return true iff ssh is configured and able to log on to instance.
      */
     public boolean canConnectSsh(ChaosInstance instance) {
@@ -116,10 +119,8 @@ public class ChaosInstance {
     }
 
     /**
-     * Connect to the instance over SSH
-     * 
-     * @param instance
-     *            instance to connect to
+     * Connect to the instance over SSH.
+     *
      * @return {@link SshClient} for connection
      */
     public SshClient connectSsh() {

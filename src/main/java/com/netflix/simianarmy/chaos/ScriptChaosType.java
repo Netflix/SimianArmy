@@ -17,29 +17,15 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Set;
-
-import org.jclouds.compute.ComputeService;
-import org.jclouds.compute.Utils;
-import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.ExecResponse;
-import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeMetadataBuilder;
-import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ssh.SshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.io.Files;
 import com.google.common.io.Resources;
-import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
@@ -67,8 +53,6 @@ public abstract class ScriptChaosType extends ChaosType {
      */
     @Override
     public boolean canApply(ChaosInstance instance) {
-        // TODO: Check that SSH connection works here?
-
         if (!instance.getSshConfig().isEnabled()) {
             LOGGER.info("Strategy disabled because SSH credentials not set");
             return false;

@@ -114,12 +114,10 @@ public class BlockAllNetworkTrafficChaosType extends ChaosType {
     }
 
     /**
-     * Gets the VPC id for the given instance
+     * Gets the VPC id for the given instance.
      *
-     * @param cloudClient
-     *            cloud client
-     * @param instanceId
-     *            instance id
+     * @param instance
+     *            instance we're checking
      * @return vpc id, or null if not a vpc instance
      */
     String getVpcId(ChaosInstance instance) {

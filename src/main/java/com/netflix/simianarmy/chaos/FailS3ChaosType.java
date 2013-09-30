@@ -17,7 +17,6 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.io.IOException;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**

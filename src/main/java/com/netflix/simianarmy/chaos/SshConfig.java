@@ -29,7 +29,7 @@ import com.google.common.io.Files;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
- * Holds SSH connection info, used for script-based chaos types
+ * Holds SSH connection info, used for script-based chaos types.
  */
 public class SshConfig {
     /** The Constant LOGGER. */
@@ -81,7 +81,7 @@ public class SshConfig {
     }
 
     /**
-     * Get the configured SSH credentials
+     * Get the configured SSH credentials.
      *
      * @return configured SSH credentials
      */
@@ -90,7 +90,7 @@ public class SshConfig {
     }
 
     /**
-     * Check if ssh is configured
+     * Check if ssh is configured.
      *
      * @return true if credentials are configured
      */
