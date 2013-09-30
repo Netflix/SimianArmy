@@ -266,19 +266,39 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         };
     }
 
-    final List<SshAction> sshActions = Lists.newArrayList();
+    private final List<SshAction> sshActions = Lists.newArrayList();
 
     public static class SshAction {
-        public String instanceId;
-        public String method;
-        public String path;
-        public String contents;
-        public String command;
+        private String instanceId;
+        private String method;
+        private String path;
+        private String contents;
+        private String command;
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String getContents() {
+            return contents;
+        }
+
+        public String getCommand() {
+            return command;
+        }
     }
 
     private class MockSshClient implements SshClient {
-        final String instanceId;
-        final LoginCredentials credentials;
+        private final String instanceId;
+        private final LoginCredentials credentials;
 
         public MockSshClient(String instanceId, LoginCredentials credentials) {
             this.instanceId = instanceId;
@@ -347,12 +367,20 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     private List<Notification> globallyNotified = Lists.newArrayList();
 
     static class Notification {
-        public String instance;
-        public ChaosType chaosType;
+        private final String instance;
+        private final ChaosType chaosType;
 
         public Notification(String instance, ChaosType chaosType) {
             this.instance = instance;
             this.chaosType = chaosType;
+        }
+
+        public String getInstance() {
+            return instance;
+        }
+
+        public ChaosType getChaosType() {
+            return chaosType;
         }
     }
 

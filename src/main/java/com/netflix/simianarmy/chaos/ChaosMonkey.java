@@ -158,7 +158,8 @@ public abstract class ChaosMonkey extends Monkey {
      * @param chaosType
      *            the chaos monkey strategy that was chosen
      */
-    public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance, ChaosType chaosType);
+    public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance,
+            ChaosType chaosType);
 
     /**
      * Gets a list of all enabled chaos types for this ChaosMonkey.

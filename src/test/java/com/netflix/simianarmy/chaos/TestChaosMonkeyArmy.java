@@ -31,14 +31,12 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext.Notification;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext.SshAction;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestChaosMonkeyArmy {
-    File sshKey;
+    private File sshKey;
 
     @BeforeTest
     public void createSshKey() throws IOException {
@@ -79,10 +77,10 @@ public class TestChaosMonkeyArmy {
     private void checkNotifications(TestChaosMonkeyContext ctx, String key) {
         List<Notification> notifications = ctx.getGloballyNotifiedList();
         Assert.assertEquals(notifications.size(), 2);
-        Assert.assertEquals(notifications.get(0).instance, "0:i-123456780");
-        Assert.assertEquals(notifications.get(0).chaosType.getKey(), key);
-        Assert.assertEquals(notifications.get(1).instance, "1:i-123456781");
-        Assert.assertEquals(notifications.get(1).chaosType.getKey(), key);
+        Assert.assertEquals(notifications.get(0).getInstance(), "0:i-123456780");
+        Assert.assertEquals(notifications.get(0).getChaosType().getKey(), key);
+        Assert.assertEquals(notifications.get(1).getInstance(), "1:i-123456781");
+        Assert.assertEquals(notifications.get(1).getChaosType().getKey(), key);
     }
 
     @Test
@@ -114,17 +112,17 @@ public class TestChaosMonkeyArmy {
         List<SshAction> sshActions = ctx.getSshActions();
         Assert.assertEquals(sshActions.size(), 4);
 
-        Assert.assertEquals(sshActions.get(0).method, "put");
-        Assert.assertTrue(sshActions.get(0).contents.toLowerCase().contains(key.toLowerCase()));
-        Assert.assertEquals(sshActions.get(0).instanceId, "0:i-123456780");
-        Assert.assertEquals(sshActions.get(1).method, "exec");
-        Assert.assertEquals(sshActions.get(1).instanceId, "0:i-123456780");
+        Assert.assertEquals(sshActions.get(0).getMethod(), "put");
+        Assert.assertTrue(sshActions.get(0).getContents().toLowerCase().contains(key.toLowerCase()));
+        Assert.assertEquals(sshActions.get(0).getInstanceId(), "0:i-123456780");
+        Assert.assertEquals(sshActions.get(1).getMethod(), "exec");
+        Assert.assertEquals(sshActions.get(1).getInstanceId(), "0:i-123456780");
 
-        Assert.assertEquals(sshActions.get(2).method, "put");
-        Assert.assertTrue(sshActions.get(2).contents.contains(key));
-        Assert.assertEquals(sshActions.get(2).instanceId, "1:i-123456781");
-        Assert.assertEquals(sshActions.get(3).method, "exec");
-        Assert.assertEquals(sshActions.get(3).instanceId, "1:i-123456781");
+        Assert.assertEquals(sshActions.get(2).getMethod(), "put");
+        Assert.assertTrue(sshActions.get(2).getContents().contains(key));
+        Assert.assertEquals(sshActions.get(2).getInstanceId(), "1:i-123456781");
+        Assert.assertEquals(sshActions.get(3).getMethod(), "exec");
+        Assert.assertEquals(sshActions.get(3).getInstanceId(), "1:i-123456781");
     }
 
 }

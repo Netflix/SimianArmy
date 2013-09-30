@@ -17,20 +17,11 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import java.util.Set;
-
-import org.jclouds.compute.ComputeService;
-import org.jclouds.compute.Utils;
-import org.jclouds.compute.domain.ComputeMetadata;
-import org.jclouds.compute.domain.NodeMetadata;
-import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ssh.SshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import com.netflix.simianarmy.CloudClient;
 
 /**

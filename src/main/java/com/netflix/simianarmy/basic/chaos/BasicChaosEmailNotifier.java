@@ -157,7 +157,8 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         body += String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
                     instanceId, group.type(), group.name());
         if (chaosType != null) {
-            body += String.format("\nChaos type: %s.", chaosType.getKey());
+            body += "\n";
+            body += String.format("Chaos type: %s.", chaosType.getKey());
         }
         body += emailBodySuffix;
         return body;
