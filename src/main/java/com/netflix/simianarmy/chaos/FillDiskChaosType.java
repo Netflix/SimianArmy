@@ -54,11 +54,9 @@ public class FillDiskChaosType extends ScriptChaosType {
             return false;
         }
 
-        if (isRootVolumeEbs(instance)) {
-            if (!isBurnMoneyEnabled()) {
-                LOGGER.debug("Root volume is EBS so FillDisk would cost money; skipping");
-                return false;
-            }
+        if (isRootVolumeEbs(instance) && !isBurnMoneyEnabled()) {
+            LOGGER.debug("Root volume is EBS so FillDisk would cost money; skipping");
+            return false;
         }
 
         return true;
