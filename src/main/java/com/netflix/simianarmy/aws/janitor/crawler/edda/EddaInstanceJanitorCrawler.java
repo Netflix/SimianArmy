@@ -40,6 +40,8 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.HashMap;
 
 /**
  * The crawler to crawl AWS instances for janitor monkey using Edda.
@@ -113,7 +115,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
         } else {
             LOGGER.info(String.format("Getting all instances in region %s", region));
         }
-        url += ";state.name=running;_expand:(instanceId,launchTime,state:(name),instanceType"
+        url += ";state.name=running;_expand:(instanceId,launchTime,state:(name),instanceType,imageId"
                 + ",publicDnsName,tags:(key,value))";
 
         JsonNode jsonNode = null;
@@ -132,6 +134,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
         for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
             resources.add(parseJsonElementToInstanceResource(region, it.next()));
         }
+        refreshOwnerByImage(region, resources);
         return resources;
     }
 
@@ -183,8 +186,9 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
             resource.setAdditionalField(InstanceJanitorCrawler.INSTANCE_FIELD_ASG_NAME, asgName);
         }
         ((AWSResource) resource).setAWSResourceState(jsonNode.get("state").get("name").getTextValue());
+        String imageId = jsonNode.get("imageId").getTextValue();
+        resource.setAdditionalField("imageId", imageId);
         return resource;
-
     }
 
     private void refreshAsgInstances() {
@@ -220,6 +224,51 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
                 }
             }
 
+        }
+    }
+
+   private void refreshOwnerByImage(String region, List<Resource> resources) {
+        HashSet<String> imageIds = new HashSet<String>();
+        for (Resource resource: resources) {
+            if (resource.getOwnerEmail() == null) {
+                imageIds.add(resource.getAdditionalField("imageId"));
+            }
+        }
+        if  (imageIds.size() > 0) {
+            HashMap<String, String> imageToOwner = new HashMap<String, String>();
+            String url = eddaClient.getBaseUrl(region) + "/aws/images/";
+            url += StringUtils.join(imageIds, ',');
+            url += ";tags.key=owner;public=false;_expand:(imageId,tags:(owner))";
+            JsonNode imageJsonNode = null;
+            try { 
+                imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
+            } catch (Exception e) {
+                LOGGER.error(String.format(
+                        "Failed to get Jason node from edda for AMIs in region %s.", region), e);
+            }
+            if (imageJsonNode == null) {
+                return;
+            }
+            for (Iterator<JsonNode> it = imageJsonNode.getElements(); it.hasNext();) {
+                JsonNode image = it.next();
+                String imageId = image.get("imageId").getTextValue();
+                JsonNode tags = image.get("tags");
+                for (Iterator<JsonNode> tagIt = tags.getElements(); tagIt.hasNext();) {
+                    JsonNode tag = tagIt.next();
+                    if (tag.get("owner") != null) {
+                        imageToOwner.put(imageId, tag.get("owner").getTextValue());
+                        break;
+                    }
+                }
+            }
+            if (imageToOwner.size() > 0) {
+                for (Resource resource: resources) {
+                    if (resource.getOwnerEmail() == null && imageToOwner.get(resource.getAdditionalField("imageId")) != null) {
+                        resource.setOwnerEmail(imageToOwner.get(resource.getAdditionalField("imageId")));
+                        LOGGER.info(String.format("Found owner %s for instance %s in AMI %s", resource.getOwnerEmail(), resource.getId(), resource.getAdditionalField("imageId")));
+                    }
+                }
+            }
         }
     }
 }
