@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import org.jclouds.compute.ComputeService;
 import org.testng.Assert;
 
 import com.netflix.simianarmy.MonkeyRecorder.Event;
@@ -131,6 +132,27 @@ public class TestMonkeyContext implements Monkey.Context {
 
             @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
+            }
+
+            @Override
+            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public void detachVolume(String instanceId, String volumeId,
+                    boolean force) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public ComputeService getJcloudsComputeService() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getJcloudsId(String instanceId) {
+                throw new UnsupportedOperationException();
             }
         };
     }
