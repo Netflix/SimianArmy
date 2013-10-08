@@ -101,7 +101,7 @@ public class TestBasicChaosEmailNotifier {
     @Test
     public void testbuildEmailBody() {
         basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
-        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId);
+        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId, null);
         Assert.assertEquals(subject, defaultBody);
     }
 
@@ -109,7 +109,7 @@ public class TestBasicChaosEmailNotifier {
     public void testbuildEmailBodyPrefix() {
         properties.setProperty("simianarmy.chaos.notification.body.prefix", bodyPrefix);
         basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
-        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId);
+        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId, null);
         Assert.assertEquals(subject, bodyPrefix + defaultBody);
     }
 
@@ -117,7 +117,7 @@ public class TestBasicChaosEmailNotifier {
     public void testbuildEmailBodySuffix() {
         properties.setProperty("simianarmy.chaos.notification.body.suffix", bodySuffix);
         basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
-        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId);
+        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId, null);
         Assert.assertEquals(subject, defaultBody + bodySuffix);
     }
 
@@ -126,7 +126,7 @@ public class TestBasicChaosEmailNotifier {
         properties.setProperty("simianarmy.chaos.notification.body.prefix", bodyPrefix);
         properties.setProperty("simianarmy.chaos.notification.body.suffix", bodySuffix);
         basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
-        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId);
+        String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId, null);
         Assert.assertEquals(subject, bodyPrefix + defaultBody + bodySuffix);
     }
 
@@ -136,7 +136,7 @@ public class TestBasicChaosEmailNotifier {
         BasicChaosEmailNotifier spyBasicChaosEmailNotifier = spy(new BasicChaosEmailNotifier(new BasicConfiguration(
                 properties), sesClient, null));
         doNothing().when(spyBasicChaosEmailNotifier).sendEmail(to, defaultSubject, defaultBody);
-        spyBasicChaosEmailNotifier.buildAndSendEmail(to, testInstanceGroup, instanceId);
+        spyBasicChaosEmailNotifier.buildAndSendEmail(to, testInstanceGroup, instanceId, null);
         verify(spyBasicChaosEmailNotifier).sendEmail(to, defaultSubject, defaultBody);
     }
 
@@ -147,7 +147,7 @@ public class TestBasicChaosEmailNotifier {
         BasicChaosEmailNotifier spyBasicChaosEmailNotifier = spy(new BasicChaosEmailNotifier(new BasicConfiguration(
                 properties), sesClient, null));
         doNothing().when(spyBasicChaosEmailNotifier).sendEmail(to, defaultBody, defaultBody);
-        spyBasicChaosEmailNotifier.buildAndSendEmail(to, testInstanceGroup, instanceId);
+        spyBasicChaosEmailNotifier.buildAndSendEmail(to, testInstanceGroup, instanceId, null);
         verify(spyBasicChaosEmailNotifier).sendEmail(to, defaultBody, defaultBody);
     }
 

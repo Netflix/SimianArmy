@@ -45,6 +45,9 @@ dependencies {
     compile 'com.google.guava:guava:11.+'
     compile 'org.apache.httpcomponents:httpclient:4.2.1'
     compile 'org.apache.httpcomponents:httpcore:4.2.1'
+    compile 'org.jclouds:jclouds-all:1.6.0'
+    compile 'org.jclouds.driver:jclouds-jsch:1.6.0'
+    compile 'org.jclouds.driver:jclouds-slf4j:1.6.0'
 
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'

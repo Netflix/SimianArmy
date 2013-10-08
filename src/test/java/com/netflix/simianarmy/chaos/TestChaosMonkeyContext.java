@@ -30,9 +30,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jclouds.compute.ComputeService;
+import org.jclouds.compute.domain.ExecChannel;
+import org.jclouds.compute.domain.ExecResponse;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.io.Payload;
+import org.jclouds.ssh.SshClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.TestMonkeyContext;
@@ -45,8 +54,12 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     private final BasicConfiguration cfg;
 
     public TestChaosMonkeyContext() {
+        this(new Properties());
+    }
+
+    protected TestChaosMonkeyContext(Properties properties) {
         super(ChaosMonkey.Type.CHAOS);
-        cfg = new BasicConfiguration(new Properties());
+        cfg = new BasicConfiguration(properties);
     }
 
     public TestChaosMonkeyContext(String propFile) {
@@ -158,8 +171,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                     if (ig == null) {
                         continue;
                     }
-                    for (String instanceId : terminated) {
-                        // Remove terminated instances from crawler list
+                    for (String instanceId : selected) {
+                        // Remove selected instances from crawler list
                         TestInstanceGroup testIg = (TestInstanceGroup) ig;
                         testIg.deleteInstance(instanceId);
                     }
@@ -169,6 +182,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
         };
     }
+
     private final List<InstanceGroup> selectedOn = new LinkedList<InstanceGroup>();
 
     public List<InstanceGroup> selectedOn() {
@@ -181,16 +195,22 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public Collection<String> select(InstanceGroup group, double probability) {
                 selectedOn.add(group);
-                return super.select(group, probability);
+                Collection<String> instances = super.select(group, probability);
+                selected.addAll(instances);
+                return instances;
             }
         };
     }
 
     private final List<String> terminated = new LinkedList<String>();
+    private final List<String> selected = Lists.newArrayList();
+    private final List<String> cloudActions = Lists.newArrayList();
 
     public List<String> terminated() {
         return terminated;
     }
+
+    final Map<String, String> securityGroupNames = Maps.newHashMap();
 
     @Override
     public CloudClient cloudClient() {
@@ -223,11 +243,180 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
             }
+
+            @Override
+            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
+                List<String> volumes = Lists.newArrayList();
+                if (includeRoot) {
+                    volumes.add("volume-0");
+                }
+                volumes.add("volume-1");
+                volumes.add("volume-2");
+                return volumes;
+            }
+
+            @Override
+            public void detachVolume(String instanceId, String volumeId, boolean force) {
+                cloudActions.add("detach:" + instanceId + ":" + volumeId);
+            }
+
+            @Override
+            public ComputeService getJcloudsComputeService() {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public String getJcloudsId(String instanceId) {
+                throw new UnsupportedOperationException();
+            }
+
+            @Override
+            public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+                return new MockSshClient(instanceId, credentials);
+            }
+
+            @Override
+            public String findSecurityGroup(String instanceId, String groupName) {
+                return securityGroupNames.get(groupName);
+            }
+
+            @Override
+            public String createSecurityGroup(String instanceId, String groupName, String description) {
+                String id = "sg-" + (securityGroupNames.size() + 1);
+                securityGroupNames.put(groupName, id);
+                cloudActions.add("createSecurityGroup:" + instanceId + ":" + groupName);
+                return id;
+            }
+
+            @Override
+            public boolean canChangeInstanceSecurityGroups(String instanceId) {
+                return true;
+            }
+
+            @Override
+            public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
+                cloudActions.add("setInstanceSecurityGroups:" + instanceId + ":" + Joiner.on(',').join(groupIds));
+            }
         };
     }
 
-    private int groupNotified = 0;
-    private int globallyNotified = 0;
+    private final List<SshAction> sshActions = Lists.newArrayList();
+
+    public static class SshAction {
+        private String instanceId;
+        private String method;
+        private String path;
+        private String contents;
+        private String command;
+
+        public String getInstanceId() {
+            return instanceId;
+        }
+
+        public String getMethod() {
+            return method;
+        }
+
+        public String getPath() {
+            return path;
+        }
+
+        public String getContents() {
+            return contents;
+        }
+
+        public String getCommand() {
+            return command;
+        }
+    }
+
+    private class MockSshClient implements SshClient {
+        private final String instanceId;
+        private final LoginCredentials credentials;
+
+        public MockSshClient(String instanceId, LoginCredentials credentials) {
+            this.instanceId = instanceId;
+            this.credentials = credentials;
+        }
+
+        @Override
+        public String getUsername() {
+            return credentials.getUser();
+        }
+
+        @Override
+        public String getHostAddress() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void put(String path, Payload contents) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Payload get(String path) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ExecResponse exec(String command) {
+            SshAction action = new SshAction();
+            action.method = "exec";
+            action.instanceId = instanceId;
+            action.command = command;
+            sshActions.add(action);
+
+            String output = "";
+            String error = "";
+            int exitStatus = 0;
+            return new ExecResponse(output, error, exitStatus);
+        }
+
+        @Override
+        public ExecChannel execChannel(String command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void connect() {
+        }
+
+        @Override
+        public void disconnect() {
+        }
+
+        @Override
+        public void put(String path, String contents) {
+            SshAction action = new SshAction();
+            action.method = "put";
+            action.instanceId = instanceId;
+            action.path = path;
+            action.contents = contents;
+            sshActions.add(action);
+        }
+    }
+
+    private List<Notification> groupNotified = Lists.newArrayList();
+    private List<Notification> globallyNotified = Lists.newArrayList();
+
+    static class Notification {
+        private final String instance;
+        private final ChaosType chaosType;
+
+        public Notification(String instance, ChaosType chaosType) {
+            this.instance = instance;
+            this.chaosType = chaosType;
+        }
+
+        public String getInstance() {
+            return instance;
+        }
+
+        public ChaosType getChaosType() {
+            return chaosType;
+        }
+    }
 
     @Override
     public ChaosEmailNotifier chaosEmailNotifier() {
@@ -248,23 +437,38 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public void sendTerminationNotification(InstanceGroup group, String instance) {
-                groupNotified++;
+            public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+                groupNotified.add(new Notification(instance, chaosType));
             }
 
             @Override
-            public void sendTerminationGlobalNotification(InstanceGroup group, String instance) {
-                globallyNotified++;
+            public void sendTerminationGlobalNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+                globallyNotified.add(new Notification(instance, chaosType));
             }
         };
     }
 
     public int getNotified() {
-        return groupNotified;
+        return groupNotified.size();
     }
 
     public int getGloballyNotified() {
+        return globallyNotified.size();
+    }
+
+    public List<Notification> getNotifiedList() {
+        return groupNotified;
+    }
+
+    public List<Notification> getGloballyNotifiedList() {
         return globallyNotified;
     }
 
+    public List<SshAction> getSshActions() {
+        return sshActions;
+    }
+
+    public List<String> getCloudActions() {
+        return cloudActions;
+    }
 }
