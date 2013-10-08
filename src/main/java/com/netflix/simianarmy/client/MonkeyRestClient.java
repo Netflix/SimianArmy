@@ -59,7 +59,8 @@ public abstract class MonkeyRestClient {
         InputStream is = response.getEntity().getContent();
         String jsonContent;
         if (is != null) {
-            jsonContent = new Scanner(is, "UTF-8").useDelimiter("\\A").next();
+            Scanner s = new Scanner(is, "UTF-8").useDelimiter("\\A");
+            jsonContent = s.hasNext() ? s.next() : "";
             is.close();
         } else {
             return null;
