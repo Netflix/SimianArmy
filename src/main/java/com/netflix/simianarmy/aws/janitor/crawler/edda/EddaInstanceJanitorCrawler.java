@@ -244,7 +244,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
                 imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
             } catch (Exception e) {
                 LOGGER.error(String.format(
-                        "Failed to get Jason node from edda for AMIs in region %s.", region), e);
+                        "Failed to get Json node from edda for AMIs in region %s.", region), e);
             }
             if (imageJsonNode == null) {
                 return;
