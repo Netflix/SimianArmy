@@ -175,6 +175,6 @@ public class TestOrphanedInstanceRule {
     private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
         int hours = (int) (resource.getExpectedTerminationTime().getTime() - now.getMillis()) / (60 * 60 * 1000);
         // There could be a 1-hour difference if the time passes the daylight saving time change
-        Assert.assertTrue(hours >= retentionDays * 24 - 1 && hours <= retentionDays * 24);
+        Assert.assertTrue(hours >= retentionDays * 24 - 1 && hours <= retentionDays * 24 + 1);
     }
 }
