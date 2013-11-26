@@ -99,6 +99,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
     private final String sourceEmail;
 
+    private final String ownerEmailDomain;
+
     private final int daysBeforeTermination;
 
     /**
@@ -122,6 +124,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.janitor.notification.ccEmails", ""), ",");
         sourceEmail = configuration().getStrOrElse("simianarmy.janitor.notification.sourceEmail", "");
+        ownerEmailDomain = configuration().getStrOrElse("simianarmy.janitor.notification.ownerEmailDomain", "");
         daysBeforeTermination =
                 (int) configuration().getNumOrElse("simianarmy.janitor.notification.daysBeforeTermination", 3);
 
@@ -380,6 +383,11 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             @Override
             public String sourceEmail() {
                 return sourceEmail;
+            }
+
+            @Override
+            public String ownerEmailDomain() {
+                return ownerEmailDomain;
             }
         };
     }

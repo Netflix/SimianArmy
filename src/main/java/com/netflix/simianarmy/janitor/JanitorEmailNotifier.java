@@ -23,6 +23,7 @@ import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.aws.AWSEmailNotifier;
 import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     private final MonkeyCalendar calendar;
     private final int daysBeforeTermination;
     private final String sourceEmail;
+    private final String ownerEmailDomain;
     private final Map<String, Collection<Resource>> invalidEmailToResources =
             new HashMap<String, Collection<Resource>>();
 
@@ -111,6 +113,11 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
          * @return the cc email addresses
          */
         String[] ccEmails();
+
+        /** Get the default domain of email addresses.
+         * @return the default domain of email addresses
+         */
+        String ownerEmailDomain();
     }
 
     /**
@@ -133,6 +140,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             }
         }
         this.sourceEmail = ctx.sourceEmail();
+        this.ownerEmailDomain = ctx.ownerEmailDomain();
     }
 
     /**
@@ -152,6 +160,10 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             }
             if (canNotify(r)) {
                 String email = r.getOwnerEmail();
+                if (email != null && !email.contains("@")
+                      && StringUtils.isNotBlank(this.ownerEmailDomain)) {
+                    email = String.format("%s@%s", email, this.ownerEmailDomain);
+                }
                 if (!isValidEmail(email)) {
                     if (defaultEmail != null) {
                         LOGGER.info(String.format("Email %s is not valid, send to the default email address %s",
