@@ -292,10 +292,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     }
 
     private ImageJanitor getImageJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
         JanitorCrawler crawler;
-        if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)
-                && configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             crawler = new EddaImageJanitorCrawler(createEddaClient(),
                     configuration().getStr("simianarmy.janitor.image.ownerId"),
                     (int) configuration().getNumOrElse("simianarmy.janitor.image.crawler.lookBackDays", 60),
@@ -303,11 +301,16 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         } else {
             throw new RuntimeException("Image Janitor only works when Edda is enabled.");
         }
-        ruleEngine.addRule(new UnusedImageRule(monkeyCalendar,
-                (int) configuration().getNumOrElse(
-                        "simianarmy.janitor.rule.unusedImageRule.retentionDays", 3),
-                (int) configuration().getNumOrElse(
-                        "simianarmy.janitor.rule.unusedImageRule.lastReferenceDaysThreshold", 45)));
+
+        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        if(configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
+            ruleEngine.addRule(new UnusedImageRule(monkeyCalendar,
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.unusedImageRule.retentionDays", 3),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.unusedImageRule.lastReferenceDaysThreshold", 45)));
+        }
+
         BasicJanitorContext janitorCtx = new BasicJanitorContext(
                 monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
                 monkeyCalendar, configuration(), recorder());
