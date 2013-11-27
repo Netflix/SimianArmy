@@ -173,7 +173,9 @@ public class BasicConformityMonkey extends ConformityMonkey {
             } else {
                 LOGGER.info("Conformity monkey is leashed, no notification is sent.");
             }
-            sendConformitySummaryEmail();
+            if (cfg.getBoolOrElse(NS + "summaryEmail.enabled", true)) {
+                sendConformitySummaryEmail();
+            }
         }
     }
 
