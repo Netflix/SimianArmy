@@ -109,7 +109,9 @@ public class BasicJanitorMonkey extends JanitorMonkey {
                 LOGGER.info(String.format("Failed to clean %d resources of type %s in the last run.",
                         janitor.getFailedToCleanResources().size(), janitor.getResourceType()));
             }
-            sendJanitorSummaryEmail();
+            if (cfg.getBoolOrElse(NS + "summaryEmail.enabled", true)) {
+                sendJanitorSummaryEmail();
+            }
         }
     }
 
