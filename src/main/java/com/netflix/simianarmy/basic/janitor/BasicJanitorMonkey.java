@@ -24,11 +24,14 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.janitor.AbstractJanitor;
 import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
@@ -153,7 +156,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             }
             StringBuilder message = new StringBuilder();
             for (AbstractJanitor janitor : janitors) {
-                Enum resourceType = janitor.getResourceType();
+                ResourceType resourceType = janitor.getResourceType();
                 appendSummary(message, "markings", resourceType, janitor.getMarkedResources(), janitor.getRegion());
                 appendSummary(message, "unmarkings", resourceType, janitor.getUnmarkedResources(), janitor.getRegion());
                 appendSummary(message, "cleanups", resourceType, janitor.getCleanedResources(), janitor.getRegion());
@@ -166,7 +169,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     }
 
     private void appendSummary(StringBuilder message, String summaryName,
-            Enum resourceType, Collection<Resource> resources, String janitorRegion) {
+            ResourceType resourceType, Collection<Resource> resources, String janitorRegion) {
         message.append(String.format("Total %s for %s = %d in region %s<br/>",
                 summaryName, resourceType.name(), resources.size(), janitorRegion));
         message.append(String.format("List: %s<br/>", printResources(resources)));

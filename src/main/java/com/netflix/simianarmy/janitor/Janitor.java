@@ -18,6 +18,8 @@
 
 package com.netflix.simianarmy.janitor;
 
+import com.netflix.simianarmy.ResourceType;
+
 /**
  * The interface for a janitor that performs the mark and cleanup operations for
  * cloud resources of a resource type.
@@ -28,7 +30,7 @@ public interface Janitor {
      * Gets the resource type the janitor is cleaning up.
      * @return the resource type the janitor is cleaning up.
      */
-    Enum getResourceType();
+    ResourceType getResourceType();
 
     /**
      * Mark cloud resources as cleanup candidates and remove the marks for resources

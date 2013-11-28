@@ -41,6 +41,7 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.janitor.rule.TestMonkeyCalendar;
 import com.netflix.simianarmy.basic.BasicConfiguration;
@@ -51,7 +52,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
 
     private static final String TEST_REGION = "test-region";
 
-    public TestAbstractJanitor(AbstractJanitor.Context ctx, Enum resourceType) {
+    public TestAbstractJanitor(AbstractJanitor.Context ctx, ResourceType resourceType) {
         super(ctx, resourceType);
         this.idToResource = new HashMap<String, Resource>();
         for (Resource r : ((TestJanitorCrawler) (ctx.janitorCrawler())).getCrawledResources()) {
@@ -479,7 +480,7 @@ class TestJanitorCrawler implements JanitorCrawler {
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         return new ArrayList<Resource>(crawledResources);
     }
 
@@ -501,7 +502,7 @@ class TestJanitorCrawler implements JanitorCrawler {
     }
 }
 
-enum TestResourceType {
+enum TestResourceType implements ResourceType {
     TEST_RESOURCE_TYPE
 }
 
@@ -517,7 +518,7 @@ class TestJanitorResourceTracker implements JanitorResourceTracker {
     }
 
     @Override
-    public List<Resource> getResources(Enum resourceType, CleanupState state, String region) {
+    public List<Resource> getResources(ResourceType resourceType, CleanupState state, String region) {
         List<Resource> result = new ArrayList<Resource>();
         for (Resource r : resources.values()) {
             if (r.getResourceType().equals(resourceType)

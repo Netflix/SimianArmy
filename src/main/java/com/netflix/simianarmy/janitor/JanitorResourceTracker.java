@@ -20,6 +20,7 @@ package com.netflix.simianarmy.janitor;
 import java.util.List;
 
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 
 /**
  * The interface to track the resources marked/cleaned by the Janitor Monkey.
@@ -42,7 +43,7 @@ public interface JanitorResourceTracker {
      * resources from all regions
      * @return list of resources that match the resource type, state and region
      */
-    List<Resource> getResources(Enum resourceType, Resource.CleanupState state, String region);
+    List<Resource> getResources(ResourceType resourceType, Resource.CleanupState state, String region);
 
     /** Gets the resource of a specific id.
      *

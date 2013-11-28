@@ -34,8 +34,10 @@ import org.mapdb.DBMaker;
 import org.mapdb.Fun;
 import org.mapdb.Utils;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 
 /**
@@ -92,9 +94,8 @@ public class LocalDbRecorder implements MonkeyRecorder {
     /* (non-Javadoc)
      * @see com.netflix.simianarmy.MonkeyRecorder#newEvent(java.lang.Enum, java.lang.Enum, java.lang.String, java.lang.String)
      */
-    @SuppressWarnings("rawtypes")
     @Override
-    public Event newEvent(Enum monkeyType, Enum eventType, String region,
+    public Event newEvent(MonkeyType monkeyType, EventType eventType, String region,
             String id) {
         init();
         return new MapDbRecorderEvent(monkeyType, eventType, region, id);
@@ -146,9 +147,8 @@ public class LocalDbRecorder implements MonkeyRecorder {
     /* (non-Javadoc)
      * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum, java.util.Map, java.util.Date)
      */
-    @SuppressWarnings("rawtypes")
     @Override
-    public List<Event> findEvents(Enum monkeyType, Map<String, String> query,
+    public List<Event> findEvents(MonkeyType monkeyType, Map<String, String> query,
             Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put("monkeyType", monkeyType.name());
@@ -158,9 +158,8 @@ public class LocalDbRecorder implements MonkeyRecorder {
     /* (non-Javadoc)
      * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum, java.lang.Enum, java.util.Map, java.util.Date)
      */
-    @SuppressWarnings("rawtypes")
     @Override
-    public List<Event> findEvents(Enum monkeyType, Enum eventType,
+    public List<Event> findEvents(MonkeyType monkeyType, EventType eventType,
             Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put("monkeyType", monkeyType.name());
@@ -174,12 +173,10 @@ public class LocalDbRecorder implements MonkeyRecorder {
 
     public static class MapDbRecorderEvent implements MonkeyRecorder.Event, Serializable {
         /** The monkey type. */
-        @SuppressWarnings("rawtypes")
-        private Enum monkeyType;
+        private MonkeyType monkeyType;
 
         /** The event type. */
-        @SuppressWarnings("rawtypes")
-        private Enum eventType;
+        private EventType eventType;
 
         /** The event id. */
         private String id;
@@ -204,8 +201,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
          * @param region
          * @param id
          */
-        @SuppressWarnings("rawtypes")
-        public MapDbRecorderEvent(Enum monkeyType, Enum eventType,
+        public MapDbRecorderEvent(MonkeyType monkeyType, EventType eventType,
                 String region, String id) {
             this.monkeyType = monkeyType;
             this.eventType = eventType;
@@ -221,8 +217,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
          * @param id
          * @param time
          */
-        @SuppressWarnings("rawtypes")
-        public MapDbRecorderEvent(Enum monkeyType, Enum eventType,
+        public MapDbRecorderEvent(MonkeyType monkeyType, EventType eventType,
                 String region, String id, long time) {
             this.monkeyType = monkeyType;
             this.eventType = eventType;
@@ -250,18 +245,16 @@ public class LocalDbRecorder implements MonkeyRecorder {
         /* (non-Javadoc)
          * @see com.netflix.simianarmy.MonkeyRecorder.Event#monkeyType()
          */
-        @SuppressWarnings("rawtypes")
         @Override
-        public Enum monkeyType() {
+        public MonkeyType monkeyType() {
             return monkeyType;
         }
 
         /* (non-Javadoc)
          * @see com.netflix.simianarmy.MonkeyRecorder.Event#eventType()
          */
-        @SuppressWarnings("rawtypes")
         @Override
-        public Enum eventType() {
+        public EventType eventType() {
             return eventType;
         }
 

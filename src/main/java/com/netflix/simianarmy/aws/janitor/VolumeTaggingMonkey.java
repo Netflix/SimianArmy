@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,12 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
@@ -106,7 +109,7 @@ public class VolumeTaggingMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public enum Type implements MonkeyType {
         /** Volume tagging monkey. */
         VOLUME_TAGGING
     }
@@ -114,13 +117,13 @@ public class VolumeTaggingMonkey extends Monkey {
     /**
      * The event types that this monkey causes.
      */
-    public enum EventTypes {
+    public enum EventTypes implements EventType {
         /** The event type for tagging the volume with Janitor meta data information. */
         TAGGING_JANITOR
     }
 
     @Override
-    public Enum type() {
+    public Type type() {
         return Type.VOLUME_TAGGING;
     }
 

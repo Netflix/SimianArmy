@@ -1,7 +1,6 @@
-// CHECKSTYLE IGNORE Javadoc
 /*
  *
- *  Copyright 2012 Netflix, Inc.
+ *  Copyright 2013 Netflix, Inc.
  *
  *     Licensed under the Apache License, Version 2.0 (the "License");
  *     you may not use this file except in compliance with the License.
@@ -18,33 +17,6 @@
  */
 package com.netflix.simianarmy;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
+public interface ResourceType extends NamedType {
 
-public class TestMonkey extends Monkey {
-    public TestMonkey() {
-        super(new TestMonkeyContext(Type.TEST));
-    }
-
-    public enum Type implements MonkeyType {
-        TEST
-    };
-
-    public Type type() {
-        return Type.TEST;
-    }
-
-    public void doMonkeyBusiness() {
-        Assert.assertTrue(true, "ran monkey business");
-    }
-
-    @Test
-    public void testStart() {
-        this.start();
-    }
-
-    @Test
-    public void testStop() {
-        this.stop();
-    }
 }

@@ -43,6 +43,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.netflix.simianarmy.CloudClient;
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.TestMonkeyContext;
 import com.netflix.simianarmy.basic.BasicConfiguration;
@@ -84,12 +85,12 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     }
 
     public static class TestInstanceGroup implements InstanceGroup {
-        private final Enum type;
+        private final GroupType type;
         private final String name;
         private final String region;
         private final List<String> instances = new ArrayList<String>();
 
-        public TestInstanceGroup(Enum type, String name, String region, String... instances) {
+        public TestInstanceGroup(GroupType type, String name, String region, String... instances) {
             this.type = type;
             this.name = name;
             this.region = region;
@@ -99,7 +100,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
 
         @Override
-        public Enum type() {
+        public GroupType type() {
             return type;
         }
 
@@ -132,7 +133,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
     }
 
-    public enum CrawlerTypes {
+    public enum CrawlerTypes implements GroupType {
         TYPE_A, TYPE_B, TYPE_C, TYPE_D
     };
 

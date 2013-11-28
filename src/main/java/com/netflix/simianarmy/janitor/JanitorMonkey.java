@@ -19,9 +19,11 @@ package com.netflix.simianarmy.janitor;
 
 import java.util.List;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 
 /**
  * The abstract class for a Janitor Monkey.
@@ -93,7 +95,7 @@ public abstract class JanitorMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public static enum Type implements MonkeyType {
         /** janitor monkey. */
         JANITOR
     }
@@ -101,7 +103,7 @@ public abstract class JanitorMonkey extends Monkey {
     /**
      * The event types that this monkey causes.
      */
-    public enum EventTypes {
+    public enum EventTypes implements EventType {
         /** Marking a resource as a cleanup candidate. */
         MARK_RESOURCE,
         /** Un-Marking a resource. */
@@ -116,7 +118,7 @@ public abstract class JanitorMonkey extends Monkey {
 
     /** {@inheritDoc} */
     @Override
-    public final Enum type() {
+    public final Type type() {
         return Type.JANITOR;
     }
 

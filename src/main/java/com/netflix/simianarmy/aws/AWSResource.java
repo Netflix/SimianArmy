@@ -28,13 +28,14 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 
 /**
  * The class represents general AWS resources that are managed by janitor monkey.
  */
 public class AWSResource implements Resource {
     private String id;
-    private Enum resourceType;
+    private ResourceType resourceType;
     private String region;
     private String ownerEmail;
     private String description;
@@ -92,7 +93,7 @@ public class AWSResource implements Resource {
         Map<String, String> fieldToValue = new HashMap<String, String>();
 
         putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_ID, getId());
-        putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_TYPE, getResourceType());
+        putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_TYPE, getResourceType().name());
         putToMapIfNotNull(fieldToValue, FIELD_REGION, getRegion());
         putToMapIfNotNull(fieldToValue, FIELD_OWNER_EMAIL, getOwnerEmail());
         putToMapIfNotNull(fieldToValue, FIELD_DESCRIPTION, getDescription());
@@ -189,19 +190,19 @@ public class AWSResource implements Resource {
 
     /** {@inheritDoc} */
     @Override
-    public Enum getResourceType() {
+    public ResourceType getResourceType() {
         return resourceType;
     }
 
     /** {@inheritDoc} */
     @Override
-    public void setResourceType(Enum resourceType) {
+    public void setResourceType(ResourceType resourceType) {
         this.resourceType = resourceType;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Resource withResourceType(Enum type) {
+    public Resource withResourceType(ResourceType type) {
         setResourceType(type);
         return this;
     }
@@ -430,7 +431,7 @@ public class AWSResource implements Resource {
         }
     }
 
-    private static void putToMapIfNotNull(Map<String, String> map, String key, Enum value) {
+    private static void putToMapIfNotNull(Map<String, String> map, String key, Enum<?> value) {
         Validate.notNull(map);
         Validate.notNull(key);
         if (value != null) {

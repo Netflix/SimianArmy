@@ -40,6 +40,7 @@ import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
 import com.amazonaws.services.autoscaling.model.SuspendedProcess;
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -97,7 +98,7 @@ public class ASGJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("ASG".equals(resourceType.name())) {
             return getASGResources();
         }

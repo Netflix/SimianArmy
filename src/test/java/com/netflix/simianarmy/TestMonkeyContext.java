@@ -36,10 +36,10 @@ import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
 public class TestMonkeyContext implements Monkey.Context {
-    private final Enum monkeyType;
+    private final MonkeyType monkeyType;
     private final LinkedList<Event> eventReport = new LinkedList<Event>();
 
-    public TestMonkeyContext(Enum monkeyType) {
+    public TestMonkeyContext(MonkeyType monkeyType) {
         this.monkeyType = monkeyType;
     }
 
@@ -188,7 +188,7 @@ public class TestMonkeyContext implements Monkey.Context {
         private final List<Event> events = new LinkedList<Event>();
 
         @Override
-        public Event newEvent(Enum mkType, Enum eventType, String region, String id) {
+        public Event newEvent(MonkeyType mkType, EventType eventType, String region, String id) {
             return new BasicRecorderEvent(mkType, eventType, region, id);
         }
 
@@ -203,13 +203,13 @@ public class TestMonkeyContext implements Monkey.Context {
         }
 
         @Override
-        public List<Event> findEvents(Enum mkeyType, Map<String, String> query, Date after) {
+        public List<Event> findEvents(MonkeyType mkeyType, Map<String, String> query, Date after) {
             // used from BasicScheduler
             return events;
         }
 
         @Override
-        public List<Event> findEvents(Enum mkeyType, Enum eventType, Map<String, String> query, Date after) {
+        public List<Event> findEvents(MonkeyType mkeyType, EventType eventType, Map<String, String> query, Date after) {
             // used from ChaosMonkey
             List<Event> evts = new LinkedList<Event>();
             for (Event evt : events) {

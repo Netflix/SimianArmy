@@ -22,10 +22,12 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.edda.EddaClient;
 import com.netflix.simianarmy.janitor.JanitorCrawler;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.jackson.JsonNode;
@@ -109,7 +111,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("IMAGE".equals(resourceType.name())) {
             return getAMIResources();
         }
@@ -186,7 +188,6 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
         imageIdToName.clear();
         for (String region : regions) {
             JsonNode jsonNode = getImagesInJson(region);
-            List<Resource> resources = Lists.newArrayList();
             for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
                 JsonNode ami = it.next();
                 String imageId = ami.get("imageId").getTextValue();

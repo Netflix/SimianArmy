@@ -23,9 +23,11 @@ import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.aws.AWSClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +63,7 @@ public class LaunchConfigJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("LAUNCH_CONFIG".equals(resourceType.name())) {
             return getLaunchConfigResources();
         }

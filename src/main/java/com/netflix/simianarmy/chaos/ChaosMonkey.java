@@ -20,11 +20,13 @@ package com.netflix.simianarmy.chaos;
 import java.util.Date;
 import java.util.List;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 
 /**
  * The Class ChaosMonkey.
@@ -82,7 +84,7 @@ public abstract class ChaosMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public enum Type implements MonkeyType {
 
         /** chaos monkey. */
         CHAOS
@@ -91,7 +93,7 @@ public abstract class ChaosMonkey extends Monkey {
     /**
      * The event types that this monkey causes.
      */
-    public enum EventTypes {
+    public enum EventTypes implements EventType {
 
         /** The chaos termination. */
         CHAOS_TERMINATION, CHAOS_TERMINATION_SKIPPED
@@ -99,7 +101,7 @@ public abstract class ChaosMonkey extends Monkey {
 
     /** {@inheritDoc} */
     @Override
-    public final Enum type() {
+    public final Type type() {
         return Type.CHAOS;
     }
 

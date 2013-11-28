@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Volume;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.VolumeTaggingMonkey;
@@ -57,7 +58,7 @@ public class EBSVolumeJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("EBS_VOLUME".equals(resourceType.name())) {
             return getVolumeResources();
         }

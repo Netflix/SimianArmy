@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 /**
@@ -32,7 +33,7 @@ public class BasicInstanceGroup implements InstanceGroup {
     private final String name;
 
     /** The type. */
-    private final Enum type;
+    private final GroupType type;
 
     /** The region. */
     private final String region;
@@ -45,14 +46,14 @@ public class BasicInstanceGroup implements InstanceGroup {
      * @param type
      *            the type
      */
-    public BasicInstanceGroup(String name, Enum type, String region) {
+    public BasicInstanceGroup(String name, GroupType type, String region) {
         this.name = name;
         this.type = type;
         this.region = region;
     }
 
     /** {@inheritDoc} */
-    public Enum type() {
+    public GroupType type() {
         return type;
     }
 

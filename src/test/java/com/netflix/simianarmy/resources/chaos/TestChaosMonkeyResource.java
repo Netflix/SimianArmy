@@ -43,8 +43,10 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
@@ -55,9 +57,9 @@ public class TestChaosMonkeyResource {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestChaosMonkeyResource.class);
 
     @Captor
-    private ArgumentCaptor<Enum> monkeyTypeArg;
+    private ArgumentCaptor<MonkeyType> monkeyTypeArg;
     @Captor
-    private ArgumentCaptor<Enum> eventTypeArg;
+    private ArgumentCaptor<EventType> eventTypeArg;
     @Captor
     private ArgumentCaptor<Map<String, String>> queryArg;
     @Captor
@@ -174,7 +176,7 @@ public class TestChaosMonkeyResource {
         // fix when Matcher.anyMapOf is available
         Map<String, String> anyMap = anyMap();
 
-        when(mockRecorder.findEvents(any(Enum.class), any(Enum.class), anyMap, any(Date.class))).thenReturn(
+        when(mockRecorder.findEvents(any(MonkeyType.class), any(EventType.class), anyMap, any(Date.class))).thenReturn(
                 Arrays.asList(mkEvent("i-1234356780"), mkEvent("i-123456781")));
 
         try {
@@ -197,8 +199,8 @@ public class TestChaosMonkeyResource {
     }
 
     private MonkeyRecorder.Event mkEvent(String instance) {
-        final Enum monkeyType = ChaosMonkey.Type.CHAOS;
-        final Enum eventType = ChaosMonkey.EventTypes.CHAOS_TERMINATION;
+        final MonkeyType monkeyType = ChaosMonkey.Type.CHAOS;
+        final EventType eventType = ChaosMonkey.EventTypes.CHAOS_TERMINATION;
         // SUPPRESS CHECKSTYLE MagicNumber
         return new BasicRecorderEvent(monkeyType, eventType, "region", "id", 1330538400000L)
         .addField("instanceId", instance).addField("groupType", "ASG").addField("groupName", "testGroup");

@@ -41,7 +41,10 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyType;
+import com.netflix.simianarmy.NamedType;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
@@ -120,7 +123,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the e
      * @return the string
      */
-    private static String enumToValue(Enum e) {
+    private static String enumToValue(NamedType e) {
         return String.format("%s|%s", e.name(), e.getClass().getName());
     }
 
@@ -131,30 +134,33 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the value
      * @return the enum
      */
-    @SuppressWarnings("unchecked")
-    private static Enum valueToEnum(String value) {
+    private static <T extends NamedType> T valueToEnum(
+            Class<T> type, String value) {
         // parts = [enum value, enum class type]
         String[] parts = value.split("\\|", 2);
         if (parts.length < 2) {
             throw new RuntimeException("value " + value + " does not appear to be an internal enum format");
         }
 
-        Class enumClass;
+        Class<?> enumClass;
         try {
             enumClass = Class.forName(parts[1]);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("class for enum value " + value + " not found");
         }
-        if (enumClass.isEnum()) {
-            final Class<? extends Enum> enumSubClass = enumClass.asSubclass(Enum.class);
-            return Enum.valueOf(enumSubClass, parts[0]);
+        if (enumClass.isEnum() && type.isAssignableFrom(enumClass)) {
+            @SuppressWarnings("rawtypes")
+            Class<? extends Enum> enumType = enumClass.asSubclass(Enum.class);
+            @SuppressWarnings("unchecked")
+            T enumValue = (T) Enum.valueOf(enumType, parts[0]);
+            return enumValue;
         }
         throw new RuntimeException("value " + value + " does not appear to be an enum type");
     }
 
     /** {@inheritDoc} */
     @Override
-    public Event newEvent(Enum monkeyType, Enum eventType, String reg, String id) {
+    public Event newEvent(MonkeyType monkeyType, EventType eventType, String reg, String id) {
         return new BasicRecorderEvent(monkeyType, eventType, reg, id);
     }
 
@@ -220,8 +226,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
                 }
                 String eid = res.get(Keys.id.name());
                 String ereg = res.get(Keys.region.name());
-                Enum monkeyType = valueToEnum(res.get(Keys.monkeyType.name()));
-                Enum eventType = valueToEnum(res.get(Keys.eventType.name()));
+                MonkeyType monkeyType = valueToEnum(MonkeyType.class, res.get(Keys.monkeyType.name()));
+                EventType eventType = valueToEnum(EventType.class, res.get(Keys.eventType.name()));
                 long eventTime = Long.parseLong(res.get(Keys.eventTime.name()));
                 list.add(new BasicRecorderEvent(monkeyType, eventType, ereg, eid, eventTime).addFields(fields));
             }
@@ -237,7 +243,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     /** {@inheritDoc} */
     @Override
-    public List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after) {
+    public List<Event> findEvents(MonkeyType monkeyType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         return findEvents(copy, after);
@@ -245,7 +251,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     /** {@inheritDoc} */
     @Override
-    public List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after) {
+    public List<Event> findEvents(MonkeyType monkeyType, EventType eventType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         copy.put(Keys.eventType.name(), enumToValue(eventType));
