@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * Marker interface for all group type enumerations.
+ */
 public interface GroupType extends NamedType {
 
 }

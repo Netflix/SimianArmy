@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * Marker interface for all event type enumerations.
+ */
 public interface EventType extends NamedType {
 
 }

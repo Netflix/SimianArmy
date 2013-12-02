@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * Marker interface for all resource type enumerations.
+ */
 public interface ResourceType extends NamedType {
 
 }

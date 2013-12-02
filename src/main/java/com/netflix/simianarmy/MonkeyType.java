@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * Marker interface for all monkey type enumerations.
+ */
 public interface MonkeyType extends NamedType {
 
 }

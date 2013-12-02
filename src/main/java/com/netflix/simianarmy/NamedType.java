@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy;
 
+/**
+ * Interface requiring a name() method.
+ */
 public interface NamedType {
 
     String name();
