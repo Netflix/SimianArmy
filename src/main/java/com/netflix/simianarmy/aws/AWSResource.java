@@ -27,6 +27,7 @@ import org.apache.commons.lang.Validate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import com.netflix.simianarmy.NamedType;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.ResourceType;
 
@@ -93,7 +94,7 @@ public class AWSResource implements Resource {
         Map<String, String> fieldToValue = new HashMap<String, String>();
 
         putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_ID, getId());
-        putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_TYPE, getResourceType().name());
+        putToMapIfNotNull(fieldToValue, FIELD_RESOURCE_TYPE, getResourceType());
         putToMapIfNotNull(fieldToValue, FIELD_REGION, getRegion());
         putToMapIfNotNull(fieldToValue, FIELD_OWNER_EMAIL, getOwnerEmail());
         putToMapIfNotNull(fieldToValue, FIELD_DESCRIPTION, getDescription());
@@ -432,6 +433,14 @@ public class AWSResource implements Resource {
     }
 
     private static void putToMapIfNotNull(Map<String, String> map, String key, Enum<?> value) {
+        Validate.notNull(map);
+        Validate.notNull(key);
+        if (value != null) {
+            map.put(key, value.name());
+        }
+    }
+
+    private static void putToMapIfNotNull(Map<String, String> map, String key, NamedType value) {
         Validate.notNull(map);
         Validate.notNull(key);
         if (value != null) {
