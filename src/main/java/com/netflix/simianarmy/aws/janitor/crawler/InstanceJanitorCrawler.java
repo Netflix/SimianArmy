@@ -58,7 +58,7 @@ public class InstanceJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.INSTANCE);
     }
 

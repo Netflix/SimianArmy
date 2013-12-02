@@ -34,7 +34,7 @@ public interface JanitorCrawler {
      *
      * @return the type of resources this crawler crawls
      */
-    EnumSet<?> resourceTypes();
+    EnumSet<? extends ResourceType> resourceTypes();
 
     /**
      * Resources crawled by this crawler for a specific resource type.

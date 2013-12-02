@@ -77,7 +77,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.INSTANCE);
     }
 

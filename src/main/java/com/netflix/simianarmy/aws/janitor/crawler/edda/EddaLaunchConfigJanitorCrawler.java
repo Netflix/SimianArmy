@@ -73,7 +73,7 @@ public class EddaLaunchConfigJanitorCrawler implements JanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.LAUNCH_CONFIG);
     }
 
