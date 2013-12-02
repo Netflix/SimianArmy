@@ -148,14 +148,17 @@ public class SimpleDBRecorder implements MonkeyRecorder {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("class for enum value " + value + " not found");
         }
-        if (enumClass.isEnum() && type.isAssignableFrom(enumClass)) {
-            @SuppressWarnings("rawtypes")
-            Class<? extends Enum> enumType = enumClass.asSubclass(Enum.class);
-            @SuppressWarnings("unchecked")
-            T enumValue = (T) Enum.valueOf(enumType, parts[0]);
-            return enumValue;
+        if (!enumClass.isEnum()) {
+            throw new RuntimeException("value " + value + " does not appear to be of an enum type");
         }
-        throw new RuntimeException("value " + value + " does not appear to be an enum type");
+        if (!type.isAssignableFrom(enumClass)) {
+            throw new RuntimeException("value " + value + " cannot be assigned to a variable of this type: " + type.getCanonicalName());
+        }
+        @SuppressWarnings("rawtypes")
+        Class<? extends Enum> enumType = enumClass.asSubclass(Enum.class);
+        @SuppressWarnings("unchecked")
+        T enumValue = (T) Enum.valueOf(enumType, parts[0]);
+        return enumValue;
     }
 
     /** {@inheritDoc} */
