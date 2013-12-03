@@ -14,20 +14,27 @@ signing {
  */
 task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
     configuration = configurations.archives
-    doFirst {
+    onlyIf { ['release', 'snapshot'].contains(project.status) }
         repositories.mavenDeployer {
-            beforeDeployment { org.gradle.api.artifacts.maven.MavenDeployment deployment -> signing.signPom(deployment) }
+            beforeDeployment { signing.signPom(it) }
 
             // To test deployment locally, use the following instead of oss.sonatype.org
             //repository(url: "file://localhost/${rootProject.rootDir}/repo")
 
-            repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
-                authentication(userName: rootProject.sonatypeUsername, password: rootProject.sonatypePassword)
-            }
+            def sonatypeUsername = rootProject.hasProperty('sonatypeUsername')?rootProject.sonatypeUsername:''
+            def sonatypePassword = rootProject.hasProperty('sonatypePassword')?rootProject.sonatypePassword:''
 
-            // Prevent datastamp from being appending to artifacts during deployment
-            uniqueVersion = false
+                repository(url: 'https://oss.sonatype.org/service/local/staging/deploy/maven2') {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
 
+                snapshotRepository(url: 'https://oss.sonatype.org/content/repositories/snapshots/') {
+                    authentication(userName: sonatypeUsername, password: sonatypePassword)
+                }
+
+                // Prevent datastamp from being appending to artifacts during deployment
+                uniqueVersion = false
+              
                 // Closure to configure all the POM with extra info, common to all projects
                 pom.project {
                     name "${project.name}"
@@ -58,6 +65,5 @@ task uploadMavenCentral(type:Upload, dependsOn: signArchives) {
                     }
                 }
         }
-    }
 }
 
