@@ -152,7 +152,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
             throw new RuntimeException("value " + value + " does not appear to be of an enum type");
         }
         if (!type.isAssignableFrom(enumClass)) {
-            throw new RuntimeException("value " + value + " cannot be assigned to a variable of this type: " + type.getCanonicalName());
+            throw new RuntimeException("value " + value + " cannot be assigned to a variable of this type: "
+                    + type.getCanonicalName());
         }
         @SuppressWarnings("rawtypes")
         Class<? extends Enum> enumType = enumClass.asSubclass(Enum.class);

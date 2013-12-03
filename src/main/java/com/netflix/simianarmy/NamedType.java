@@ -22,6 +22,9 @@ package com.netflix.simianarmy;
  */
 public interface NamedType {
 
+    /**
+     * Name of this instance.
+     */
     String name();
-    
+
 }
