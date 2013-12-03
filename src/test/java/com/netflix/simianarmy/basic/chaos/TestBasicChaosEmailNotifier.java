@@ -29,6 +29,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext.TestInstanceGroup;
 
@@ -40,7 +41,7 @@ public class TestBasicChaosEmailNotifier {
 
     private Properties properties;
 
-    private enum GroupTypes {
+    private enum GroupTypes implements GroupType {
         TYPE_A
     };
 

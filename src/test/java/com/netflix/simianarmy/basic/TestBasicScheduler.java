@@ -28,7 +28,9 @@ import java.util.Calendar;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.TestMonkeyContext;
 
 // CHECKSTYLE IGNORE MagicNumber
@@ -55,9 +57,13 @@ public class TestBasicScheduler extends BasicScheduler {
         return frequencyUnit;
     }
 
-    private enum Enums {
-        MONKEY, EVENT
+    private enum Enums implements MonkeyType {
+        MONKEY
     };
+    
+    private enum EventEnums implements EventType {
+        EVENT
+    }
 
     @Test
     public void testRunner() throws InterruptedException {
@@ -108,7 +114,7 @@ public class TestBasicScheduler extends BasicScheduler {
         // create an event 5 min ago
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, -5);
-        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, Enums.EVENT, "region", "test-id", cal.getTime()
+        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, EventEnums.EVENT, "region", "test-id", cal.getTime()
                 .getTime());
         context.recorder().recordEvent(evt);
 

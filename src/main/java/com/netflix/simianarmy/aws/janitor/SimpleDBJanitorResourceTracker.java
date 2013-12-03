@@ -35,6 +35,7 @@ import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
@@ -95,7 +96,7 @@ public class SimpleDBJanitorResourceTracker implements JanitorResourceTracker {
      * the SimpleDB.
      */
     @Override
-    public List<Resource> getResources(Enum resourceType, CleanupState state, String resourceRegion) {
+    public List<Resource> getResources(ResourceType resourceType, CleanupState state, String resourceRegion) {
         Validate.notEmpty(resourceRegion);
         List<Resource> resources = new ArrayList<Resource>();
         StringBuilder query = new StringBuilder();

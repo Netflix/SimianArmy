@@ -20,6 +20,8 @@ package com.netflix.simianarmy.chaos;
 import java.util.EnumSet;
 import java.util.List;
 
+import com.netflix.simianarmy.GroupType;
+
 /**
  * The Interface ChaosCrawler.
  */
@@ -35,7 +37,7 @@ public interface ChaosCrawler {
          *
          * @return the group type enum
          */
-        Enum type();
+        GroupType type();
 
         /**
          * Name.

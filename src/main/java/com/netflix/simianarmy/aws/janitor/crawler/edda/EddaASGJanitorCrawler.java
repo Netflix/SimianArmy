@@ -21,10 +21,12 @@ package com.netflix.simianarmy.aws.janitor.crawler.edda;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.edda.EddaClient;
 import com.netflix.simianarmy.janitor.JanitorCrawler;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.jackson.JsonNode;
@@ -97,12 +99,12 @@ public class EddaASGJanitorCrawler implements JanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.ASG);
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("ASG".equals(resourceType.name())) {
             return getASGResources();
         }

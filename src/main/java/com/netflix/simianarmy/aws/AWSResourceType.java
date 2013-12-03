@@ -18,10 +18,12 @@
 
 package com.netflix.simianarmy.aws;
 
+import com.netflix.simianarmy.ResourceType;
+
 /**
  * The enum of resource types of AWS.
  */
-public enum AWSResourceType {
+public enum AWSResourceType implements ResourceType {
     /** AWS instance. */
     INSTANCE,
     /** AWS EBS volume. */

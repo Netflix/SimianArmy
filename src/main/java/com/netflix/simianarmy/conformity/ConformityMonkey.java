@@ -19,6 +19,7 @@ package com.netflix.simianarmy.conformity;
 
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.MonkeyType;
 
 import java.util.Collection;
 
@@ -95,14 +96,14 @@ public abstract class ConformityMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public enum Type implements MonkeyType {
         /** Conformity monkey. */
         CONFORMITY
     }
 
     /** {@inheritDoc} */
     @Override
-    public final Enum type() {
+    public final Type type() {
         return Type.CONFORMITY;
     }
 

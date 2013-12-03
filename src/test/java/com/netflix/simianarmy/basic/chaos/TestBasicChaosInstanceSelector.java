@@ -23,14 +23,16 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 import org.testng.Assert;
-
 import org.slf4j.Logger;
+
 import static org.slf4j.helpers.NOPLogger.NOP_LOGGER;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
@@ -42,12 +44,12 @@ public class TestBasicChaosInstanceSelector {
         }
     };
 
-    public enum Types {
+    public enum Types implements GroupType {
         TEST
     }
 
     private InstanceGroup group = new InstanceGroup() {
-        public Enum type() {
+        public GroupType type() {
             return Types.TEST;
         }
 

@@ -36,6 +36,7 @@ import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -65,12 +66,12 @@ public class EBSSnapshotJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.EBS_SNAPSHOT);
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("EBS_SNAPSHOT".equals(resourceType.name())) {
             return getSnapshotResources();
         }

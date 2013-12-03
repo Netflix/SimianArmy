@@ -25,8 +25,10 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.janitor.JanitorMonkey.EventTypes;
 import com.netflix.simianarmy.janitor.JanitorMonkey.Type;
+
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,7 +71,7 @@ public abstract class AbstractJanitor implements Janitor {
     private final JanitorCrawler crawler;
 
     /** The resource type that the janitor is responsible for to clean up. **/
-    private final Enum resourceType;
+    private final ResourceType resourceType;
 
     /** The janitor resource tracker that is responsible for keeping track of
      * resource status.
@@ -160,7 +162,7 @@ public abstract class AbstractJanitor implements Janitor {
      * @param ctx the context
      * @param resourceType the resource type the janitor is taking care
      */
-    public AbstractJanitor(Context ctx, Enum resourceType) {
+    public AbstractJanitor(Context ctx, ResourceType resourceType) {
         Validate.notNull(ctx);
         Validate.notNull(resourceType);
         this.region = ctx.region();
@@ -184,7 +186,7 @@ public abstract class AbstractJanitor implements Janitor {
     }
 
     @Override
-    public Enum getResourceType() {
+    public ResourceType getResourceType() {
         return resourceType;
     }
 

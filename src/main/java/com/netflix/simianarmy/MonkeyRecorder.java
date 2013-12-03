@@ -50,14 +50,14 @@ public interface MonkeyRecorder {
          *
          * @return the monkey type enum
          */
-        Enum monkeyType();
+        MonkeyType monkeyType();
 
         /**
          * Event type.
          *
          * @return the event type enum
          */
-        Enum eventType();
+        EventType eventType();
 
         /**
          * Region.
@@ -108,7 +108,7 @@ public interface MonkeyRecorder {
      *            the id
      * @return the event
      */
-    Event newEvent(Enum monkeyType, Enum eventType, String region, String id);
+    Event newEvent(MonkeyType monkeyType, EventType eventType, String region, String id);
 
     /**
      * Record event.
@@ -140,7 +140,7 @@ public interface MonkeyRecorder {
      *            the after
      * @return the list of events
      */
-    List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after);
+    List<Event> findEvents(MonkeyType monkeyType, Map<String, String> query, Date after);
 
     /**
      * Find events.
@@ -155,5 +155,5 @@ public interface MonkeyRecorder {
      *            the after
      * @return the list
      */
-    List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after);
+    List<Event> findEvents(MonkeyType monkeyType, EventType eventType, Map<String, String> query, Date after);
 }

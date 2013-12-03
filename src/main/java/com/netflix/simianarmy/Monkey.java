@@ -108,7 +108,7 @@ public abstract class Monkey {
      *
      * @return the monkey type enum
      */
-    public abstract Enum type();
+    public abstract MonkeyType type();
 
     /**
      * Do monkey business.
