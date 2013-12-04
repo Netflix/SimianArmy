@@ -54,7 +54,7 @@ public class ImageJanitor extends AbstractJanitor {
     @Override
     protected void cleanup(Resource resource) {
         LOGGER.info(String.format("Deleting image %s", resource.getId()));
-        awsClient.deleteLaunchConfiguration(resource.getId());
+        awsClient.deleteImage(resource.getId());
     }
 
     @Override
