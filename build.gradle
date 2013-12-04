@@ -4,12 +4,18 @@ group = "com.netflix.${project.name}"
 apply plugin:'eclipse-wtp'
 
 buildscript {
-    repositories { mavenCentral() }
+    repositories {
+        mavenLocal()
+        mavenCentral() // maven { url 'http://jcenter.bintray.com' }
+    }
     apply from: file('gradle/buildscript.gradle'), to: buildscript
 }
 
 allprojects {
-    repositories { mavenCentral() }
+    repositories { 
+        mavenLocal()
+        mavenCentral() // maven { url: 'http://jcenter.bintray.com' }
+    }
 }
 
 apply from: file('gradle/convention.gradle')
@@ -69,7 +75,6 @@ tasks.withType(Compile) {
 artifacts {
     archives tasks.jar
 }
-
 import nl.javadude.gradle.plugins.license.License
 tasks.withType(License).each { licenseTask ->
     licenseTask.exclude '**/*.json'

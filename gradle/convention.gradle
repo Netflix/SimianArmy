@@ -1,9 +1,9 @@
-apply plugin: 'java' // Plugin as major conventions
+apply plugin: 'java' // Plugin as major conventions, overwrites status
 
 sourceCompatibility = 1.6
 
 // GRADLE-2087 workaround, perform after java plugin
-status = version.contains('-SNAPSHOT')?'snapshot':'release'
+status = project.hasProperty('preferredStatus')?project.preferredStatus:(version.contains('SNAPSHOT')?'snapshot':'release')
 
 // Indenting to align with multi-project branch
     task sourcesJar(type: Jar, dependsOn:classes) {
@@ -45,9 +45,6 @@ status = version.contains('-SNAPSHOT')?'snapshot':'release'
         }
     }
 
-    // Ensure output is on a new line
-    javadoc.doFirst { println "" }
-
     configurations {
         provided {
             description = 'much like compile, but indicates you expect the JDK or a container to provide it. It is only available on the compilation classpath, and is not transitive.'
@@ -63,7 +60,28 @@ status = version.contains('-SNAPSHOT')?'snapshot':'release'
         test.runtimeClasspath += project.configurations.provided
     }
 
+apply plugin: 'github-pages' // Used to create publishGhPages task
+
+def docTasks = [:]
+[Javadoc,ScalaDoc,Groovydoc].each{ Class docClass ->
+    tasks.withType(docClass).each { docTask ->
+        docTasks[docTask.name] = docTask
+        processGhPages.dependsOn(docTask)
+    }
+}
+
+githubPages {
+    repoUri = "git@github.com:Netflix/${rootProject.githubProjectName}.git"
+    pages {
+        docTasks.each { shortName, docTask ->
+            from(docTask.outputs.files) {
+                into "docs/${shortName}"
+            }
+        }
+    }
+}
+
 // Generate wrapper, which is distributed as part of source to alleviate the need of installing gradle
 task createWrapper(type: Wrapper) {
-    gradleVersion = '1.1'
+    gradleVersion = '1.5'
 }
