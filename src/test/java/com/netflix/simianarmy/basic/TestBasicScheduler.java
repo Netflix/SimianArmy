@@ -18,23 +18,25 @@
  */
 package com.netflix.simianarmy.basic;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import java.util.Calendar;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.google.common.util.concurrent.Callables;
 import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.TestMonkeyContext;
 
 // CHECKSTYLE IGNORE MagicNumber
-public class TestBasicScheduler extends BasicScheduler {
+public class TestBasicScheduler {
 
     @Test
     public void testConstructors() {
@@ -42,19 +44,9 @@ public class TestBasicScheduler extends BasicScheduler {
         Assert.assertNotNull(sched);
         Assert.assertEquals(sched.frequency(), 1);
         Assert.assertEquals(sched.frequencyUnit(), TimeUnit.HOURS);
-        Assert.assertNotNull(new BasicScheduler(12, TimeUnit.HOURS, 2));
-    }
-
-    private int frequency = 2;
-
-    public int frequency() {
-        return frequency;
-    }
-
-    private TimeUnit frequencyUnit = TimeUnit.SECONDS;
-
-    public TimeUnit frequencyUnit() {
-        return frequencyUnit;
+        BasicScheduler sched2 = new BasicScheduler(12, TimeUnit.MINUTES, 2);
+        Assert.assertEquals(sched2.frequency(), 12);
+        Assert.assertEquals(sched2.frequencyUnit(), TimeUnit.MINUTES);
     }
 
     private enum Enums implements MonkeyType {
@@ -67,48 +59,41 @@ public class TestBasicScheduler extends BasicScheduler {
 
     @Test
     public void testRunner() throws InterruptedException {
-        BasicScheduler sched = new TestBasicScheduler();
+        BasicScheduler sched = new BasicScheduler(200, TimeUnit.MILLISECONDS, 1);
         Monkey mockMonkey = mock(Monkey.class);
         when(mockMonkey.context()).thenReturn(new TestMonkeyContext(Enums.MONKEY));
         when(mockMonkey.type()).thenReturn(Enums.MONKEY).thenReturn(Enums.MONKEY);
 
         final AtomicLong counter = new AtomicLong(0L);
         sched.start(mockMonkey, new Runnable() {
+            @Override
             public void run() {
                 counter.incrementAndGet();
             }
         });
-        Thread.sleep(1000);
+        Thread.sleep(100);
         Assert.assertEquals(counter.get(), 1);
-        Thread.sleep(2000);
+        Thread.sleep(200);
         Assert.assertEquals(counter.get(), 2);
         sched.stop(mockMonkey);
-        Thread.sleep(2000);
+        Thread.sleep(200);
         Assert.assertEquals(counter.get(), 2);
     }
 
     @Test
-    public void testDelayedStart() throws InterruptedException {
-        TestBasicScheduler sched = new TestBasicScheduler();
-
-        // set monkey to run hourly
-        sched.frequency = 1;
-        sched.frequencyUnit = TimeUnit.HOURS;
+    public void testDelayedStart() throws Exception {
+        BasicScheduler sched = new BasicScheduler(1, TimeUnit.HOURS, 1);
 
         TestMonkeyContext context = new TestMonkeyContext(Enums.MONKEY);
         Monkey mockMonkey = mock(Monkey.class);
         when(mockMonkey.context()).thenReturn(context).thenReturn(context);
         when(mockMonkey.type()).thenReturn(Enums.MONKEY).thenReturn(Enums.MONKEY);
 
-        // first monkey has no previous events, so it runs immediately
-        final AtomicLong counter = new AtomicLong(0L);
-        sched.start(mockMonkey, new Runnable() {
-            public void run() {
-                counter.incrementAndGet();
-            }
-        });
-        Thread.sleep(10);
-        Assert.assertEquals(counter.get(), 1);
+        // first monkey has no previous events, so it runs practically immediately
+        FutureTask<Void> task = new FutureTask<Void>(Callables.<Void>returning(null));
+        sched.start(mockMonkey, task);
+        // make sure that the task gets completed within 100ms
+        task.get(100L, TimeUnit.MILLISECONDS);
         sched.stop(mockMonkey);
 
         // create an event 5 min ago
@@ -118,16 +103,15 @@ public class TestBasicScheduler extends BasicScheduler {
                 .getTime());
         context.recorder().recordEvent(evt);
 
-        // this time when it runs it will not increment within 10ms since it should be scheduled for 55m from now.
-        sched.start(mockMonkey, new Runnable() {
-            public void run() {
-                counter.incrementAndGet();
-            }
-        });
-        Thread.sleep(10);
-
-        // counter did not increment because start was delayed due to previous event
-        Assert.assertEquals(counter.get(), 1);
+        // this time when it runs it will not run immediately since it should be scheduled for 55m from now.
+        task = new FutureTask<Void>(Callables.<Void>returning(null));
+        sched.start(mockMonkey, task);
+        try {
+            task.get(100, TimeUnit.MILLISECONDS);
+            Assert.fail("The task shouldn't have been completed in 100ms");
+        } catch (TimeoutException e) {
+            // This is expected.
+        }
         sched.stop(mockMonkey);
     }
 }
