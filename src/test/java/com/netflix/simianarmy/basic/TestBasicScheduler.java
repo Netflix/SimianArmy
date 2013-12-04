@@ -109,8 +109,7 @@ public class TestBasicScheduler {
         try {
             task.get(100, TimeUnit.MILLISECONDS);
             Assert.fail("The task shouldn't have been completed in 100ms");
-        } catch (TimeoutException e) {
-            // This is expected.
+        } catch (TimeoutException e) { // NOPMD - This is an expected exception
         }
         sched.stop(mockMonkey);
     }
