@@ -18,8 +18,8 @@ status = project.hasProperty('preferredStatus')?project.preferredStatus:(version
         extension 'jar'
     }
 
-    configurations.add('sources')
-    configurations.add('javadoc')
+    configurations.create('sources')
+    configurations.create('javadoc')
     configurations.archives {
         extendsFrom configurations.sources
         extendsFrom configurations.javadoc
@@ -83,5 +83,5 @@ githubPages {
 
 // Generate wrapper, which is distributed as part of source to alleviate the need of installing gradle
 task createWrapper(type: Wrapper) {
-    gradleVersion = '1.5'
+    gradleVersion = '1.9'
 }
