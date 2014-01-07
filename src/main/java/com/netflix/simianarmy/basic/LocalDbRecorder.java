@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.basic;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +33,6 @@ import org.mapdb.Atomic;
 import org.mapdb.DB;
 import org.mapdb.DBMaker;
 import org.mapdb.Fun;
-import org.mapdb.Utils;
 
 import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -76,7 +76,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
             return;
         }
         File dbFile = null;
-        dbFile = (dbFilename == null)? Utils.tempDbFile() : new File(dbFilename);
+        dbFile = (dbFilename == null)? tempDbFile() : new File(dbFilename);
         if (dbpassword != null) {
             db = DBMaker.newFileDB(dbFile)
                     .closeOnJvmShutdown()
@@ -89,6 +89,14 @@ public class LocalDbRecorder implements MonkeyRecorder {
         }
         eventMap = db.getTreeMap("eventMap");
         nextId = db.createAtomicLong("next", 1);
+    }
+
+    private static File tempDbFile() {
+        try {
+            return File.createTempFile("mapdb","db");
+        } catch (IOException e) {
+            throw new RuntimeException("Temporary DB file could not be created", e);
+        }
     }
 
     /* (non-Javadoc)
