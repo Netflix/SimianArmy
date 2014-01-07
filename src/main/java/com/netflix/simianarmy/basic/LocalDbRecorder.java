@@ -93,7 +93,9 @@ public class LocalDbRecorder implements MonkeyRecorder {
 
     private static File tempDbFile() {
         try {
-            return File.createTempFile("mapdb","db");
+            final File tmpFile = File.createTempFile("mapdb","db");
+            tmpFile.deleteOnExit();
+            return tmpFile;
         } catch (IOException e) {
             throw new RuntimeException("Temporary DB file could not be created", e);
         }
