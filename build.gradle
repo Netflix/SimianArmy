@@ -51,11 +51,13 @@ dependencies {
     compile 'com.google.guava:guava:11.+'
     compile 'org.apache.httpcomponents:httpclient:4.2.1'
     compile 'org.apache.httpcomponents:httpcore:4.2.1'
+    compile 'org.apache.commons:commons-email:1.3.2'
     compile 'org.jclouds.driver:jclouds-jsch:1.6.0'
     compile 'org.jclouds.driver:jclouds-slf4j:1.6.0'
 
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'
+    testCompile 'org.subethamail:subethasmtp:3.1.7'
 
     runtime 'org.slf4j:slf4j-log4j12:1.6.1'
 

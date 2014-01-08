@@ -24,7 +24,6 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
@@ -38,26 +37,23 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(BasicChaosEmailNotifier.class);
 
-    private final MonkeyConfiguration cfg;
     private final String defaultEmail;
     private final List<String> ccAddresses;
 
     /** Constructor.
      *
      * @param cfg the monkey configuration
-     * @param sesClient the Amazon SES client
      * @param defaultEmail the default email address to notify when the group does not have a
      * owner email specified
      * @param ccAddresses the cc email addresses for notifications
      */
-    public BasicChaosEmailNotifier(MonkeyConfiguration cfg, AmazonSimpleEmailServiceClient sesClient,
-            String defaultEmail, String... ccAddresses) {
-        super(sesClient);
-        this.cfg = cfg;
+    public BasicChaosEmailNotifier(MonkeyConfiguration cfg,
+        String defaultEmail, String... ccAddresses) {
+        super(cfg);
         this.defaultEmail = defaultEmail;
         this.ccAddresses = Arrays.asList(ccAddresses);
     }
-
+    
     /**
      * Sends an email notification for a termination of instance to a global
      * email address.
@@ -129,8 +125,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         } else {
             subject = buildEmailSubject(to);
         }
-
-        sendEmail(to, subject, body);
+        emailClient.sendEmail(to, getSourceAddress(to), getCcAddresses(to), subject, body);
     }
 
     @Override
@@ -173,11 +168,13 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     public String getSourceAddress(String to) {
         String prop = "simianarmy.chaos.notification.sourceEmail";
         String sourceEmail = cfg.getStr(prop);
-        if (sourceEmail == null || !isValidEmail(sourceEmail)) {
+        if (sourceEmail == null || !emailClient.isValidEmail(sourceEmail)) {
             String msg = String.format("Property %s is not set or its value is not a valid email.", prop);
             LOGGER.error(msg);
             throw new RuntimeException(msg);
         }
         return sourceEmail;
     }
+
+    
 }

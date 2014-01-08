@@ -17,23 +17,113 @@
  */
 package com.netflix.simianarmy.chaos;
 
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.netflix.simianarmy.aws.AWSEmailNotifier;
+import java.lang.reflect.Constructor;
+
+import javax.servlet.ServletException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.netflix.simianarmy.EmailClient;
+import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.MonkeyEmailNotifier;
+import com.netflix.simianarmy.aws.AWSEmailClient;
+import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 /** The email notifier for Chaos monkey.
  *
  */
-public abstract class ChaosEmailNotifier extends AWSEmailNotifier {
+public abstract class ChaosEmailNotifier implements MonkeyEmailNotifier {
+    protected EmailClient emailClient;
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChaosEmailNotifier.class);
 
-    /** Constructor. Currently the notifier is fixed the email client to
-     * Amazon Simple Email Service. We can release this restriction when
-     * we want to support different email clients.
+    protected final MonkeyConfiguration cfg;
+    
+    /** Constructor. 
      *
-     * @param sesClient the AWS simple email service client.
+     * @param cfg the monkey configuration used to initialize the email notifier.
      */
-    public ChaosEmailNotifier(AmazonSimpleEmailServiceClient sesClient) {
-        super(sesClient);
+    public ChaosEmailNotifier(MonkeyConfiguration cfg) {
+        this.cfg = cfg;
+        createEmailClient();
+    }
+    
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    protected void createEmailClient() {
+        BasicConfiguration config = (BasicConfiguration)cfg;
+        Class emailClientClass = loadClientClass(config, "simianarmy.client.email.class");
+        if (emailClientClass == null || emailClientClass.equals(AWSEmailClient.class)) {
+            AWSEmailClient awsEmailClient = new AWSEmailClient();
+            setEmailClient(awsEmailClient);
+        } else {
+            setEmailClient(( (EmailClient) factory(emailClientClass, config)));
+        }
+    }
+    
+    public EmailClient getEmailClient() {
+        return emailClient;
+    }
+
+    public void setEmailClient(EmailClient emailClient) {
+        this.emailClient = emailClient;
+    }
+    
+    /**
+     * Load a class specified by the config; for drop-in replacements.
+     * (Duplicates a method in MonkeyServer; refactor to util?).
+     *
+     * @param config
+     * @param key
+     * @return The initialized class named in by the key, or null if empty or not found
+     * @throws ServletException
+     */
+    @SuppressWarnings("rawtypes")
+    protected Class loadClientClass(BasicConfiguration config, String key) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            String clientClassName = config.getStrOrElse(key, null);
+            if (clientClassName == null || clientClassName.isEmpty()) {
+                //LOGGER.info("using standard class for " + key);
+                return null;
+            }
+        Class newClass = classLoader.loadClass(clientClassName);
+            //LOGGER.info("using " + key + " loaded " + newClass.getCanonicalName());
+            return newClass;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load " + key, e);
+        }
+    }
+
+    /**
+     * Generic factory to create monkey collateral types.
+     *
+     * @param <T>
+     *            the generic type to create
+     * @param implClass
+     *            the actual concrete type to instantiate.
+     * @return an object of the requested type
+     */
+    public <T> T factory(Class<T> implClass, BasicConfiguration config) {
+        try {
+            // then find corresponding ctor
+            for (Constructor<?> ctor : implClass.getDeclaredConstructors()) {
+                Class<?>[] paramTypes = ctor.getParameterTypes();
+                if (paramTypes.length != 1) {
+                    continue;
+                }
+                if (paramTypes[0].getName().endsWith("Configuration")) {
+                    @SuppressWarnings("unchecked")
+                    T impl = (T) ctor.newInstance(config);
+                    return impl;
+                }
+            }
+            // Last ditch; try no-arg.
+            return implClass.newInstance();
+        } catch (Exception e) {
+            LOGGER.error("context config error, cannot make an instance of " + implClass.getName(), e);
+        }
+        return null;
     }
 
     /**

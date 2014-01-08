@@ -421,7 +421,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
 
     @Override
     public ChaosEmailNotifier chaosEmailNotifier() {
-        return new ChaosEmailNotifier(null) {
+        return new ChaosEmailNotifier(cfg) {
             @Override
             public String getSourceAddress(String to) {
                 return "source@chaosMonkey.foo";
