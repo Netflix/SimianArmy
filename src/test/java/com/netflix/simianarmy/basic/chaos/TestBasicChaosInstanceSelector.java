@@ -18,18 +18,21 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
+
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
 import org.testng.Assert;
-
 import org.slf4j.Logger;
+
 import static org.slf4j.helpers.NOPLogger.NOP_LOGGER;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
@@ -41,12 +44,12 @@ public class TestBasicChaosInstanceSelector {
         }
     };
 
-    public enum Types {
+    public enum Types implements GroupType {
         TEST
     }
 
     private InstanceGroup group = new InstanceGroup() {
-        public Enum type() {
+        public GroupType type() {
             return Types.TEST;
         }
 
@@ -65,18 +68,21 @@ public class TestBasicChaosInstanceSelector {
 
         public void addInstance(String ignored) {
         }
+
+        @Override
+        public InstanceGroup copyAs(String name) {
+            return this;
+        }
     };
 
     @Test
     public void testSelect() {
-        Assert.assertNull(selector.select(group, 0), "select disabled group is always null");
-        Assert.assertNull(selector.select(group, 0.0), "select disabled group is always null");
+        Assert.assertTrue(selector.select(group, 0).isEmpty(), "select disabled group is always null");
+        Assert.assertTrue(selector.select(group, 0.0).isEmpty(), "select disabled group is always null");
 
         int selected = 0;
         for (int i = 0; i < 100; i++) {
-            if (selector.select(group, 1.0) != null) {
-                selected++;
-            }
+            selected += selector.select(group, 1.0).size();
         }
 
         Assert.assertEquals(selected, 100, "1.0 probability always selects an instance");
@@ -96,14 +102,13 @@ public class TestBasicChaosInstanceSelector {
 
         Map<String, Integer> selectMap = new HashMap<String, Integer>();
         for (int i = 0; i < RUNS; i++) {
-            String inst = selector.select(group, probability);
-            if (inst == null) {
-                continue;
-            }
-            if (selectMap.containsKey(inst)) {
-                selectMap.put(inst, selectMap.get(inst) + 1);
-            } else {
-                selectMap.put(inst, 1);
+            Collection<String> instances = selector.select(group, probability);
+            for (String inst : instances) {
+                if (selectMap.containsKey(inst)) {
+                    selectMap.put(inst, selectMap.get(inst) + 1);
+                } else {
+                    selectMap.put(inst, 1);
+                }
             }
         }
 
@@ -117,6 +122,35 @@ public class TestBasicChaosInstanceSelector {
         for (Map.Entry<String, Integer> pair : selectMap.entrySet()) {
             Assert.assertTrue(pair.getValue() > min && pair.getValue() < max, pair.getKey() + " selected " + avg
                     + " +- 4% times for prob: " + probability + " [got: " + pair.getValue() + "]");
+        }
+    }
+
+    @Test
+    public void testSelectWithProbMoreThanOne() {
+        // The number of selected instances should always be p when the prob is an integer.
+        for (int p = 0; p <= group.instances().size(); p++) {
+            Assert.assertEquals(selector.select(group, p).size(), p);
+        }
+
+        // When the prob is bigger than the size of the group, we get the whole group.
+        for (int p = group.instances().size(); p <= group.instances().size() * 2; p++) {
+            Assert.assertEquals(selector.select(group, p).size(), group.instances().size());
+        }
+    }
+
+    @Test
+    public void testSelectWithProbMoreThanOneWithFraction() {
+        // The number of selected instances can be p or p+1, depending on whether the fraction part
+        // can get a instance selected.
+        for (int p = 0; p <= group.instances().size(); p++) {
+            Collection<String> selected = selector.select(group, p + 0.5);
+            Assert.assertTrue(selected.size() >= p && selected.size() <= p + 1);
+        }
+
+        // When the prob is bigger than the size of the group, we get the whole group.
+        for (int p = group.instances().size(); p <= group.instances().size() * 2; p++) {
+            Collection<String> selected = selector.select(group, p + 0.5);
+            Assert.assertEquals(selected.size(), group.instances().size());
         }
     }
 }

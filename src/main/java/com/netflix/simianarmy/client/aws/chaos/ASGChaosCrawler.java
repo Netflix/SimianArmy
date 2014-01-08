@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
+import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -35,7 +36,7 @@ public class ASGChaosCrawler implements ChaosCrawler {
     /**
      * The group types Types.
      */
-    public enum Types {
+    public enum Types implements GroupType {
 
         /** only crawls AutoScalingGroups. */
         ASG;

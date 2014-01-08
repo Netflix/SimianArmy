@@ -48,7 +48,11 @@ public class BasicConfiguration implements MonkeyConfiguration {
     @Override
     public boolean getBoolOrElse(String property, boolean dflt) {
         String val = props.getProperty(property);
-        return val == null ? dflt : Boolean.parseBoolean(val);
+        if (val == null) {
+            return dflt;
+        }
+        val = val.trim();
+        return Boolean.parseBoolean(val);
     }
 
     /** {@inheritDoc} */
@@ -74,6 +78,11 @@ public class BasicConfiguration implements MonkeyConfiguration {
     /** {@inheritDoc} */
     @Override
     public void reload() {
+        // BasicConfiguration is based on static properties, so reload is a no-op
+    }
+
+    @Override
+    public void reload(String groupName) {
         // BasicConfiguration is based on static properties, so reload is a no-op
     }
 }

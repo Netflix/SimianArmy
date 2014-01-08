@@ -26,8 +26,8 @@ public interface MonkeyConfiguration {
      * Gets the boolean associated with property string. If not found it will return false.
      *
      * @param property
-     *            the property
-     * @return the bool
+     *            the property name
+     * @return the boolean value
      */
     boolean getBool(String property);
 
@@ -35,10 +35,10 @@ public interface MonkeyConfiguration {
      * Gets the boolean associated with property string. If not found it will return dflt.
      *
      * @param property
-     *            the property
+     *            the property name
      * @param dflt
-     *            the dflt
-     * @return the bool or else
+     *            the default value
+     * @return the bool property value, or dflt if none set
      */
     boolean getBoolOrElse(String property, boolean dflt);
 
@@ -46,10 +46,10 @@ public interface MonkeyConfiguration {
      * Gets the number (double) associated with property string. If not found it will return dflt.
      *
      * @param property
-     *            the property
+     *            the property name
      * @param dflt
-     *            the dflt
-     * @return the num or else
+     *            the default value
+     * @return the numeric property value, or dflt if none set
      */
     double getNumOrElse(String property, double dflt);
 
@@ -57,8 +57,8 @@ public interface MonkeyConfiguration {
      * Gets the string associated with property string. If not found it will return null.
      *
      * @param property
-     *            the property
-     * @return the str
+     *            the property name
+     * @return the string property value
      */
     String getStr(String property);
 
@@ -66,10 +66,10 @@ public interface MonkeyConfiguration {
      * Gets the string associated with property string. If not found it will return dflt.
      *
      * @param property
-     *            the property
+     *            the property name
      * @param dflt
-     *            the dflt
-     * @return the str or else
+     *            the default value
+     * @return the string property value, or dflt if none set
      */
     String getStrOrElse(String property, String dflt);
 
@@ -77,4 +77,11 @@ public interface MonkeyConfiguration {
      * If the configuration has dynamic elements then they should be reloaded with this.
      */
     void reload();
+
+    /**
+     * Reloads the properties of specific group.
+     * @param groupName
+     *          the instance group's name
+     */
+    void reload(String groupName);
 }

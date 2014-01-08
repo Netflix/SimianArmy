@@ -18,21 +18,28 @@
  */
 package com.netflix.simianarmy.basic;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import com.netflix.simianarmy.EventType;
+import com.netflix.simianarmy.MonkeyType;
 
 public class TestBasicRecorderEvent {
-    public enum Types {
-        MONKEY, EVENT
+    public enum Types implements MonkeyType {
+        MONKEY
     };
+    
+    public enum EventTypes implements EventType {
+        EVENT
+    }
 
     @Test
     public void test() {
-        Enum monkeyType = Types.MONKEY;
-        Enum eventType = Types.EVENT;
+        MonkeyType monkeyType = Types.MONKEY;
+        EventType eventType = EventTypes.EVENT;
         BasicRecorderEvent evt = new BasicRecorderEvent(monkeyType, eventType, "region", "test-id");
         testEvent(evt);
 
@@ -47,7 +54,7 @@ public class TestBasicRecorderEvent {
     void testEvent(BasicRecorderEvent evt) {
         Assert.assertEquals(evt.id(), "test-id");
         Assert.assertEquals(evt.monkeyType(), Types.MONKEY);
-        Assert.assertEquals(evt.eventType(), Types.EVENT);
+        Assert.assertEquals(evt.eventType(), EventTypes.EVENT);
         Assert.assertEquals(evt.region(), "region");
         Assert.assertEquals(evt.addField("a", "1"), evt);
         Map<String, String> map = new HashMap<String, String>();

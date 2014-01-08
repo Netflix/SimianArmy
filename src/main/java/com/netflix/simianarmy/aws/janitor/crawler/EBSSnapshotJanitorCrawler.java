@@ -36,6 +36,7 @@ import com.amazonaws.services.ec2.model.Image;
 import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -48,7 +49,7 @@ public class EBSSnapshotJanitorCrawler extends AbstractAWSJanitorCrawler {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(EBSSnapshotJanitorCrawler.class);
 
-    /** The name representing the additional field name of AMIs genreated using the snapshot. */
+    /** The name representing the additional field name of AMIs generated using the snapshot. */
     public static final String SNAPSHOT_FIELD_AMIS = "AMIs";
 
 
@@ -65,12 +66,12 @@ public class EBSSnapshotJanitorCrawler extends AbstractAWSJanitorCrawler {
     }
 
     @Override
-    public EnumSet<?> resourceTypes() {
+    public EnumSet<? extends ResourceType> resourceTypes() {
         return EnumSet.of(AWSResourceType.EBS_SNAPSHOT);
     }
 
     @Override
-    public List<Resource> resources(Enum resourceType) {
+    public List<Resource> resources(ResourceType resourceType) {
         if ("EBS_SNAPSHOT".equals(resourceType.name())) {
             return getSnapshotResources();
         }

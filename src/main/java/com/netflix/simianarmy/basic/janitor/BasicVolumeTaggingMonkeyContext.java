@@ -37,7 +37,8 @@ public class BasicVolumeTaggingMonkeyContext extends BasicSimianArmyContext impl
     public BasicVolumeTaggingMonkeyContext() {
         super("simianarmy.properties", "client.properties", "volumeTagging.properties");
         for (String r : StringUtils.split(region(), ",")) {
-            awsClients.add(new AWSClient(r));
+            createClient(r);
+            awsClients.add(awsClient());
         }
     }
 

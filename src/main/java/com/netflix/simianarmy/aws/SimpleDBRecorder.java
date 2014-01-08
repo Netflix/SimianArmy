@@ -28,15 +28,23 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.amazonaws.AmazonClientException;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.model.Attribute;
+import com.amazonaws.services.simpledb.model.CreateDomainRequest;
 import com.amazonaws.services.simpledb.model.Item;
+import com.amazonaws.services.simpledb.model.ListDomainsResult;
 import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyType;
+import com.netflix.simianarmy.NamedType;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
@@ -45,6 +53,8 @@ import com.netflix.simianarmy.client.aws.AWSClient;
  */
 @SuppressWarnings("serial")
 public class SimpleDBRecorder implements MonkeyRecorder {
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDBRecorder.class);
 
     private final AmazonSimpleDB simpleDBClient;
 
@@ -113,7 +123,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the e
      * @return the string
      */
-    private static String enumToValue(Enum e) {
+    private static String enumToValue(NamedType e) {
         return String.format("%s|%s", e.name(), e.getClass().getName());
     }
 
@@ -124,30 +134,37 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the value
      * @return the enum
      */
-    @SuppressWarnings("unchecked")
-    private static Enum valueToEnum(String value) {
+    private static <T extends NamedType> T valueToEnum(
+            Class<T> type, String value) {
         // parts = [enum value, enum class type]
         String[] parts = value.split("\\|", 2);
         if (parts.length < 2) {
             throw new RuntimeException("value " + value + " does not appear to be an internal enum format");
         }
 
-        Class enumClass;
+        Class<?> enumClass;
         try {
             enumClass = Class.forName(parts[1]);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("class for enum value " + value + " not found");
         }
-        if (enumClass.isEnum()) {
-            final Class<? extends Enum> enumSubClass = enumClass.asSubclass(Enum.class);
-            return Enum.valueOf(enumSubClass, parts[0]);
+        if (!enumClass.isEnum()) {
+            throw new RuntimeException("value " + value + " does not appear to be of an enum type");
         }
-        throw new RuntimeException("value " + value + " does not appear to be an enum type");
+        if (!type.isAssignableFrom(enumClass)) {
+            throw new RuntimeException("value " + value + " cannot be assigned to a variable of this type: "
+                    + type.getCanonicalName());
+        }
+        @SuppressWarnings("rawtypes")
+        Class<? extends Enum> enumType = enumClass.asSubclass(Enum.class);
+        @SuppressWarnings("unchecked")
+        T enumValue = (T) Enum.valueOf(enumType, parts[0]);
+        return enumValue;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Event newEvent(Enum monkeyType, Enum eventType, String reg, String id) {
+    public Event newEvent(MonkeyType monkeyType, EventType eventType, String reg, String id) {
         return new BasicRecorderEvent(monkeyType, eventType, reg, id);
     }
 
@@ -186,7 +203,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      */
     protected List<Event> findEvents(Map<String, String> queryMap, long after) {
         StringBuilder query = new StringBuilder(
-                String.format("select * from %s where region = '%s'", domain, region));
+                String.format("select * from `%s` where region = '%s'", domain, region));
         for (Map.Entry<String, String> pair : queryMap.entrySet()) {
             query.append(String.format(" and %s = '%s'", pair.getKey(), pair.getValue()));
         }
@@ -213,8 +230,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
                 }
                 String eid = res.get(Keys.id.name());
                 String ereg = res.get(Keys.region.name());
-                Enum monkeyType = valueToEnum(res.get(Keys.monkeyType.name()));
-                Enum eventType = valueToEnum(res.get(Keys.eventType.name()));
+                MonkeyType monkeyType = valueToEnum(MonkeyType.class, res.get(Keys.monkeyType.name()));
+                EventType eventType = valueToEnum(EventType.class, res.get(Keys.eventType.name()));
                 long eventTime = Long.parseLong(res.get(Keys.eventTime.name()));
                 list.add(new BasicRecorderEvent(monkeyType, eventType, ereg, eid, eventTime).addFields(fields));
             }
@@ -230,7 +247,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     /** {@inheritDoc} */
     @Override
-    public List<Event> findEvents(Enum monkeyType, Map<String, String> query, Date after) {
+    public List<Event> findEvents(MonkeyType monkeyType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         return findEvents(copy, after);
@@ -238,10 +255,36 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     /** {@inheritDoc} */
     @Override
-    public List<Event> findEvents(Enum monkeyType, Enum eventType, Map<String, String> query, Date after) {
+    public List<Event> findEvents(MonkeyType monkeyType, EventType eventType, Map<String, String> query, Date after) {
         Map<String, String> copy = new LinkedHashMap<String, String>(query);
         copy.put(Keys.monkeyType.name(), enumToValue(monkeyType));
         copy.put(Keys.eventType.name(), enumToValue(eventType));
         return findEvents(copy, after);
+    }
+
+    /**
+     * Creates the SimpleDB domain, if it does not already exist.
+     */
+    public void init() {
+        try {
+            if (this.region == null || this.region.equals("region-null")) {
+                // This is a mock with an invalid region; avoid a slow timeout
+                LOGGER.debug("Region=null; skipping SimpleDB domain creation");
+                return;
+            }
+            ListDomainsResult listDomains = sdbClient().listDomains();
+            for (String d : listDomains.getDomainNames()) {
+                if (d.equals(domain)) {
+                    LOGGER.debug("SimpleDB domain found: {}", domain);
+                    return;
+                }
+            }
+            LOGGER.info("Creating SimpleDB domain: {}", domain);
+            CreateDomainRequest createDomainRequest = new CreateDomainRequest(
+                    domain);
+            sdbClient().createDomain(createDomainRequest);
+        } catch (AmazonClientException e) {
+            LOGGER.warn("Error while trying to auto-create SimpleDB domain", e);
+        }
     }
 }

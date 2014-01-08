@@ -4,12 +4,18 @@ group = "com.netflix.${project.name}"
 apply plugin:'eclipse-wtp'
 
 buildscript {
-    repositories { mavenCentral() }
+    repositories {
+        mavenLocal()
+        mavenCentral() // maven { url 'http://jcenter.bintray.com' }
+    }
     apply from: file('gradle/buildscript.gradle'), to: buildscript
 }
 
 allprojects {
-    repositories { mavenCentral() }
+    repositories { 
+        mavenLocal()
+        mavenCentral() // maven { url: 'http://jcenter.bintray.com' }
+    }
 }
 
 apply from: file('gradle/convention.gradle')
@@ -21,11 +27,15 @@ apply from: file('gradle/release.gradle')
 apply plugin: 'war'
 apply plugin: 'jetty'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
 
 dependencies {
     // for the VMWareClient
     compile 'com.cloudbees.thirdparty:vijava:5.0.0'
     compile 'dom4j:dom4j:1.6.1'
+
+    // for DB support outside of AWS (SimpleDB not available)
+    compile 'org.mapdb:mapdb:latest.release'
 
     compile 'javax.ws.rs:jsr311-api:1.1.1'
     compile 'com.sun.jersey:jersey-core:1.11'
@@ -35,18 +45,19 @@ dependencies {
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
     compile 'com.netflix.eureka:eureka-client:1.1.22'
-    compile 'com.amazonaws:aws-java-sdk:1.3.27'
+    compile 'com.amazonaws:aws-java-sdk:latest.release'
     compile 'commons-lang:commons-lang:2.6'
     compile 'joda-time:joda-time:2.0'
     compile 'com.google.guava:guava:11.+'
+    compile 'org.apache.httpcomponents:httpclient:4.2.1'
+    compile 'org.apache.httpcomponents:httpcore:4.2.1'
+    compile 'org.jclouds.driver:jclouds-jsch:1.6.0'
+    compile 'org.jclouds.driver:jclouds-slf4j:1.6.0'
 
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'
 
     runtime 'org.slf4j:slf4j-log4j12:1.6.1'
-
-    // needed for findbug Missing Class: org.slf4j.impl.StaticLoggerBinder
-    providedCompile 'org.slf4j:slf4j-log4j12:1.6.1'
 
     providedCompile 'javax.servlet:servlet-api:2.5'
     // needed for findbug Missing Class: javax.annotation.Nonnull
@@ -64,7 +75,6 @@ tasks.withType(Compile) {
 artifacts {
     archives tasks.jar
 }
-
 import nl.javadude.gradle.plugins.license.License
 tasks.withType(License).each { licenseTask ->
     licenseTask.exclude '**/*.json'

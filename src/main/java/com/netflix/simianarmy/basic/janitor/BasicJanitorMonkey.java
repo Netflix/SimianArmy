@@ -29,6 +29,7 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.janitor.AbstractJanitor;
 import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
@@ -109,7 +110,9 @@ public class BasicJanitorMonkey extends JanitorMonkey {
                 LOGGER.info(String.format("Failed to clean %d resources of type %s in the last run.",
                         janitor.getFailedToCleanResources().size(), janitor.getResourceType()));
             }
-            sendJanitorSummaryEmail();
+            if (cfg.getBoolOrElse(NS + "summaryEmail.enabled", true)) {
+                sendJanitorSummaryEmail();
+            }
         }
     }
 
@@ -151,7 +154,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             }
             StringBuilder message = new StringBuilder();
             for (AbstractJanitor janitor : janitors) {
-                Enum resourceType = janitor.getResourceType();
+                ResourceType resourceType = janitor.getResourceType();
                 appendSummary(message, "markings", resourceType, janitor.getMarkedResources(), janitor.getRegion());
                 appendSummary(message, "unmarkings", resourceType, janitor.getUnmarkedResources(), janitor.getRegion());
                 appendSummary(message, "cleanups", resourceType, janitor.getCleanedResources(), janitor.getRegion());
@@ -164,7 +167,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     }
 
     private void appendSummary(StringBuilder message, String summaryName,
-            Enum resourceType, Collection<Resource> resources, String janitorRegion) {
+            ResourceType resourceType, Collection<Resource> resources, String janitorRegion) {
         message.append(String.format("Total %s for %s = %d in region %s<br/>",
                 summaryName, resourceType.name(), resources.size(), janitorRegion));
         message.append(String.format("List: %s<br/>", printResources(resources)));

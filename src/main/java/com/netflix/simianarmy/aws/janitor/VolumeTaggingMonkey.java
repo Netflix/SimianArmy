@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.google.common.collect.Maps;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,10 +33,12 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.ec2.model.VolumeAttachment;
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
@@ -106,7 +109,7 @@ public class VolumeTaggingMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public enum Type implements MonkeyType {
         /** Volume tagging monkey. */
         VOLUME_TAGGING
     }
@@ -114,13 +117,13 @@ public class VolumeTaggingMonkey extends Monkey {
     /**
      * The event types that this monkey causes.
      */
-    public enum EventTypes {
+    public enum EventTypes implements EventType {
         /** The event type for tagging the volume with Janitor meta data information. */
         TAGGING_JANITOR
     }
 
     @Override
-    public Enum type() {
+    public Type type() {
         return Type.VOLUME_TAGGING;
     }
 
@@ -132,7 +135,7 @@ public class VolumeTaggingMonkey extends Monkey {
                 tagVolumesWithLatestAttachment(awsClient);
             }
         } else {
-            LOGGER.info(String.format("Volume tagging monkey is not enabled. You can set %s to true to enalbe it.",
+            LOGGER.info(String.format("Volume tagging monkey is not enabled. You can set %s to true to enable it.",
                     prop));
         }
     }
@@ -149,7 +152,7 @@ public class VolumeTaggingMonkey extends Monkey {
             List<Tag> tags = volume.getTags();
 
             // The volume can have a special tag is it does not want to be changed/tagged
-            // by Jantior monkey.
+            // by Janitor monkey.
             if ("donotmark".equals(getTagValue(JanitorMonkey.JANITOR_TAG, tags))) {
                 LOGGER.info(String.format("The volume %s is tagged as not handled by Janitor",
                         volume.getVolumeId()));
@@ -245,7 +248,7 @@ public class VolumeTaggingMonkey extends Monkey {
         return metadata;
     }
 
-    /** Gets the domain name for the owner email. The method can be overriden in subclasses.
+    /** Gets the domain name for the owner email. The method can be overridden in subclasses.
      *
      * @return the domain name for the owner email.
      */

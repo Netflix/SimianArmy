@@ -18,12 +18,15 @@
 package com.netflix.simianarmy.chaos;
 
 import java.util.Date;
+import java.util.List;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.FeatureNotEnabledException;
 import com.netflix.simianarmy.InstanceGroupNotFoundException;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyType;
 
 /**
  * The Class ChaosMonkey.
@@ -81,7 +84,7 @@ public abstract class ChaosMonkey extends Monkey {
     /**
      * The monkey Type.
      */
-    public enum Type {
+    public enum Type implements MonkeyType {
 
         /** chaos monkey. */
         CHAOS
@@ -90,7 +93,7 @@ public abstract class ChaosMonkey extends Monkey {
     /**
      * The event types that this monkey causes.
      */
-    public enum EventTypes {
+    public enum EventTypes implements EventType {
 
         /** The chaos termination. */
         CHAOS_TERMINATION, CHAOS_TERMINATION_SKIPPED
@@ -98,7 +101,7 @@ public abstract class ChaosMonkey extends Monkey {
 
     /** {@inheritDoc} */
     @Override
-    public final Enum type() {
+    public final Type type() {
         return Type.CHAOS;
     }
 
@@ -132,7 +135,7 @@ public abstract class ChaosMonkey extends Monkey {
      *            the instance
      * @return the termination event
      */
-    public abstract Event recordTermination(ChaosCrawler.InstanceGroup group, String instance);
+    public abstract Event recordTermination(ChaosCrawler.InstanceGroup group, String instance, ChaosType chaosType);
 
     /**
      * Terminates one instance right away from an instance group when there are available instances.
@@ -144,7 +147,7 @@ public abstract class ChaosMonkey extends Monkey {
      * @throws FeatureNotEnabledException
      * @throws InstanceGroupNotFoundException
      */
-    public abstract Event terminateNow(String type, String name)
+    public abstract Event terminateNow(String type, String name, ChaosType chaosType)
             throws FeatureNotEnabledException, InstanceGroupNotFoundException;
 
     /**
@@ -154,6 +157,14 @@ public abstract class ChaosMonkey extends Monkey {
      *            the group
      * @param instance
      *            the instance
+     * @param chaosType
+     *            the chaos monkey strategy that was chosen
      */
-    public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance);
+    public abstract void sendTerminationNotification(ChaosCrawler.InstanceGroup group, String instance,
+            ChaosType chaosType);
+
+    /**
+     * Gets a list of all enabled chaos types for this ChaosMonkey.
+     */
+    public abstract List<ChaosType> getChaosTypes();
 }

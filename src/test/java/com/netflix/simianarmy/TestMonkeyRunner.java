@@ -35,11 +35,11 @@ public class TestMonkeyRunner {
     private static boolean monkeyBRan = false;
 
     private static class MonkeyB extends Monkey {
-        public enum Type {
+        public enum Type implements MonkeyType {
             B
         };
 
-        public Enum type() {
+        public Type type() {
             return Type.B;
         }
 

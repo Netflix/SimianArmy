@@ -18,28 +18,29 @@
 
 package com.netflix.simianarmy.janitor;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.common.collect.Maps;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.janitor.JanitorMonkey.EventTypes;
 import com.netflix.simianarmy.janitor.JanitorMonkey.Type;
+
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * An abstract implementation of Janitor. It marks resources that the rule engine considers
@@ -70,7 +71,7 @@ public abstract class AbstractJanitor implements Janitor {
     private final JanitorCrawler crawler;
 
     /** The resource type that the janitor is responsible for to clean up. **/
-    private final Enum resourceType;
+    private final ResourceType resourceType;
 
     /** The janitor resource tracker that is responsible for keeping track of
      * resource status.
@@ -161,7 +162,7 @@ public abstract class AbstractJanitor implements Janitor {
      * @param ctx the context
      * @param resourceType the resource type the janitor is taking care
      */
-    public AbstractJanitor(Context ctx, Enum resourceType) {
+    public AbstractJanitor(Context ctx, ResourceType resourceType) {
         Validate.notNull(ctx);
         Validate.notNull(resourceType);
         this.region = ctx.region();
@@ -185,7 +186,7 @@ public abstract class AbstractJanitor implements Janitor {
     }
 
     @Override
-    public Enum getResourceType() {
+    public ResourceType getResourceType() {
         return resourceType;
     }
 
@@ -197,10 +198,7 @@ public abstract class AbstractJanitor implements Janitor {
     public void markResources() {
         markedResources.clear();
         unmarkedResources.clear();
-        Map<String, Resource> trackedMarkedResources = new HashMap<String, Resource>();
-        for (Resource resource : resourceTracker.getResources(resourceType, Resource.CleanupState.MARKED, region)) {
-            trackedMarkedResources.put(resource.getId(), resource);
-        }
+        Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
 
         List<Resource> crawledResources = crawler.resources(resourceType);
         LOGGER.info(String.format("Looking for cleanup candidate in %d crawled resources.",
@@ -256,6 +254,20 @@ public abstract class AbstractJanitor implements Janitor {
         unmarkUserTerminatedResources(crawledResources, trackedMarkedResources);
     }
 
+
+    /**
+     * Gets the existing resources that are marked as cleanup candidate. Allowing the subclass to override for e.g.
+     * to handle multi-region.
+     * @return the map from resource id to marked resource
+     */
+    protected Map<String, Resource> getTrackedMarkedResources() {
+        Map<String, Resource> trackedMarkedResources = Maps.newHashMap();
+        for (Resource resource : resourceTracker.getResources(resourceType, Resource.CleanupState.MARKED, region)) {
+            trackedMarkedResources.put(resource.getId(), resource);
+        }
+        return trackedMarkedResources;
+    }
+
     /**
      * Cleans up all cleanup candidates that are OK to remove.
      */
@@ -263,12 +275,11 @@ public abstract class AbstractJanitor implements Janitor {
     public void cleanupResources() {
         cleanedResources.clear();
         failedToCleanResources.clear();
-        List<Resource> trackedMarkedResources = resourceTracker.getResources(
-                resourceType, Resource.CleanupState.MARKED, region);
+        Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
         LOGGER.info(String.format("Checking %d marked resources for cleanup.", trackedMarkedResources.size()));
 
         Date now = calendar.now().getTime();
-        for (Resource markedResource : trackedMarkedResources) {
+        for (Resource markedResource : trackedMarkedResources.values()) {
             if (canClean(markedResource, now)) {
                 LOGGER.info(String.format("Cleaning up resource %s of type %s",
                         markedResource.getId(), markedResource.getResourceType().name()));
@@ -307,7 +318,7 @@ public abstract class AbstractJanitor implements Janitor {
      * 2) the expected termination time is already passed
      * 3) the owner has already been notified about the cleanup
      * 4) the resource is not opted out of Janitor monkey
-     * The method can be overriden in subclasses.
+     * The method can be overridden in subclasses.
      * @param resource the resource the Janitor considers to clean
      * @param now the time that represents the current time
      * @return true if the resource is OK to clean, false otherwise

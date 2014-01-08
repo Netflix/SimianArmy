@@ -26,11 +26,11 @@ public class TestMonkey extends Monkey {
         super(new TestMonkeyContext(Type.TEST));
     }
 
-    public enum Type {
+    public enum Type implements MonkeyType {
         TEST
     };
 
-    public Enum type() {
+    public Type type() {
         return Type.TEST;
     }
 

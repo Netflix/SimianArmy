@@ -18,14 +18,20 @@
 package com.netflix.simianarmy.basic;
 
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
+import javax.servlet.ServletException;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.amazonaws.auth.AWSCredentialsProvider;
+import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.Monkey;
@@ -35,6 +41,7 @@ import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyScheduler;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
+import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.client.aws.AWSClient;
 
 /**
@@ -69,6 +76,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** The reported events. */
     private final LinkedList<Event> eventReport;
 
+    /** The AWS credentials provider to be used. */
+    private AWSCredentialsProvider awsCredentialsProvider = new DefaultAWSCredentialsProviderChain();
+
+    /** If configured, the ARN of Role to be assumed. */
+    private final String assumeRoleArn;
+
     private final String account;
 
     private final String secret;
@@ -82,7 +95,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
         for (String configFile : configFiles) {
             loadConfigurationFileIntoProperties(configFile);
         }
-        LOGGER.info("The folowing are properties in the context.");
+        LOGGER.info("The following are properties in the context.");
         for (Entry<Object, Object> prop : properties.entrySet()) {
             LOGGER.info(String.format("%s = %s", prop.getKey(), prop.getValue()));
         }
@@ -93,6 +106,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
+
+        assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
+        if (assumeRoleArn != null) {
+            this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn);
+        }
 
         // if credentials are set explicitly make them available to the AWS SDK
         if (StringUtils.isNotBlank(account) && StringUtils.isNotBlank(secret)) {
@@ -132,18 +150,36 @@ public class BasicSimianArmyContext implements Monkey.Context {
         setScheduler(new BasicScheduler(freq, freqUnit, threads));
     }
 
+    @SuppressWarnings("unchecked")
     private void createRecorder() {
-        String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
-        if (client != null) {
-            setRecorder(new SimpleDBRecorder(client, domain));
+        @SuppressWarnings("rawtypes")
+        Class recorderClass = loadClientClass(config, "simianarmy.client.recorder.class");
+        if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
+            String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
+            if (client != null) {
+                SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, domain);
+                simpleDbRecorder.init();
+                setRecorder(simpleDbRecorder);
+            }
+        } else {
+            setRecorder( (MonkeyRecorder) factory(recorderClass, config));
         }
     }
 
     /**
-     * Create the specific client. Override to provide your own client.
+     * Create the specific client with region taken from properties.
+     * Override to provide your own client.
      */
     protected void createClient() {
-        this.client = new AWSClient(region);
+        createClient(region);
+    }
+
+    /**
+     * Create the specific client within passed region, using the appropriate AWS credentials provider.
+     * @param clientRegion
+     */
+    protected void createClient(String clientRegion) {
+        this.client = new AWSClient(clientRegion, awsCredentialsProvider);
         setCloudClient(this.client);
     }
 
@@ -290,4 +326,71 @@ public class BasicSimianArmyContext implements Monkey.Context {
     protected Properties getProperties() {
         return this.properties;
     }
+
+    /**
+     * Gets the AWS credentials provider.
+     * @return the AWS credentials provider
+     */
+    public AWSCredentialsProvider getAwsCredentialsProvider() {
+        return awsCredentialsProvider;
+    }
+
+    /**
+     * Load a class specified by the config; for drop-in replacements.
+     * (Duplicates a method in MonkeyServer; refactor to util?).
+     *
+     * @param clientConfig
+     * @param key
+     * @return
+     * @throws ServletException
+     */
+    @SuppressWarnings("rawtypes")
+    private Class loadClientClass(BasicConfiguration config, String key) {
+        ClassLoader classLoader = getClass().getClassLoader();
+        try {
+            String clientClassName = config.getStrOrElse(key, null);
+            if (clientClassName == null || clientClassName.isEmpty()) {
+                LOGGER.info("using standard class for " + key);
+                return null;
+            }
+        Class newClass = classLoader.loadClass(clientClassName);
+            LOGGER.info("using " + key + " loaded " + newClass.getCanonicalName());
+            return newClass;
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("Could not load " + key, e);
+        }
+    }
+
+    /**
+     * Generic factory to create monkey collateral types.
+     *
+     * @param <T>
+     *            the generic type to create
+     * @param implClass
+     *            the actual concrete type to instantiate.
+     * @return an object of the requested type
+     */
+    public <T> T factory(Class<T> implClass, BasicConfiguration config) {
+        try {
+            // then find corresponding ctor
+            for (Constructor<?> ctor : implClass.getDeclaredConstructors()) {
+                Class<?>[] paramTypes = ctor.getParameterTypes();
+                if (paramTypes.length != 1) {
+                    continue;
+                }
+                if (paramTypes[0].getName().endsWith("Configuration")) {
+                    @SuppressWarnings("unchecked")
+                    T impl = (T) ctor.newInstance(config);
+                    return impl;
+                }
+            }
+            // Last ditch; try no-arg.
+            return implClass.newInstance();
+        } catch (Exception e) {
+            LOGGER.error("context config error, cannot make an instance of " + implClass.getName(), e);
+        }
+        return null;
+    }
+
+
 }

@@ -17,6 +17,17 @@
  */
 package com.netflix.simianarmy.janitor;
 
+import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.netflix.simianarmy.MonkeyCalendar;
+import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.aws.AWSEmailNotifier;
+import org.apache.commons.lang.Validate;
+import org.apache.commons.lang.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,37 +35,28 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.Resource.CleanupState;
-import com.netflix.simianarmy.aws.AWSEmailNotifier;
 
 /** The email notifier implemented for Janitor Monkey. */
 public class JanitorEmailNotifier extends AWSEmailNotifier {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(JanitorEmailNotifier.class);
-    private static final String EMAIL_PATTERN =
-            "^[_A-Za-z0-9-\\+]+(\\.[_A-Za-z0-9-]+)*@"
-                    + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
     private static final String UNKNOWN_EMAIL = "UNKNOWN";
+    /**
+     * If the scheduled termination date is within 2 hours of notification date + headsup days,
+     * we don't need to extend the termination date.
+     */
+    private static final int HOURS_IN_MARGIN = 2;
 
     private final String region;
     private final String defaultEmail;
     private final List<String> ccEmails;
-    private final Pattern emailPattern;
     private final JanitorResourceTracker resourceTracker;
     private final JanitorEmailBuilder emailBuilder;
     private final MonkeyCalendar calendar;
     private final int daysBeforeTermination;
     private final String sourceEmail;
+    private final String ownerEmailDomain;
     private final Map<String, Collection<Resource>> invalidEmailToResources =
             new HashMap<String, Collection<Resource>>();
 
@@ -111,6 +113,11 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
          * @return the cc email addresses
          */
         String[] ccEmails();
+
+        /** Get the default domain of email addresses.
+         * @return the default domain of email addresses
+         */
+        String ownerEmailDomain();
     }
 
     /**
@@ -120,7 +127,6 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     public JanitorEmailNotifier(Context ctx) {
         super(ctx.sesClient());
         this.region = ctx.region();
-        this.emailPattern = Pattern.compile(EMAIL_PATTERN);
         this.defaultEmail = ctx.defaultEmail();
         this.daysBeforeTermination = ctx.daysBeforeTermination();
         this.resourceTracker = ctx.resourceTracker();
@@ -134,6 +140,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             }
         }
         this.sourceEmail = ctx.sourceEmail();
+        this.ownerEmailDomain = ctx.ownerEmailDomain();
     }
 
     /**
@@ -153,6 +160,10 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
             }
             if (canNotify(r)) {
                 String email = r.getOwnerEmail();
+                if (email != null && !email.contains("@")
+                      && StringUtils.isNotBlank(this.ownerEmailDomain)) {
+                    email = String.format("%s@%s", email, this.ownerEmailDomain);
+                }
                 if (!isValidEmail(email)) {
                     if (defaultEmail != null) {
                         LOGGER.info(String.format("Email %s is not valid, send to the default email address %s",
@@ -210,26 +221,13 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
     }
 
     @Override
-    public boolean isValidEmail(String email) {
-        if (email == null) {
-            return false;
-        }
-        if (emailPattern.matcher(email).matches()) {
-            return true;
-        } else {
-            LOGGER.error(String.format("Invalid email address: %s", email));
-            return false;
-        }
-    }
-
-    @Override
     public String buildEmailSubject(String email) {
         return String.format("Janitor Monkey Notification for %s", email);
     }
 
     /**
      * Decides if it is time for sending notification for the resource. This method can be
-     * overriden in subclasses so notifications can be send earlier or later.
+     * overridden in subclasses so notifications can be send earlier or later.
      * @param resource the resource
      * @return true if it is OK to send notification now, otherwise false.
      */
@@ -242,7 +240,9 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
         Date notificationTime = resource.getNotificationTime();
         // We don't want to send notification too early (since things may change) or too late (we need
         // to give owners enough time to take actions.
-        Date windowStart = calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination);
+        Date windowStart = new Date(new DateTime(
+                calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination).getTime())
+                .minusHours(HOURS_IN_MARGIN).getMillis());
         Date windowEnd = calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination + 1);
         Date terminationDate = resource.getExpectedTerminationTime();
         if (notificationTime == null

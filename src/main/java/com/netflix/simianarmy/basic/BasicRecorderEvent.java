@@ -22,7 +22,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyType;
 
 /**
  * The Class BasicRecorderEvent.
@@ -30,10 +32,10 @@ import com.netflix.simianarmy.MonkeyRecorder;
 public class BasicRecorderEvent implements MonkeyRecorder.Event {
 
     /** The monkey type. */
-    private Enum monkeyType;
+    private MonkeyType monkeyType;
 
     /** The event type. */
-    private Enum eventType;
+    private EventType eventType;
 
     /** The event id. */
     private String id;
@@ -55,11 +57,11 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      * @param eventType
      *            the event type
      * @param region
-     *            the region event occured in
+     *            the region event occurred in
      * @param id
      *            the event id
      */
-    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String region, String id) {
+    public BasicRecorderEvent(MonkeyType monkeyType, EventType eventType, String region, String id) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
         this.id = id;
@@ -75,13 +77,13 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
      * @param eventType
      *            the event type
      * @param region
-     *            the region event occured in
+     *            the region event occurred in
      * @param id
      *            the event id
      * @param time
      *            the event time
      */
-    public BasicRecorderEvent(Enum monkeyType, Enum eventType, String region, String id, long time) {
+    public BasicRecorderEvent(MonkeyType monkeyType, EventType eventType, String region, String id, long time) {
         this.monkeyType = monkeyType;
         this.eventType = eventType;
         this.id = id;
@@ -105,12 +107,12 @@ public class BasicRecorderEvent implements MonkeyRecorder.Event {
     }
 
     /** {@inheritDoc} */
-    public Enum monkeyType() {
+    public MonkeyType monkeyType() {
         return monkeyType;
     }
 
     /** {@inheritDoc} */
-    public Enum eventType() {
+    public EventType eventType() {
         return eventType;
     }
 

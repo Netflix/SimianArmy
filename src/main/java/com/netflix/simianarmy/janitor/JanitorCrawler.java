@@ -22,6 +22,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.ResourceType;
 
 /**
  * The crawler for janitor monkey.
@@ -33,7 +34,7 @@ public interface JanitorCrawler {
      *
      * @return the type of resources this crawler crawls
      */
-    EnumSet<?> resourceTypes();
+    EnumSet<? extends ResourceType> resourceTypes();
 
     /**
      * Resources crawled by this crawler for a specific resource type.
@@ -41,7 +42,7 @@ public interface JanitorCrawler {
      * @param resourceType the resource type
      * @return the list
      */
-    List<Resource> resources(Enum resourceType);
+    List<Resource> resources(ResourceType resourceType);
 
     /**
      * Gets the up to date information for a collection of resource ids. When the input argument is null

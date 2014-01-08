@@ -54,7 +54,7 @@ public class OldUnusedLaunchConfigRule implements Rule {
      * @param calendar
      *            The calendar used to calculate the termination time
      * @param ageThreshold
-     *            The number of days that a launch configuration is considered as a cleanup canididate
+     *            The number of days that a launch configuration is considered as a cleanup candidate
      *            since it is created
      * @param retentionDays
      *            The number of days that the unused launch configuration is retained before being terminated
