@@ -1,7 +1,5 @@
 apply plugin: 'java' // Plugin as major conventions, overwrites status
 
-sourceCompatibility = 1.6
-
 // GRADLE-2087 workaround, perform after java plugin
 status = project.hasProperty('preferredStatus')?project.preferredStatus:(version.contains('SNAPSHOT')?'snapshot':'release')
 
