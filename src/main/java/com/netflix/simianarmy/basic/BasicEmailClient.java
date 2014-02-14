@@ -25,7 +25,7 @@ public abstract class BasicEmailClient implements EmailClient {
     protected final MonkeyConfiguration cfg;
     
     static {
-        emailPattern = Pattern.compile(EMAIL_PATTERN);;
+        emailPattern = Pattern.compile(EMAIL_PATTERN);
     }
     
     /**
