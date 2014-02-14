@@ -131,34 +131,35 @@ public class TestBasicChaosEmailNotifier {
         String subject = basicChaosEmailNotifier.buildEmailBody(testInstanceGroup, instanceId, null);
         Assert.assertEquals(subject, bodyPrefix + defaultBody + bodySuffix);
     }
-    
-    /** 
+
+    /**
      * Test to verify that specifying a specific email client implementation works and that
      * the default is not selected
      */
     @Test
     public void testUsesJakartaCommonsEmailClient() {
         properties.setProperty("simianarmy.chaos.notification.sourceEmail", to);
-        properties.setProperty("simianarmy.client.email.class", "com.netflix.simianarmy.basic.JakartaCommonsEmailClient");
-        BasicChaosEmailNotifier basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
+        properties.setProperty("simianarmy.client.email.class",
+            "com.netflix.simianarmy.basic.JakartaCommonsEmailClient");
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
             properties), null);
-        Assert.assertEquals(basicChaosEmailNotifier.getEmailClient().getClass(), 
+        Assert.assertEquals(basicChaosEmailNotifier.getEmailClient().getClass(),
             JakartaCommonsEmailClient.class);
     }
-    
-    /** 
+
+    /**
      * Test to verify that NOT specifying a specific email causes the default to be selected
      */
     @Test
     public void testUsesAWSEmailClient() {
         properties.setProperty("simianarmy.chaos.notification.sourceEmail", to);
-        BasicChaosEmailNotifier basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
             properties), null);
-        Assert.assertEquals(basicChaosEmailNotifier.getEmailClient().getClass(), 
+        Assert.assertEquals(basicChaosEmailNotifier.getEmailClient().getClass(),
             AWSEmailClient.class);
     }
-    
-    /** 
+
+    /**
      * Test that the SMTP client actually works and sends an email. Rather than using mocks of a lower level
      * class that is essentially auto-wired, this is more of an integration test.  In the test,
      * we spin up an in-memory SMTP server running on port 2500 (if you run it on 25, the default SMTP port,
@@ -168,29 +169,30 @@ public class TestBasicChaosEmailNotifier {
     @Test
     public void testBuildAndSendEmailForReal() {
         Wiser wiser = new Wiser();
-        try { 
+        try {
             wiser.setPort(2500); // Default is 25
             wiser.start();
             properties.setProperty("simianarmy.chaos.notification.sourceEmail", "mightyjoeyoung@simianarmy.com");
-            properties.setProperty("simianarmy.client.email.class", "com.netflix.simianarmy.basic.JakartaCommonsEmailClient");
+            properties.setProperty("simianarmy.client.email.class",
+                "com.netflix.simianarmy.basic.JakartaCommonsEmailClient");
             properties.setProperty("simianarmy.client.smtp.port", "2500");
             String toReal = "bonzo@simianarmy.com";
-            BasicChaosEmailNotifier basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
+            basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
                 properties), null);
             BasicChaosEmailNotifier spyBasicChaosEmailNotifier = spy(basicChaosEmailNotifier);
             spyBasicChaosEmailNotifier.buildAndSendEmail(toReal, testInstanceGroup, instanceId, null);
             verify(spyBasicChaosEmailNotifier).buildAndSendEmail(toReal, testInstanceGroup, instanceId, null);
             Assert.assertEquals(wiser.getMessages().size(), 1);
-        }finally {
+        } finally {
             wiser.stop();
         }
     }
-    
+
     @Test
     public void testBuildAndSendEmail() {
         String toReal = "bonzo@simianarmy.com";
         properties.setProperty("simianarmy.chaos.notification.sourceEmail", toReal);
-        BasicChaosEmailNotifier basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
             properties), null);
         BasicChaosEmailNotifier spyBasicChaosEmailNotifier = spy(basicChaosEmailNotifier);
         doNothing().when(spyBasicChaosEmailNotifier).buildAndSendEmail(toReal, testInstanceGroup, instanceId, null);
@@ -202,7 +204,7 @@ public class TestBasicChaosEmailNotifier {
     public void testBuildAndSendEmailSubjectIsBody() {
         properties.setProperty("simianarmy.chaos.notification.subject.isBody", "true");
         properties.setProperty("simianarmy.chaos.notification.sourceEmail", to);
-        BasicChaosEmailNotifier basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(
             properties), null);
         BasicChaosEmailNotifier spyBasicChaosEmailNotifier = spy(basicChaosEmailNotifier);
         doNothing().when(spyBasicChaosEmailNotifier).buildAndSendEmail(to, testInstanceGroup, instanceId, null);
