@@ -9,7 +9,7 @@ import com.netflix.simianarmy.EmailClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
- * This class provides basic functionality for delivering a message by email.
+ * This class provides basic functionality for delivering email.
  * Subclasses will implement the actual transport code, and optionally redefine the rules
  * of what makes an email address valid.
  * @author mgeis
