@@ -99,7 +99,7 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
 
     /**Indicates whether email is valid for use by simian army.
      * @param email
-     * @return
+     * @return true if email is valid, false if it is not
      */
     public boolean isValidEmail(String email) {
         if (email == null) {
