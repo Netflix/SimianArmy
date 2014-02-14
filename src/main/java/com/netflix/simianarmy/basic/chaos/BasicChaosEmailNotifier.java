@@ -53,7 +53,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         this.defaultEmail = defaultEmail;
         this.ccAddresses = Arrays.asList(ccAddresses);
     }
-    
+
     /**
      * Sends an email notification for a termination of instance to a global
      * email address.
@@ -63,7 +63,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
      */
     @Override
     public void sendTerminationGlobalNotification(InstanceGroup group, String instanceId, ChaosType chaosType) {
-        String to = cfg.getStr("simianarmy.chaos.notification.global.receiverEmail");
+        String to = getCfg().getStr("simianarmy.chaos.notification.global.receiverEmail");
         if (StringUtils.isBlank(to)) {
             LOGGER.warn("Global email address was not set, but global email notification was enabled!");
             return;
@@ -93,7 +93,7 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
      */
     protected String getOwnerEmail(InstanceGroup group) {
         String prop = String.format("simianarmy.chaos.%s.%s.ownerEmail", group.type(), group.name());
-        String ownerEmail = cfg.getStr(prop);
+        String ownerEmail = getCfg().getStr(prop);
         if (ownerEmail == null) {
             LOGGER.info(String.format("Property %s is not set, use the default email address %s as"
                     + " the owner email of group %s of type %s",
@@ -118,20 +118,20 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         String body = buildEmailBody(group, instanceId, chaosType);
 
         String subject;
-        boolean emailSubjectIsBody = cfg.getBoolOrElse(
+        boolean emailSubjectIsBody = getCfg().getBoolOrElse(
                 "simianarmy.chaos.notification.subject.isBody", false);
         if (emailSubjectIsBody) {
             subject = body;
         } else {
             subject = buildEmailSubject(to);
         }
-        emailClient.sendEmail(to, getSourceAddress(to), getCcAddresses(to), subject, body);
+        getEmailClient().sendEmail(to, getSourceAddress(to), getCcAddresses(to), subject, body);
     }
 
     @Override
     public String buildEmailSubject(String to) {
-        String emailSubjectPrefix = cfg.getStrOrElse("simianarmy.chaos.notification.subject.prefix", "");
-        String emailSubjectSuffix = cfg.getStrOrElse("simianarmy.chaos.notification.subject.suffix", "");
+        String emailSubjectPrefix = getCfg().getStrOrElse("simianarmy.chaos.notification.subject.prefix", "");
+        String emailSubjectSuffix = getCfg().getStrOrElse("simianarmy.chaos.notification.subject.suffix", "");
         return String.format("%sChaos Monkey Termination Notification for %s%s",
                                                 emailSubjectPrefix, to, emailSubjectSuffix);
     }
@@ -146,8 +146,8 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
      * @return the created string
      */
     public String buildEmailBody(InstanceGroup group, String instanceId, ChaosType chaosType) {
-        String emailBodyPrefix = cfg.getStrOrElse("simianarmy.chaos.notification.body.prefix", "");
-        String emailBodySuffix = cfg.getStrOrElse("simianarmy.chaos.notification.body.suffix", "");
+        String emailBodyPrefix = getCfg().getStrOrElse("simianarmy.chaos.notification.body.prefix", "");
+        String emailBodySuffix = getCfg().getStrOrElse("simianarmy.chaos.notification.body.suffix", "");
         String body = emailBodyPrefix;
         body += String.format("Instance %s of %s %s is being terminated by Chaos monkey.",
                     instanceId, group.type(), group.name());
@@ -167,8 +167,8 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
     @Override
     public String getSourceAddress(String to) {
         String prop = "simianarmy.chaos.notification.sourceEmail";
-        String sourceEmail = cfg.getStr(prop);
-        if (sourceEmail == null || !emailClient.isValidEmail(sourceEmail)) {
+        String sourceEmail = getCfg().getStr(prop);
+        if (sourceEmail == null || !getEmailClient().isValidEmail(sourceEmail)) {
             String msg = String.format("Property %s is not set or its value is not a valid email.", prop);
             LOGGER.error(msg);
             throw new RuntimeException(msg);
@@ -176,5 +176,4 @@ public class BasicChaosEmailNotifier extends ChaosEmailNotifier {
         return sourceEmail;
     }
 
-    
 }

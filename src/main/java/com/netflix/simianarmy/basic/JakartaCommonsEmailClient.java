@@ -27,7 +27,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.basic.BasicEmailClient;
 
 /**
  * The class implements the EmailClient interface using the Jakarta commons email library
@@ -42,28 +41,30 @@ public class JakartaCommonsEmailClient extends BasicEmailClient {
     public JakartaCommonsEmailClient(MonkeyConfiguration cfg) {
         super(cfg);
     }
-    
+
     /* (non-Javadoc)
      * @see com.netflix.simianarmy.basic.BasicEmailClient#buildAndSendEmail(String, String, String[], String, String)
      */
     @Override
     protected String buildAndSendEmail(String to, String from, String[] cc, String subject, String body) {
         Email email = new SimpleEmail();
-        email.setHostName(cfg.getStrOrElse("simianarmy.client.smtp.host", "localhost"));
-        email.setSmtpPort(Integer.parseInt(cfg.getStrOrElse("simianarmy.client.smtp.port", "25")));
-        String smtpUser = cfg.getStr("simianarmy.client.smtp.username");
-        String smtpPass = cfg.getStr("simianarmy.client.smtp.password");
-        if(smtpUser != null && smtpPass != null){
+        email.setHostName(getCfg().getStrOrElse("simianarmy.client.smtp.host", "localhost"));
+        email.setSmtpPort(Integer.parseInt(getCfg().getStrOrElse("simianarmy.client.smtp.port", "25")));
+        String smtpUser = getCfg().getStr("simianarmy.client.smtp.username");
+        String smtpPass = getCfg().getStr("simianarmy.client.smtp.password");
+        if (smtpUser != null && smtpPass != null) {
           email.setAuthenticator(new DefaultAuthenticator(smtpUser, smtpPass));
         }
         email.setSubject(subject);
-        
+
         String result = null;
         try {
             email.setFrom(from);
             email.setMsg(body);
             email.addTo(to);
-            if(!ArrayUtils.isEmpty(cc)) email.addCc(cc);
+            if (!ArrayUtils.isEmpty(cc)) {
+                email.addCc(cc);
+            }
             LOGGER.debug(String.format("Sending email with subject '%s' to %s",
                 subject, to));
             result = email.send();

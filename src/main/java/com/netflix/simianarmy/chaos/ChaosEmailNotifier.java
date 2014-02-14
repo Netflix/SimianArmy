@@ -19,8 +19,6 @@ package com.netflix.simianarmy.chaos;
 
 import java.lang.reflect.Constructor;
 
-import javax.servlet.ServletException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +33,16 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
  *
  */
 public abstract class ChaosEmailNotifier implements MonkeyEmailNotifier {
-    protected EmailClient emailClient;
+    private EmailClient emailClient;
     private static final Logger LOGGER = LoggerFactory.getLogger(ChaosEmailNotifier.class);
 
-    protected final MonkeyConfiguration cfg;
-    
-    /** Constructor. 
+    private final MonkeyConfiguration cfg;
+
+    public MonkeyConfiguration getCfg() {
+        return cfg;
+    }
+
+    /** Constructor.
      *
      * @param cfg the monkey configuration used to initialize the email notifier.
      */
@@ -48,19 +50,22 @@ public abstract class ChaosEmailNotifier implements MonkeyEmailNotifier {
         this.cfg = cfg;
         createEmailClient();
     }
-    
+
+    /**
+     * Instantiates the email client to handle transport of mail.
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected void createEmailClient() {
-        BasicConfiguration config = (BasicConfiguration)cfg;
+        BasicConfiguration config = (BasicConfiguration) cfg;
         Class emailClientClass = loadClientClass(config, "simianarmy.client.email.class");
         if (emailClientClass == null || emailClientClass.equals(AWSEmailClient.class)) {
             AWSEmailClient awsEmailClient = new AWSEmailClient();
             setEmailClient(awsEmailClient);
         } else {
-            setEmailClient(( (EmailClient) factory(emailClientClass, config)));
+            setEmailClient(((EmailClient) factory(emailClientClass, config)));
         }
     }
-    
+
     public EmailClient getEmailClient() {
         return emailClient;
     }
@@ -68,7 +73,7 @@ public abstract class ChaosEmailNotifier implements MonkeyEmailNotifier {
     public void setEmailClient(EmailClient emailClient) {
         this.emailClient = emailClient;
     }
-    
+
     /**
      * Load a class specified by the config; for drop-in replacements.
      * (Duplicates a method in MonkeyServer; refactor to util?).
@@ -76,7 +81,6 @@ public abstract class ChaosEmailNotifier implements MonkeyEmailNotifier {
      * @param config
      * @param key
      * @return The initialized class named in by the key, or null if empty or not found
-     * @throws ServletException
      */
     @SuppressWarnings("rawtypes")
     protected Class loadClientClass(BasicConfiguration config, String key) {

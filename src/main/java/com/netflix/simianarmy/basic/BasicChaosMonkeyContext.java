@@ -27,9 +27,9 @@ import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
 
 /**
- * The Class BasicChaosMonkeyContext. This provide the basic context needed for the Chaos Monkey to run. It will configure
- * the Chaos Monkey based on a simianarmy.properties file and chaos.properties. The properties file can be
- * overridden with -Dsimianarmy.properties=/path/to/my.properties
+ * The Class BasicChaosMonkeyContext. This provide the basic context needed for the Chaos Monkey to run.
+ * It will configure the Chaos Monkey based on a simianarmy.properties file and chaos.properties.
+ * The properties file can be overridden with -Dsimianarmy.properties=/path/to/my.properties
  */
 public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements ChaosMonkey.Context {
 
@@ -41,7 +41,7 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
 
     /** The chaos email notifier. */
     private ChaosEmailNotifier chaosEmailNotifier;
-    
+
     /**
      * Instantiates a new basic context.
      */
@@ -52,7 +52,7 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
         MonkeyConfiguration cfg = configuration();
         setChaosEmailNotifier(new BasicChaosEmailNotifier(cfg, null));
     }
-    
+
     /** {@inheritDoc} */
     @Override
     public ChaosCrawler chaosCrawler() {

@@ -45,10 +45,10 @@ public class AWSEmailClient extends BasicEmailClient {
      * The constructor.
      */
     public AWSEmailClient() {
-        super();//at this time, AWSEmailClient does not rely on any property configurations
+        super(); //at this time, AWSEmailClient does not rely on any property configurations
         this.sesClient = new AmazonSimpleEmailServiceClient();
     }
-    
+
     /* (non-Javadoc)
      * @see com.netflix.simianarmy.basic.BasicEmailClient#buildAndSendEmail(String, String, String[], String, String)
      */

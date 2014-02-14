@@ -18,8 +18,8 @@
 package com.netflix.simianarmy;
 
 
-/** 
- * The interface for the email client used by monkeys. Generally, the EmailClient is used by a Notifier 
+/**
+ * The interface for the email client used by monkeys. Generally, the EmailClient is used by a Notifier
  * to use a mail-specific API to construct and deliver the message.
  */
 public interface EmailClient {
