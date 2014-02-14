@@ -34,7 +34,10 @@ import com.netflix.simianarmy.MonkeyEmailNotifier;
 
 /**
  * The class implements the monkey email notifier using AWS simple email service
- * for sending email.
+ * for sending email.  This class could be deprecated in the future, but
+ * the Janitor and Conformity monkeys use it directly, and their behavior is
+ * so AWS-specific that no real use case exists (yet) that requires a refactoring
+ * and abstraction of their functionality.
  */
 public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
     /** The Constant LOGGER. */
@@ -56,7 +59,12 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
         this.emailPattern = Pattern.compile(EMAIL_PATTERN);
     }
 
-    @Override
+    /**
+     * Sends the email notification.
+     * @param to address of recipient
+     * @param subject subject of message
+     * @param body message content
+     */
     public void sendEmail(String to, String subject, String body) {
         if (!isValidEmail(to)) {
             LOGGER.error(String.format("The destination email address %s is not valid,  no email is sent.", to));
@@ -89,7 +97,10 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
                 to, result.getMessageId(), subject));
     }
 
-    @Override
+    /**Indicates whether email is valid for use by simian army.
+     * @param email
+     * @return true if email is valid, false if it is not
+     */
     public boolean isValidEmail(String email) {
         if (email == null) {
             return false;

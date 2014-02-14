@@ -339,13 +339,13 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * Load a class specified by the config; for drop-in replacements.
      * (Duplicates a method in MonkeyServer; refactor to util?).
      *
-     * @param clientConfig
+     * @param config
      * @param key
-     * @return
+     * @return The initialized class named by the key, or null if empty or not found
      * @throws ServletException
      */
     @SuppressWarnings("rawtypes")
-    private Class loadClientClass(BasicConfiguration config, String key) {
+    protected Class loadClientClass(BasicConfiguration config, String key) {
         ClassLoader classLoader = getClass().getClassLoader();
         try {
             String clientClassName = config.getStrOrElse(key, null);

@@ -22,13 +22,6 @@ package com.netflix.simianarmy;
 public interface MonkeyEmailNotifier {
 
     /**
-     * Determines if a email address is valid.
-     * @param email the email
-     * @return true if the email address is valid, false otherwise.
-     */
-    boolean isValidEmail(String email);
-
-    /**
      * Builds an email subject for an email address.
      * @param to the destination email address
      * @return the email subject
@@ -48,12 +41,4 @@ public interface MonkeyEmailNotifier {
      * @return the source email addresses
      */
     String getSourceAddress(String to);
-
-    /**
-     * Sends an email.
-     * @param to the address sent to
-     * @param subject the email subject
-     * @param body the email body
-     */
-    void sendEmail(String to, String subject, String body);
 }
