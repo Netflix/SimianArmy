@@ -211,7 +211,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         return terminated;
     }
 
-    final Map<String, String> securityGroupNames = Maps.newHashMap();
+    private final Map<String, String> securityGroupNames = Maps.newHashMap();
 
     @Override
     public CloudClient cloudClient() {

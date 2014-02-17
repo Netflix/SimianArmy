@@ -18,7 +18,8 @@
  */
 package com.netflix.simianarmy.basic;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
 import java.util.Calendar;
 import java.util.concurrent.FutureTask;
@@ -52,7 +53,7 @@ public class TestBasicScheduler {
     private enum Enums implements MonkeyType {
         MONKEY
     };
-    
+
     private enum EventEnums implements EventType {
         EVENT
     }
@@ -99,8 +100,8 @@ public class TestBasicScheduler {
         // create an event 5 min ago
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.MINUTE, -5);
-        BasicRecorderEvent evt = new BasicRecorderEvent(Enums.MONKEY, EventEnums.EVENT, "region", "test-id", cal.getTime()
-                .getTime());
+        BasicRecorderEvent evt = new BasicRecorderEvent(
+            Enums.MONKEY, EventEnums.EVENT, "region", "test-id", cal.getTime().getTime());
         context.recorder().recordEvent(evt);
 
         // this time when it runs it will not run immediately since it should be scheduled for 55m from now.

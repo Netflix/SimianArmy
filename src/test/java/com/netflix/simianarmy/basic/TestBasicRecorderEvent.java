@@ -31,7 +31,7 @@ public class TestBasicRecorderEvent {
     public enum Types implements MonkeyType {
         MONKEY
     };
-    
+
     public enum EventTypes implements EventType {
         EVENT
     }
