@@ -54,19 +54,19 @@ public class LocalDbRecorder implements MonkeyRecorder {
 
     // Upper bound, so we don't fill the disk with monkey events
     private static final double MAX_EVENTS = 10000;
-    private double max_events = MAX_EVENTS;
+    private double maxEvents = MAX_EVENTS;
 
     private String dbFilename = "simianarmy_events";
 
     private String dbpassword = null;
 
-    /**
+    /** Constructor.
      *
      */
     public LocalDbRecorder(MonkeyConfiguration configuration) {
         if (configuration != null) {
             dbFilename = configuration.getStrOrElse("simianarmy.recorder.localdb.file", null);
-            max_events = configuration.getNumOrElse("simianarmy.recorder.localdb.max_events", MAX_EVENTS);
+            maxEvents = configuration.getNumOrElse("simianarmy.recorder.localdb.max_events", MAX_EVENTS);
             dbpassword = configuration.getStrOrElse("simianarmy.recorder.localdb.password", null);
         }
     }
@@ -76,7 +76,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
             return;
         }
         File dbFile = null;
-        dbFile = (dbFilename == null)? tempDbFile() : new File(dbFilename);
+        dbFile = (dbFilename == null) ? tempDbFile() : new File(dbFilename);
         if (dbpassword != null) {
             db = DBMaker.newFileDB(dbFile)
                     .closeOnJvmShutdown()
@@ -93,7 +93,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
 
     private static File tempDbFile() {
         try {
-            final File tmpFile = File.createTempFile("mapdb","db");
+            final File tmpFile = File.createTempFile("mapdb", "db");
             tmpFile.deleteOnExit();
             return tmpFile;
         } catch (IOException e) {
@@ -102,7 +102,8 @@ public class LocalDbRecorder implements MonkeyRecorder {
     }
 
     /* (non-Javadoc)
-     * @see com.netflix.simianarmy.MonkeyRecorder#newEvent(java.lang.Enum, java.lang.Enum, java.lang.String, java.lang.String)
+     * @see com.netflix.simianarmy.MonkeyRecorder#newEvent(java.lang.Enum, java.lang.Enum,
+     * java.lang.String, java.lang.String)
      */
     @Override
     public Event newEvent(MonkeyType monkeyType, EventType eventType, String region,
@@ -120,7 +121,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
         Fun.Tuple2<Long, Long> id = Fun.t2(evt.eventTime().getTime(),
                 nextId.incrementAndGet());
 
-        if (eventMap.size()+1 > max_events) {
+        if (eventMap.size() + 1 > maxEvents) {
             eventMap.remove(eventMap.firstKey());
         }
         eventMap.put(id, evt);
@@ -140,7 +141,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
                 if (pair.getKey().equals("id") && !evt.id().equals(pair.getValue())) {
                     matched = false;
                 }
-                if (pair.getKey().equals("monkeyType") && ! evt.monkeyType().toString().equals(pair.getValue())) {
+                if (pair.getKey().equals("monkeyType") && !evt.monkeyType().toString().equals(pair.getValue())) {
                     matched = false;
                 }
                 if (pair.getKey().equals("eventType") && !evt.eventType().toString().equals(pair.getValue())) {
@@ -166,7 +167,8 @@ public class LocalDbRecorder implements MonkeyRecorder {
     }
 
     /* (non-Javadoc)
-     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum, java.lang.Enum, java.util.Map, java.util.Date)
+     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum,
+     * java.lang.Enum, java.util.Map, java.util.Date)
      */
     @Override
     public List<Event> findEvents(MonkeyType monkeyType, EventType eventType,
@@ -181,6 +183,9 @@ public class LocalDbRecorder implements MonkeyRecorder {
         return Fun.t2(date.getTime(), 0L);
     }
 
+    /** Loggable event for LocalDbRecorder.
+     *
+     */
     public static class MapDbRecorderEvent implements MonkeyRecorder.Event, Serializable {
         /** The monkey type. */
         private MonkeyType monkeyType;
@@ -200,12 +205,9 @@ public class LocalDbRecorder implements MonkeyRecorder {
         /** The event time. */
         private Date date;
 
-        /**
-         *
-         */
         private static final long serialVersionUID = 1L;
 
-        /**
+        /** Constructor.
          * @param monkeyType
          * @param eventType
          * @param region
@@ -220,7 +222,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
             this.date = new Date();
         }
 
-        /**
+        /** Constructor.
          * @param monkeyType
          * @param eventType
          * @param region
@@ -303,6 +305,9 @@ public class LocalDbRecorder implements MonkeyRecorder {
 
     }
 
+    /** Appears to be used for testing, if so should be moved to a unit test. (2/16/2014, mgeis)
+     * @param args
+     */
     public static void main(String[] args) {
         LocalDbRecorder r = new LocalDbRecorder(null);
         r.init();

@@ -242,7 +242,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
             url += StringUtils.join(imageIds, ',');
             url += ";tags.key=owner;public=false;_expand:(imageId,tags:(owner))";
             JsonNode imageJsonNode = null;
-            try { 
+            try {
                 imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
             } catch (Exception e) {
                 LOGGER.error(String.format(
@@ -265,9 +265,11 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
             }
             if (imageToOwner.size() > 0) {
                 for (Resource resource: resources) {
-                    if (resource.getOwnerEmail() == null && imageToOwner.get(resource.getAdditionalField("imageId")) != null) {
+                    if (resource.getOwnerEmail() == null
+                        && imageToOwner.get(resource.getAdditionalField("imageId")) != null) {
                         resource.setOwnerEmail(imageToOwner.get(resource.getAdditionalField("imageId")));
-                        LOGGER.info(String.format("Found owner %s for instance %s in AMI %s", resource.getOwnerEmail(), resource.getId(), resource.getAdditionalField("imageId")));
+                        LOGGER.info(String.format("Found owner %s for instance %s in AMI %s",
+                            resource.getOwnerEmail(), resource.getId(), resource.getAdditionalField("imageId")));
                     }
                 }
             }

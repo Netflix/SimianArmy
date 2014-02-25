@@ -86,7 +86,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
     public enum Type implements MonkeyType {
         MONKEY
     }
-    
+
     public enum EventTypes implements EventType {
         EVENT
     }
@@ -118,7 +118,8 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         Assert.assertEquals(map.remove("region"), "region");
         Assert.assertEquals(map.remove("recordType"), "MonkeyEvent");
         Assert.assertEquals(map.remove("monkeyType"), "MONKEY|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type");
-        Assert.assertEquals(map.remove("eventType"), "EVENT|com.netflix.simianarmy.aws.TestSimpleDBRecorder$EventTypes");
+        Assert.assertEquals(map.remove("eventType"),
+            "EVENT|com.netflix.simianarmy.aws.TestSimpleDBRecorder$EventTypes");
         Assert.assertEquals(map.remove("field1"), "value1");
         Assert.assertEquals(map.remove("field2"), "value2");
         Assert.assertEquals(map.size(), 0);

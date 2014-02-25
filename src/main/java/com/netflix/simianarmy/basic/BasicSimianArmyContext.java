@@ -24,8 +24,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import javax.servlet.ServletException;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +151,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
     @SuppressWarnings("unchecked")
     private void createRecorder() {
         @SuppressWarnings("rawtypes")
-        Class recorderClass = loadClientClass(config, "simianarmy.client.recorder.class");
+        Class recorderClass = loadClientClass("simianarmy.client.recorder.class");
         if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
             String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
             if (client != null) {
@@ -162,7 +160,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
                 setRecorder(simpleDbRecorder);
             }
         } else {
-            setRecorder( (MonkeyRecorder) factory(recorderClass, config));
+            setRecorder((MonkeyRecorder) factory(recorderClass));
         }
     }
 
@@ -339,13 +337,11 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * Load a class specified by the config; for drop-in replacements.
      * (Duplicates a method in MonkeyServer; refactor to util?).
      *
-     * @param clientConfig
      * @param key
      * @return
-     * @throws ServletException
      */
     @SuppressWarnings("rawtypes")
-    private Class loadClientClass(BasicConfiguration config, String key) {
+    private Class loadClientClass(String key) {
         ClassLoader classLoader = getClass().getClassLoader();
         try {
             String clientClassName = config.getStrOrElse(key, null);
@@ -370,7 +366,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
      *            the actual concrete type to instantiate.
      * @return an object of the requested type
      */
-    public <T> T factory(Class<T> implClass, BasicConfiguration config) {
+    private <T> T factory(Class<T> implClass) {
         try {
             // then find corresponding ctor
             for (Constructor<?> ctor : implClass.getDeclaredConstructors()) {

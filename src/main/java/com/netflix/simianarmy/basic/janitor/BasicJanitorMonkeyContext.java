@@ -306,7 +306,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         }
 
         JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
-        if(configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
             ruleEngine.addRule(new UnusedImageRule(monkeyCalendar,
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.unusedImageRule.retentionDays", 3),
