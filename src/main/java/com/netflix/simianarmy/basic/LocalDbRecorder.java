@@ -102,8 +102,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
     }
 
     /* (non-Javadoc)
-     * @see com.netflix.simianarmy.MonkeyRecorder#newEvent(java.lang.Enum, java.lang.Enum,
-     * java.lang.String, java.lang.String)
+     * @see com.netflix.simianarmy.MonkeyRecorder#newEvent(MonkeyType, EventType, String, String)
      */
     @Override
     public Event newEvent(MonkeyType monkeyType, EventType eventType, String region,
@@ -156,7 +155,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
     }
 
     /* (non-Javadoc)
-     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum, java.util.Map, java.util.Date)
+     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(MonkeyType, Map, Date)
      */
     @Override
     public List<Event> findEvents(MonkeyType monkeyType, Map<String, String> query,
@@ -167,8 +166,7 @@ public class LocalDbRecorder implements MonkeyRecorder {
     }
 
     /* (non-Javadoc)
-     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(java.lang.Enum,
-     * java.lang.Enum, java.util.Map, java.util.Date)
+     * @see com.netflix.simianarmy.MonkeyRecorder#findEvents(MonkeyType, EventType, Map, Date)
      */
     @Override
     public List<Event> findEvents(MonkeyType monkeyType, EventType eventType,
