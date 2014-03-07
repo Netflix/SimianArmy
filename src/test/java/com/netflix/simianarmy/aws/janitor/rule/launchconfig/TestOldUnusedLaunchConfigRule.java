@@ -153,7 +153,7 @@ public class TestOldUnusedLaunchConfigRule {
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
 
-    /** Verify that the termination date is roughly rentionDays from now **/
+    /** Verify that the termination date is roughly retentionDays from now **/
     private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
         long timeDifference = (resource.getExpectedTerminationTime().getTime() - now.getMillis());
         //use floating point, allow for a one hour diff on either side due to DST cutover
