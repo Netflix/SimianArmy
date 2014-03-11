@@ -27,6 +27,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.TestUtils;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.InstanceJanitorCrawler;
@@ -47,7 +48,7 @@ public class TestOrphanedInstanceRule {
         OrphanedInstanceRule rule = new OrphanedInstanceRule(new TestMonkeyCalendar(),
                 ageThreshold, retentionDaysWithOwner, retentionDaysWithoutOwner);
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDaysWithOwner, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDaysWithOwner, now);
     }
 
     @Test
@@ -62,7 +63,7 @@ public class TestOrphanedInstanceRule {
         OrphanedInstanceRule rule = new OrphanedInstanceRule(new TestMonkeyCalendar(),
                 ageThreshold, retentionDaysWithOwner, retentionDaysWithoutOwner);
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDaysWithoutOwner, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDaysWithoutOwner, now);
     }
 
     @Test
@@ -171,10 +172,4 @@ public class TestOrphanedInstanceRule {
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
 
-    /** Verify that the termination date is roughly rentionDays from now **/
-    private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
-        int hours = (int) (resource.getExpectedTerminationTime().getTime() - now.getMillis()) / (60 * 60 * 1000);
-        // There could be a 1-hour difference if the time passes the daylight saving time change
-        Assert.assertTrue(hours >= retentionDays * 24 - 1 && hours <= retentionDays * 24 + 1);
-    }
 }

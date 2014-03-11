@@ -20,9 +20,6 @@
 
 package com.netflix.simianarmy.aws.janitor.rule.asg;
 
-import static org.joda.time.DateTimeConstants.MILLIS_PER_DAY;
-import static org.joda.time.DateTimeConstants.MILLIS_PER_HOUR;
-
 import java.util.Date;
 
 import org.joda.time.DateTime;
@@ -31,6 +28,7 @@ import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.TestUtils;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
@@ -52,7 +50,7 @@ public class TestOldEmptyASGRule {
         OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
                 new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDays, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
 
     @Test
@@ -118,7 +116,7 @@ public class TestOldEmptyASGRule {
         OldEmptyASGRule rule = new OldEmptyASGRule(calendar, launchConfiguAgeThreshold, retentionDays,
                 new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDays, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
 
     @Test
@@ -188,15 +186,4 @@ public class TestOldEmptyASGRule {
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
 
-    /** Verify that the termination date is roughly retentionDays from now **/
-    private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
-        long timeDifference = (resource.getExpectedTerminationTime().getTime() - now.getMillis());
-        //use floating point, allow for a one hour diff on either side due to DST cutover
-        double retentionMillis = (double) retentionDays * MILLIS_PER_DAY;
-        double actualTerminationDays = (double) timeDifference / (double) MILLIS_PER_DAY;
-        double allowableLowerBound = (retentionMillis - (double) MILLIS_PER_HOUR) / (double) MILLIS_PER_DAY;
-        double allowableUpperBound = (retentionMillis + (double) MILLIS_PER_HOUR) / (double) MILLIS_PER_DAY;
-
-        Assert.assertTrue(allowableLowerBound <= actualTerminationDays && actualTerminationDays <= allowableUpperBound);
-    }
 }
