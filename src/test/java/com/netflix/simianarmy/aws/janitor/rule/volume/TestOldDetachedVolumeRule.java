@@ -130,7 +130,7 @@ public class TestOldDetachedVolumeRule {
         Assert.assertFalse(rule.isValid(resource));
         TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
-    
+
     /** This test exists to check logic on a utility method.
      * The tagging rule for resource expiry uses a variable nubmer of days.
      * However, JodaTime date arithmetic for DAYS uses calendar days.  It does NOT
@@ -138,7 +138,7 @@ public class TestOldDetachedVolumeRule {
      * Therefore, a termination policy of 4 days (96 hours) will actually occur in
      * 95 hours if the resource is tagged with that rule within 4 days of the DST
      * cutover.
-     * 
+     *
      * We experienced test case failures around the 2014 spring DST cutover that
      * prevented us from getting green builds.  So, the assertion logic was loosened
      * to check that we were within a day of the expected date.  For the test case,
@@ -147,17 +147,17 @@ public class TestOldDetachedVolumeRule {
      * that use a DateTime of "DateTime.now()" are not true unit tests, because the
      * test does not isolate the date.  They are actually a partial integration test,
      * as they leave the date up to the system where the test executes.
-     * 
+     *
      * We have to mock the call to MonkeyCalendar.now() because the constructor
-     * for that class uses Calendar.getInstance() internally.  
-     * 
+     * for that class uses Calendar.getInstance() internally.
+     *
      */
     @Test
     public void testOldDetachedVolumeBeforeDaylightSavingsCutover() {
         int ageThreshold = 5;
         //here we set the create date to a few days before a known DST cutover, where
         //we observed DST failures
-        DateTime closeToSpringAheadDst = new DateTime(2014, 3, 7, 0, 0, DateTimeZone.forID("America/Los_Angeles")); 
+        DateTime closeToSpringAheadDst = new DateTime(2014, 3, 7, 0, 0, DateTimeZone.forID("America/Los_Angeles"));
         Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
             .withLaunchTime(new Date(closeToSpringAheadDst.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
@@ -165,17 +165,17 @@ public class TestOldDetachedVolumeRule {
         String metaTag = VolumeTaggingMonkey.makeMetaTag(null, null, lastDetachTime);
         resource.setTag(JanitorMonkey.JANITOR_META_TAG, metaTag);
         int retentionDays = 4;
-        
+
         //set the "now" to the fixed execution date for this rule and create a partial mock
         Calendar fixed = Calendar.getInstance(TimeZone.getTimeZone("America/Los_Angeles"));
         fixed.setTimeInMillis(closeToSpringAheadDst.getMillis());
         MonkeyCalendar monkeyCalendar = new TestMonkeyCalendar();
         MonkeyCalendar spyCalendar = spy(monkeyCalendar);
         when(spyCalendar.now()).thenReturn(fixed);
-        
+
         //use the partial mock for the OldDetachedVolumeRule
         OldDetachedVolumeRule rule = new OldDetachedVolumeRule(spyCalendar, ageThreshold, retentionDays);
-        Assert.assertFalse(rule.isValid(resource));//this volume should be seen as invalid
+        Assert.assertFalse(rule.isValid(resource)); //this volume should be seen as invalid
         //now verify that the difference between "now" and the cutoff is slightly under the intended
         //retention limit, as the DST cutover makes us lose one hour
         verifyDSTCutoverHappened(resource, retentionDays, closeToSpringAheadDst);
@@ -259,16 +259,17 @@ public class TestOldDetachedVolumeRule {
     public void testNullCalendar() {
         new OldDetachedVolumeRule(null, 5, 4);
     }
-    
-    /** Verify that a test conditioned to run across the spring DST cutover actually did 
-     * cross that threshold.  The real difference will be about 0.05 days less than 
+
+    /** Verify that a test conditioned to run across the spring DST cutover actually did
+     * cross that threshold.  The real difference will be about 0.05 days less than
      * the retentionDays parameter.
      * @param resource The AWS resource being tested
      * @param retentionDays Number of days the resource should be kept around
      * @param timeOfCheck When the check is executed
      */
     private void verifyDSTCutoverHappened(Resource resource, int retentionDays, DateTime timeOfCheck) {
-        double realDays = (double) (resource.getExpectedTerminationTime().getTime() - timeOfCheck.getMillis()) / (double) MILLIS_PER_DAY;
+        double realDays = (double) (resource.getExpectedTerminationTime().getTime() - timeOfCheck.getMillis())
+            / (double) MILLIS_PER_DAY;
         long days = (resource.getExpectedTerminationTime().getTime() - timeOfCheck.getMillis()) / MILLIS_PER_DAY;
         Assert.assertTrue(realDays < (double) retentionDays);
         Assert.assertNotEquals(days, retentionDays);
