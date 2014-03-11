@@ -22,6 +22,7 @@ package com.netflix.simianarmy.aws.janitor.rule.launchconfig;
 
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.TestUtils;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.LaunchConfigJanitorCrawler;
@@ -46,7 +47,7 @@ public class TestOldUnusedLaunchConfigRule {
         int retentionDays = 3;
         OldUnusedLaunchConfigRule rule = new OldUnusedLaunchConfigRule(calendar, ageThreshold, retentionDays);
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDays, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
 
     @Test
@@ -150,9 +151,4 @@ public class TestOldUnusedLaunchConfigRule {
         Assert.assertNull(resource.getExpectedTerminationTime());
     }
 
-    /** Verify that the termination date is roughly rentionDays from now **/
-    private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
-        long days = (resource.getExpectedTerminationTime().getTime() - now.getMillis()) / (24 * 60 * 60 * 1000);
-        Assert.assertEquals(days, retentionDays);
-    }
 }

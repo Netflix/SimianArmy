@@ -28,6 +28,7 @@ import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.TestUtils;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
@@ -49,7 +50,7 @@ public class TestSuspendedASGRule {
         SuspendedASGRule rule = new SuspendedASGRule(calendar, suspensionAgeThreshold, retentionDays,
                 new DummyASGInstanceValidator());
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDays, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
 
     @Test
@@ -186,9 +187,4 @@ public class TestSuspendedASGRule {
         new SuspendedASGRule(null, 3, 2, null);
     }
 
-    /** Verify that the termination date is roughly rentionDays from now **/
-    private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
-        long days = (resource.getExpectedTerminationTime().getTime() - now.getMillis()) / (24 * 60 * 60 * 1000);
-        Assert.assertEquals(days, retentionDays);
-    }
 }

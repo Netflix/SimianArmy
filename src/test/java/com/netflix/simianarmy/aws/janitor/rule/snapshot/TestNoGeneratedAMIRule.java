@@ -27,6 +27,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.TestUtils;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.EBSSnapshotJanitorCrawler;
@@ -97,7 +98,7 @@ public class TestNoGeneratedAMIRule {
         NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(),
                 ageThreshold, retentionDays);
         Assert.assertFalse(rule.isValid(resource));
-        verifyTerminationTime(resource, retentionDays, now);
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
     }
 
     @Test
@@ -182,9 +183,4 @@ public class TestNoGeneratedAMIRule {
         new NoGeneratedAMIRule(null, 5, 4);
     }
 
-    /** Verify that the termination date is roughly rentionDays from now **/
-    private void verifyTerminationTime(Resource resource, int retentionDays, DateTime now) {
-        long days = (resource.getExpectedTerminationTime().getTime() - now.getMillis()) / (24 * 60 * 60 * 1000);
-        Assert.assertEquals(days, retentionDays);
-    }
 }
