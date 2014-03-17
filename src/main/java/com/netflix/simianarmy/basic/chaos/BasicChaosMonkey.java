@@ -120,10 +120,14 @@ public class BasicChaosMonkey extends ChaosMonkey {
         allChaosTypes.add(new NetworkCorruptionChaosType(cfg));
         allChaosTypes.add(new NetworkLatencyChaosType(cfg));
         allChaosTypes.add(new NetworkLossChaosType(cfg));
-
-        TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
-        long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
-        runsPerDay = units / ctx.scheduler().frequency();
+        
+        if(TimeUnit.DAYS == ctx.scheduler().frequencyUnit()) {
+            runsPerDay = ctx.scheduler().frequency();
+        } else {
+            TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
+            long units = freqUnit.convert(close.getTimeInMillis() - open.getTimeInMillis(), TimeUnit.MILLISECONDS);
+            runsPerDay = units / ctx.scheduler().frequency();
+        }
     }
 
     /** {@inheritDoc} */

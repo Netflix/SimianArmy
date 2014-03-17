@@ -19,12 +19,15 @@
 package com.netflix.simianarmy.basic.chaos;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.MonkeyScheduler;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
@@ -185,6 +188,54 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(3).name(), "name3");
         Assert.assertEquals(terminated.size(), 0);
     }
+    
+    @Test
+    public void testFullProbability() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("fullProbability.properties") {
+            @Override
+            public MonkeyScheduler scheduler() {
+                return new MonkeyScheduler() {
+                    @Override
+                    public int frequency() {
+                        return 1;
+                    }
+
+                    @Override
+                    public TimeUnit frequencyUnit() {
+                        return TimeUnit.DAYS;
+                    }
+
+                    @Override
+                    public void start(Monkey monkey, Runnable run) {
+                        Assert.assertEquals(monkey.type().name(), monkey.type().name(), "starting monkey");
+                        run.run();
+                    }
+
+                    @Override
+                    public void stop(Monkey monkey) {
+                        Assert.assertEquals(monkey.type().name(), monkey.type().name(), "stopping monkey");
+                    }
+                };
+            }
+            ;
+        };
+        ChaosMonkey chaos = new BasicChaosMonkey(ctx);
+        chaos.start();
+        chaos.stop();
+        List<InstanceGroup> selectedOn = ctx.selectedOn();
+        List<String> terminated = ctx.terminated();
+        Assert.assertEquals(selectedOn.size(), 4);
+        Assert.assertEquals(selectedOn.get(0).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
+        Assert.assertEquals(selectedOn.get(0).name(), "name0");
+        Assert.assertEquals(selectedOn.get(1).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
+        Assert.assertEquals(selectedOn.get(1).name(), "name1");
+        Assert.assertEquals(selectedOn.get(2).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_B);
+        Assert.assertEquals(selectedOn.get(2).name(), "name2");
+        Assert.assertEquals(selectedOn.get(3).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_B);
+        Assert.assertEquals(selectedOn.get(3).name(), "name3");
+        Assert.assertEquals(terminated.size(), 4);
+    }
+
 
     @Test
     public void testNoProbabilityByName() {
