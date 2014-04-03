@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Response;
 
+import com.netflix.simianarmy.GroupType;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -35,6 +36,10 @@ import com.netflix.simianarmy.resources.chaos.ChaosMonkeyResource;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestBasicChaosMonkey {
+    private enum GroupTypes implements GroupType {
+        TYPE_A, TYPE_B
+    };
+
     @Test
     public void testDisabled() {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("disabled.properties");
@@ -351,6 +356,33 @@ public class TestBasicChaosMonkey {
         chaos.stop();
         Assert.assertEquals(ctx.selectedOn().size(), 3);
         Assert.assertEquals(ctx.terminated().size(), 3);
+    }
+
+    @Test
+    public void testGetValueFromCfgWithDefault() {
+        TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("propertiesWithDefaults.properties");
+        BasicChaosMonkey chaos = new BasicChaosMonkey(ctx);
+
+        // named 1 has actual values in config
+        InstanceGroup named1 = new BasicInstanceGroup("named1", GroupTypes.TYPE_A, "test-dev-1");
+
+        // named 2 doesn't have values but it's group has values
+        InstanceGroup named2 = new BasicInstanceGroup("named2", GroupTypes.TYPE_A, "test-dev-1");
+
+        // named 3 doesn't have values and it's group doesn't have values
+        InstanceGroup named3 = new BasicInstanceGroup("named3", GroupTypes.TYPE_B, "test-dev-1");
+
+        Assert.assertEquals(chaos.getBoolFromCfgOrDefault(named1, "enabled", true), false);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named1, "probability", 3.0), 1.1);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named1, "maxTerminationsPerDay", 4.0), 2.1);
+
+        Assert.assertEquals(chaos.getBoolFromCfgOrDefault(named2, "enabled", true), true);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named2, "probability", 3.0), 1.0);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named2, "maxTerminationsPerDay", 4.0), 2.0);
+
+        Assert.assertEquals(chaos.getBoolFromCfgOrDefault(named3, "enabled", true), true);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named3, "probability", 3.0), 3.0);
+        Assert.assertEquals(chaos.getNumFromCfgOrDefault(named3, "maxTerminationsPerDay", 4.0), 4.0);
     }
 
     @Test

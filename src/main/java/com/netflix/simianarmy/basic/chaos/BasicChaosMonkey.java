@@ -300,11 +300,21 @@ public class BasicChaosMonkey extends ChaosMonkey {
             }
         }
         propName = "probability";
-        String defaultProp = NS + group.type();
-        String probProp = NS + group.type() + "." + group.name() + "." + propName;
-        double prob = cfg.getNumOrElse(probProp, cfg.getNumOrElse(defaultProp + "." + propName, 1.0));
+        double prob = getNumFromCfgOrDefault(group, propName, 1.0);
         LOGGER.info("Group {} [type {}] enabled [prob {}]", new Object[]{group.name(), group.type(), prob});
         return prob;
+    }
+
+    protected double getNumFromCfgOrDefault(InstanceGroup group, String propName, double defaultValue) {
+        String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
+        String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
+        return cfg.getNumOrElse(prop, cfg.getNumOrElse(defaultProp, defaultValue));
+    }
+
+    protected boolean getBoolFromCfgOrDefault(InstanceGroup group, String propName, boolean defaultValue) {
+        String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
+        String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
+        return cfg.getBoolOrElse(prop, cfg.getBoolOrElse(defaultProp, defaultValue));
     }
 
     /**
@@ -344,11 +354,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
      * @return boolean
      */
     protected boolean isGroupEnabled(InstanceGroup group) {
-        String prop = NS + group.type() + "." + group.name() + ".enabled";
-        String defaultProp = NS + group.type() + ".enabled";
-        if (cfg.getBoolOrElse(prop, cfg.getBool(defaultProp))) {
+        boolean enabled = getBoolFromCfgOrDefault(group, "enabled", false);
+        if (enabled) {
             return true;
         } else {
+            String prop = NS + group.type() + "." + group.name() + ".enabled";
+            String defaultProp = NS + group.type() + ".enabled";
             LOGGER.info("Group {} [type {}] disabled, set {}=true or {}=true",
                     new Object[]{group.name(), group.type(), prop, defaultProp});
             return false;
@@ -417,10 +428,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
     protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
         Validate.notNull(group);
         String propName = "maxTerminationsPerDay";
-        String defaultProp = String.format("%s%s.%s", NS, group.type(), propName);
-        String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
-        double maxTerminationsPerDay = cfg.getNumOrElse(prop, cfg.getNumOrElse(defaultProp, 1.0));
+        double maxTerminationsPerDay = getNumFromCfgOrDefault(group, propName, 1.0);
         if (maxTerminationsPerDay <= MIN_MAX_TERMINATION_COUNT_PER_DAY) {
+            String prop = String.format("%s%s.%s.%s", NS, group.type(), group.name(), propName);
             LOGGER.info("ChaosMonkey is configured to not allow any killing from group {} [{}] "
                     + "with max daily count set as {}", new Object[]{group.name(), group.type(), prop});
             return true;
