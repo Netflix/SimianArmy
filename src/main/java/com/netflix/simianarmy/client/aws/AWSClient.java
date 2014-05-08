@@ -732,7 +732,7 @@ public class AWSClient implements CloudClient {
 
         node = NodeMetadataBuilder.fromNodeMetadata(node).credentials(credentials).build();
 
-        Utils utils = computeService.getContext().getUtils();
+        Utils utils = computeService.getContext().utils();
         SshClient ssh = utils.sshForNode().apply(node);
 
         ssh.connect();
