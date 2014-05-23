@@ -259,7 +259,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
                     Resource resource = idToResource.get(volumeId);
                     JsonNode attachments = data.get("attachments");
 
-                    if (attachments.isArray() && attachments.size() > 0) {
+                    if (!(attachments.isArray() && attachments.size() > 0)) {
                         continue;
                     }
                     JsonNode attachment = attachments.get(0);
