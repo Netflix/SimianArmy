@@ -10,7 +10,6 @@ import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.edda.EddaClient;
 import com.netflix.simianarmy.janitor.JanitorCrawler;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
-
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.codehaus.jackson.JsonNode;
@@ -21,13 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * The crawler to crawl AWS EBS volumes for Janitor monkey using Edda.
@@ -266,7 +259,9 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
                     Resource resource = idToResource.get(volumeId);
                     JsonNode attachments = data.get("attachments");
 
-                    Validate.isTrue(attachments.isArray() && attachments.size() > 0);
+                    if (attachments.isArray() && attachments.size() > 0) {
+                        continue;
+                    }
                     JsonNode attachment = attachments.get(0);
 
                     JsonNode ltime = elem.get("ltime");
