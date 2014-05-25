@@ -47,9 +47,14 @@ import com.netflix.simianarmy.chaos.ChaosInstance;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
 import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
+import com.netflix.simianarmy.chaos.FailCinderChaosType;
+import com.netflix.simianarmy.chaos.FailCinderv2ChaosType;
 import com.netflix.simianarmy.chaos.FailEc2ChaosType;
 import com.netflix.simianarmy.chaos.FailDnsChaosType;
 import com.netflix.simianarmy.chaos.FailDynamoDbChaosType;
+import com.netflix.simianarmy.chaos.FailGlanceChaosType;
+import com.netflix.simianarmy.chaos.FailKeystoneChaosType;
+import com.netflix.simianarmy.chaos.FailNovaChaosType;
 import com.netflix.simianarmy.chaos.FailS3ChaosType;
 import com.netflix.simianarmy.chaos.FillDiskChaosType;
 import com.netflix.simianarmy.chaos.KillProcessesChaosType;
@@ -120,6 +125,11 @@ public class BasicChaosMonkey extends ChaosMonkey {
         allChaosTypes.add(new NetworkCorruptionChaosType(cfg));
         allChaosTypes.add(new NetworkLatencyChaosType(cfg));
         allChaosTypes.add(new NetworkLossChaosType(cfg));
+        allChaosTypes.add(new FailNovaChaosType(cfg));
+        allChaosTypes.add(new FailCinderChaosType(cfg));
+        allChaosTypes.add(new FailCinderv2ChaosType(cfg));
+        allChaosTypes.add(new FailKeystoneChaosType(cfg));
+        allChaosTypes.add(new FailGlanceChaosType(cfg));
 
         TimeUnit freqUnit = ctx.scheduler().frequencyUnit();
         if (TimeUnit.DAYS == freqUnit) {
