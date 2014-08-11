@@ -31,7 +31,7 @@ apply plugin: 'idea'
 
 dependencies {
     // for the VMWareClient
-    compile 'com.cloudbees.thirdparty:vijava:5.0.0'
+    compile 'com.cloudbees.thirdparty:vijava:latest.release'
     compile 'dom4j:dom4j:1.6.1'
 
     // for DB support outside of AWS (SimpleDB not available)
