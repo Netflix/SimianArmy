@@ -17,14 +17,18 @@
  */
 package com.netflix.simianarmy.basic;
 
-import java.util.Properties;
-
 import com.netflix.simianarmy.MonkeyConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.util.Properties;
 
 /**
  * The Class BasicConfiguration.
  */
 public class BasicConfiguration implements MonkeyConfiguration {
+
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicConfiguration.class);
 
     /** The properties. */
     private Properties props;
@@ -59,7 +63,15 @@ public class BasicConfiguration implements MonkeyConfiguration {
     @Override
     public double getNumOrElse(String property, double dflt) {
         String val = props.getProperty(property);
-        return val == null ? dflt : Double.parseDouble(val);
+        double result = dflt;
+        if (val != null && !val.isEmpty()) {
+            try {
+                result = Double.parseDouble(val);
+            } catch (NumberFormatException e) {
+                LOGGER.error("failed to parse property: " + property + "; returning default value: " + dflt, e);
+            }
+        }
+        return result;
     }
 
     /** {@inheritDoc} */
