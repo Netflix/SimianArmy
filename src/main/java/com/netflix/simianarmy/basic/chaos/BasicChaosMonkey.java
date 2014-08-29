@@ -17,48 +17,17 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
-
+import com.google.common.collect.Lists;
+import com.netflix.simianarmy.*;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.chaos.*;
+import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.Lists;
-import com.netflix.simianarmy.CloudClient;
-import com.netflix.simianarmy.FeatureNotEnabledException;
-import com.netflix.simianarmy.InstanceGroupNotFoundException;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.NotFoundException;
-import com.netflix.simianarmy.chaos.BlockAllNetworkTrafficChaosType;
-import com.netflix.simianarmy.chaos.BurnIoChaosType;
-import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
-import com.netflix.simianarmy.chaos.BurnCpuChaosType;
-import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
-import com.netflix.simianarmy.chaos.ChaosInstance;
-import com.netflix.simianarmy.chaos.ChaosMonkey;
-import com.netflix.simianarmy.chaos.ChaosType;
-import com.netflix.simianarmy.chaos.DetachVolumesChaosType;
-import com.netflix.simianarmy.chaos.FailEc2ChaosType;
-import com.netflix.simianarmy.chaos.FailDnsChaosType;
-import com.netflix.simianarmy.chaos.FailDynamoDbChaosType;
-import com.netflix.simianarmy.chaos.FailS3ChaosType;
-import com.netflix.simianarmy.chaos.FillDiskChaosType;
-import com.netflix.simianarmy.chaos.KillProcessesChaosType;
-import com.netflix.simianarmy.chaos.NetworkCorruptionChaosType;
-import com.netflix.simianarmy.chaos.NetworkLatencyChaosType;
-import com.netflix.simianarmy.chaos.NetworkLossChaosType;
-import com.netflix.simianarmy.chaos.NullRouteChaosType;
-import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
-import com.netflix.simianarmy.chaos.SshConfig;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The Class BasicChaosMonkey.
@@ -133,29 +102,29 @@ public class BasicChaosMonkey extends ChaosMonkey {
     /** {@inheritDoc} */
     @Override
     public void doMonkeyBusiness() {
-        context().resetEventReport();
-        cfg.reload();
-        if (!isChaosMonkeyEnabled()) {
-            return;
-        }
-        for (InstanceGroup group : context().chaosCrawler().groups()) {
-            if (isGroupEnabled(group)) {
-                if (isMaxTerminationCountExceeded(group)) {
-                    continue;
-                }
-                double prob = getEffectiveProbability(group);
-                Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
-                for (String inst : instances) {
-                    ChaosType chaosType = pickChaosType(context().cloudClient(), inst);
-                    if (chaosType == null) {
-                        // This is surprising ... normally we can always just terminate it
-                        LOGGER.warn("No chaos type was applicable to the instance: {}", inst);
-                        continue;
+            context().resetEventReport();
+            cfg.reload();
+            if (!isChaosMonkeyEnabled()) {
+                return;
+            }
+            for (InstanceGroup group : context().chaosCrawler().groups()) {
+                if (isGroupEnabled(group)) {
+                    double prob = getEffectiveProbability(group);
+                    Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
+                    for (String inst : instances) {
+                        if (isMaxTerminationCountExceeded(group)) {
+                            break;
+                        }
+                        ChaosType chaosType = pickChaosType(context().cloudClient(), inst);
+                        if (chaosType == null) {
+                            // This is surprising ... normally we can always just terminate it
+                            LOGGER.warn("No chaos type was applicable to the instance: {}", inst);
+                            continue;
+                        }
+                        terminateInstance(group, inst, chaosType);
                     }
-                    terminateInstance(group, inst, chaosType);
                 }
             }
-        }
     }
 
     private ChaosType pickChaosType(CloudClient cloudClient, String instanceId) {
