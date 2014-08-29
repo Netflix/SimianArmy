@@ -109,6 +109,9 @@ public class BasicChaosMonkey extends ChaosMonkey {
             }
             for (InstanceGroup group : context().chaosCrawler().groups()) {
                 if (isGroupEnabled(group)) {
+                    if (isMaxTerminationCountExceeded(group)) {
+                        continue;
+                    }
                     double prob = getEffectiveProbability(group);
                     Collection<String> instances = context().chaosInstanceSelector().select(group, prob / runsPerDay);
                     for (String inst : instances) {
