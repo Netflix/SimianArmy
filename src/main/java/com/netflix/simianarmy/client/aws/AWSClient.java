@@ -62,8 +62,11 @@ import com.amazonaws.services.ec2.model.Tag;
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
 import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancerAttributesRequest;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancerAttributesResult;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerAttributes;
 import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
@@ -306,7 +309,22 @@ public class AWSClient implements CloudClient {
         return elbs;
     }
 
-
+    /**
+     * Describe a set of specific ELBs.
+     *
+     * @param names the ELB names
+     * @return the ELBs
+     */
+    public LoadBalancerAttributes describeElasticLoadBalancerAttributes(String name) {
+        LOGGER.info(String.format("Getting attributes for ELB with name '%s' in region %s.", name, region));
+        AmazonElasticLoadBalancingClient elbClient = elbClient();
+        DescribeLoadBalancerAttributesRequest request = new DescribeLoadBalancerAttributesRequest().withLoadBalancerName(name);
+        DescribeLoadBalancerAttributesResult result = elbClient.describeLoadBalancerAttributes(request);
+        LoadBalancerAttributes attrs = result.getLoadBalancerAttributes();
+        LOGGER.info(String.format("Got attributes for ELB with name '%s' in region %s.", name, region));
+        return attrs;
+    }
+    
     /**
      * Describe a set of specific auto-scaling instances.
      *
