@@ -26,6 +26,7 @@ import com.netflix.simianarmy.aws.conformity.SimpleDBConformityClusterTracker;
 import com.netflix.simianarmy.aws.conformity.crawler.AWSClusterCrawler;
 import com.netflix.simianarmy.aws.conformity.rule.BasicConformityEurekaClient;
 import com.netflix.simianarmy.aws.conformity.rule.ConformityEurekaClient;
+import com.netflix.simianarmy.aws.conformity.rule.CrossZoneLoadBalancing;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceHasHealthCheckUrl;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceHasStatusUrl;
 import com.netflix.simianarmy.aws.conformity.rule.InstanceInSecurityGroup;
@@ -42,6 +43,7 @@ import com.netflix.simianarmy.conformity.ConformityEmailNotifier;
 import com.netflix.simianarmy.conformity.ConformityMonkey;
 import com.netflix.simianarmy.conformity.ConformityRule;
 import com.netflix.simianarmy.conformity.ConformityRuleEngine;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,6 +152,11 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
                 ruleEngine.addRule(new InstanceInVPC(getAwsCredentialsProvider()));
         }
 
+        if (configuration().getBoolOrElse(
+                "simianarmy.conformity.rule.CrossZoneLoadBalancing.enabled", false)) {
+                ruleEngine().addRule(new CrossZoneLoadBalancing(getAwsCredentialsProvider()));
+        }
+        
         createClient(region());
         regionToAwsClient.put(region(), awsClient());
 
