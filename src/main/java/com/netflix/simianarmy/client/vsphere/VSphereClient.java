@@ -16,12 +16,21 @@
 package com.netflix.simianarmy.client.vsphere;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import com.google.common.net.HostAndPort;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.vmware.vim25.mo.VirtualMachine;
+import org.jclouds.domain.LoginCredentials;
+import org.jclouds.http.handlers.BackoffLimitedRetryHandler;
+import org.jclouds.proxy.internal.GuiceProxyConfig;
+import org.jclouds.ssh.SshClient;
+import org.jclouds.ssh.jsch.JschSshClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This client describes the VSphere folders as AutoScalingGroup's containing the virtual machines that are directly in
@@ -31,7 +40,7 @@ import com.vmware.vim25.mo.VirtualMachine;
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereClient extends AWSClient {
-//    private static final Logger LOGGER = LoggerFactory.getLogger(VSphereClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(VSphereClient.class);
 
     private final TerminationStrategy terminationStrategy;
     private final VSphereServiceConnection connection;
@@ -46,6 +55,7 @@ public class VSphereClient extends AWSClient {
     }
 
     @Override
+    @Deprecated
     public List<AutoScalingGroup> describeAutoScalingGroups(String... names) {
         final VSphereGroups groups = new VSphereGroups();
 
@@ -73,6 +83,28 @@ public class VSphereClient extends AWSClient {
         return groups.asList();
     }
 
+    public List<VSphereGroup> describeVsphereGroups(String... names) {
+        ArrayList<VSphereGroup> groupList = new ArrayList<VSphereGroup>();
+        try {
+            connection.connect();
+
+            for (String name : names) {
+                VSphereGroup group = new VSphereGroup(name);
+                for (VirtualMachine virtualMachine : connection.describeVirtualMachines(name)) {
+                    String instanceId = virtualMachine.getName();
+                    LOGGER.info(instanceId);
+                    group.addInstance(instanceId);
+                }
+                groupList.add(group);
+            }
+
+        } finally {
+            connection.disconnect();
+        }
+
+        return groupList;
+    }
+
     @Override
     /**
      * reinstall the given instance. If it is powered down this will be ignored and the
@@ -89,5 +121,22 @@ public class VSphereClient extends AWSClient {
         } finally {
             connection.disconnect();
         }
+    }
+
+    @Override
+    public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+        String ipAddress = null;
+        try {
+            connection.connect();
+            VirtualMachine virtualMachine = connection.getVirtualMachineById(instanceId);
+            ipAddress = virtualMachine.getGuest().getIpAddress();
+        } catch (RemoteException e) {
+            throw new AmazonServiceException("cannot destroy & recreate " + instanceId, e);
+        } finally {
+            connection.disconnect();
+        }
+        JschSshClient ssh = new JschSshClient(new GuiceProxyConfig(), BackoffLimitedRetryHandler.INSTANCE, HostAndPort.fromParts(ipAddress, 22), credentials, 1*1000);
+        ssh.connect();
+        return ssh;
     }
 }

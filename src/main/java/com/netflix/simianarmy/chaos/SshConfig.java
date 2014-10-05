@@ -74,7 +74,12 @@ public class SshConfig {
         }
 
         if (privateKey == null) {
-            this.sshCredentials = null;
+            String sshPassword = config.getStrOrElse("simianarmy.chaos.ssh.password", null);
+            if (sshPassword == null) {
+                this.sshCredentials = null;
+            } else {
+                this.sshCredentials = LoginCredentials.builder().user(sshUser).password(sshPassword).build();
+            }
         } else {
             this.sshCredentials = LoginCredentials.builder().user(sshUser).privateKey(privateKey).build();
         }

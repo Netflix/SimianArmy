@@ -20,16 +20,23 @@ import com.netflix.simianarmy.basic.BasicChaosMonkeyContext;
 
 /**
  * This Context extends the BasicContext in order to provide a different client: the VSphereClient.
- *
+ * Add a different crawler: the VsphereChaosCrawler.
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereContext extends BasicChaosMonkeyContext {
+    private VSphereClient client;
+    private MonkeyConfiguration config;
+
+    public VSphereContext() {
+        setChaosCrawler(new VsphereChaosCrawler(client, config));
+    }
+
     @Override
     protected void createClient() {
-        MonkeyConfiguration config = configuration();
+        config = configuration();
         final PropertyBasedTerminationStrategy terminationStrategy = new PropertyBasedTerminationStrategy(config);
         final VSphereServiceConnection connection = new VSphereServiceConnection(config);
-        final VSphereClient client = new VSphereClient(terminationStrategy, connection);
+        client = new VSphereClient(terminationStrategy, connection);
         setCloudClient(client);
     }
 }
