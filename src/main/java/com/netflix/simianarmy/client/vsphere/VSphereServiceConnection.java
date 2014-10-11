@@ -135,7 +135,7 @@ public class VSphereServiceConnection {
      * @param absolutePath path like datacenter/folder/../folder
      * @throws AmazonServiceException
      *             If there is any communication error. */
-    public List<VirtualMachine> describeVirtualMachines(String absolutePath) {
+    public List<VirtualMachine> describeVirtualMachines(String absolutePath) throws AmazonServiceException {
         ArrayList<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
         String[] paths = absolutePath.split("/");
         List<ManagedEntity> dcList = searchManagedEntities(DC_TYPE_NAME);
@@ -143,26 +143,27 @@ public class VSphereServiceConnection {
             if (paths[0].equals(datacenter.getName())) {
                 Folder parent = null;
                 try {
-                    parent = ((Datacenter)datacenter).getVmFolder();
+                    parent = ((Datacenter) datacenter).getVmFolder();
                 } catch (RemoteException e) {
-                    throw new AmazonServiceException("Can not query root folder from datacenter " + datacenter.getName(), e);
+                    throw new AmazonServiceException("Can not query root folder from datacenter "
+                            + datacenter.getName(), e);
                 }
-                for (int i=1; i < paths.length; i++) {
+                for (int i = 1; i < paths.length; i++) {
                     boolean isFound = false;
                     for (ManagedEntity entity: getChildEntity(parent)) {
                         if (entity instanceof Folder && paths[i].equals(entity.getName())) {
-                            parent = (Folder)entity;
+                            parent = (Folder) entity;
                             isFound = true;
                             break;
                         }
                     }
                     if (!isFound) {
-                        throw new AmazonServiceException("Can not find " + paths[i] + " under " + paths[i-1]);
+                        throw new AmazonServiceException("Can not find " + paths[i] + " under " + paths[i - 1]);
                     }
                 }
                 for (ManagedEntity entity: getChildEntity(parent)) {
                     if (entity instanceof VirtualMachine) {
-                        vmList.add((VirtualMachine)entity);
+                        vmList.add((VirtualMachine) entity);
                     }
                 }
                 break;
@@ -176,7 +177,7 @@ public class VSphereServiceConnection {
      * @param parent folder entity.
      * @throws AmazonServiceException
      *             If there is any communication error.*/
-    public List<ManagedEntity> getChildEntity(Folder parent) {
+    public List<ManagedEntity> getChildEntity(Folder parent) throws AmazonServiceException {
         ManagedEntity[] mes;
         try {
             mes = parent.getChildEntity();
@@ -195,7 +196,7 @@ public class VSphereServiceConnection {
      * @param type Managed entity type.
      * @throws AmazonServiceException
      *             If there is any communication error.*/
-    public List<ManagedEntity> searchManagedEntities(String type) {
+    public List<ManagedEntity> searchManagedEntities(String type) throws AmazonServiceException {
         ManagedEntity[] mes;
         try {
             mes = getInventoryNavigator().searchManagedEntities(type);

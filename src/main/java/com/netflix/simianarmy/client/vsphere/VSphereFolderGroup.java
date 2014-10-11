@@ -12,7 +12,7 @@ import java.util.List;
  */
 public class VSphereFolderGroup {
     /**
-     * vSphere absolute folder path
+     * vSphere absolute folder path.
      */
     private String groupName;
     /**
@@ -20,6 +20,10 @@ public class VSphereFolderGroup {
      */
     private java.util.List<Instance> instances;
 
+    /**
+     * Constructor.
+     * @param groupName
+     */
     public VSphereFolderGroup(String groupName) {
         this.groupName = groupName;
         instances = new ArrayList<Instance>();

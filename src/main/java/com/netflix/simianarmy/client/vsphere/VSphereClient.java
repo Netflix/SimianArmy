@@ -33,8 +33,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This client describes the VSphere folders as VSphereFolderGroup's containing the virtual machines that are directly in
- * that folder. And it can terminate these VMs with the configured TerminationStrategy as well as other SriptChaosType.
+ * This client describes the VSphere folders as VSphereFolderGroup's containing the virtual machines that are directly
+ * in that folder. And it can terminate these VMs with the configured TerminationStrategy as well as other
+ * SriptChaosType.
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
@@ -43,7 +44,8 @@ public class VSphereClient extends AWSClient {
 
     private final TerminationStrategy terminationStrategy;
     private final VSphereServiceConnection connection;
-
+    private static final int PORT = 22;
+    private static final int TIME_OUT = 1 * 1000;
     /**
      * Create the specific Client from the given strategy and connection.
      */
@@ -76,7 +78,6 @@ public class VSphereClient extends AWSClient {
 
                 boolean shouldAddNamedGroup = true;
                 if (names != null) {
-                    // TODO need to implement this feature!!!
                     throw new RuntimeException("This feature (selecting groups by name) is not implemented yet");
                 }
 
@@ -155,7 +156,8 @@ public class VSphereClient extends AWSClient {
         } finally {
             connection.disconnect();
         }
-        JschSshClient ssh = new JschSshClient(new GuiceProxyConfig(), BackoffLimitedRetryHandler.INSTANCE, HostAndPort.fromParts(ipAddress, 22), credentials, 1*1000);
+        JschSshClient ssh = new JschSshClient(new GuiceProxyConfig(), BackoffLimitedRetryHandler.INSTANCE,
+                HostAndPort.fromParts(ipAddress, PORT), credentials, TIME_OUT);
         ssh.connect();
         return ssh;
     }

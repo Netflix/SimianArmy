@@ -28,6 +28,9 @@ public class VSphereContext extends BasicChaosMonkeyContext {
     private VSphereClient client;
     private MonkeyConfiguration config;
 
+    /**
+     * Constructor.
+     */
     public VSphereContext() {
         setChaosCrawler(new VSphereChaosCrawler(client, config));
     }

@@ -26,9 +26,15 @@ import com.netflix.simianarmy.client.vsphere.VSphereFolderGroup;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import java.util.*;
+import java.util.List;
+import java.util.EnumSet;
+import java.util.Properties;
+import java.util.ArrayList;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 public class TestVSphereChaosCrawler {
     private VSphereFolderGroup mkVfg(String vfgName, String instanceId) {
@@ -56,11 +62,11 @@ public class TestVSphereChaosCrawler {
         vfgList.add(mkVfg("DC1", "vm-0001"));
         vfgList.add(mkVfg("DC2", "vm-0002"));
 
-        when(clientMock.describeVsphereGroups("DC1","DC2")).thenReturn(vfgList);
+        when(clientMock.describeVsphereGroups("DC1", "DC2")).thenReturn(vfgList);
 
         List<InstanceGroup> groups = crawler.groups();
 
-        verify(clientMock, times(1)).describeVsphereGroups("DC1","DC2");
+        verify(clientMock, times(1)).describeVsphereGroups("DC1", "DC2");
 
         Assert.assertEquals(groups.size(), 2);
 
