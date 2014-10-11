@@ -17,11 +17,11 @@ package com.netflix.simianarmy.client.vsphere;
 
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.basic.BasicChaosMonkeyContext;
-import com.netflix.simianarmy.client.vsphere.chaos.VSphereChaosCrawler;
+import com.netflix.simianarmy.client.vsphere.chaos.VFGChaosCrawler;
 
 /**
  * This Context extends the BasicContext in order to provide a different client: the VSphereClient and
- * add a different crawler: the VSphereChaosCrawler.
+ * add a different crawler: the VFGChaosCrawler.
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereContext extends BasicChaosMonkeyContext {
@@ -32,7 +32,7 @@ public class VSphereContext extends BasicChaosMonkeyContext {
      * Constructor.
      */
     public VSphereContext() {
-        setChaosCrawler(new VSphereChaosCrawler(client, config));
+        setChaosCrawler(new VFGChaosCrawler(client, config));
     }
 
     @Override

@@ -13,10 +13,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- *  The Class VSphereChaosCrawler. This will crawl for all available virtual machines under folders
+ *  The Class VFGChaosCrawler. This will crawl for all available virtual machines under folders
  *  defined by configuration simianarmy.client.vsphere.crawler.groups.
  */
-public class VSphereChaosCrawler implements ChaosCrawler {
+public class VFGChaosCrawler implements ChaosCrawler {
 
     /** The vSphere client. */
     private final VSphereClient client;
@@ -28,7 +28,7 @@ public class VSphereChaosCrawler implements ChaosCrawler {
      * @param client
      * @param config
      */
-    public VSphereChaosCrawler(VSphereClient client, MonkeyConfiguration config) {
+    public VFGChaosCrawler(VSphereClient client, MonkeyConfiguration config) {
         this.client = client;
         this.config = config;
     }

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.times;
 
-public class TestVSphereChaosCrawler {
+public class TestVFGChaosCrawler {
     private VSphereFolderGroup mkVfg(String vfgName, String instanceId) {
         VSphereFolderGroup vfg = new VSphereFolderGroup(vfgName);
         vfg.addInstance(instanceId);
@@ -45,7 +45,7 @@ public class TestVSphereChaosCrawler {
 
     @Test
     public void testGroupTypes() {
-        VSphereChaosCrawler crawler = new VSphereChaosCrawler(null, null);
+        VFGChaosCrawler crawler = new VFGChaosCrawler(null, null);
         EnumSet<?> types = crawler.groupTypes();
         Assert.assertEquals(types.size(), 1);
         Assert.assertEquals(types.iterator().next().name(), "VFG");
@@ -57,7 +57,7 @@ public class TestVSphereChaosCrawler {
         Properties properties = new Properties();
         properties.setProperty("simianarmy.client.vsphere.crawler.groups", "DC1,DC2");
         MonkeyConfiguration config = new BasicConfiguration(properties);
-        VSphereChaosCrawler crawler = new VSphereChaosCrawler(clientMock, config);
+        VFGChaosCrawler crawler = new VFGChaosCrawler(clientMock, config);
         List<VSphereFolderGroup> vfgList = new ArrayList<VSphereFolderGroup>();
         vfgList.add(mkVfg("DC1", "vm-0001"));
         vfgList.add(mkVfg("DC2", "vm-0002"));
@@ -70,12 +70,12 @@ public class TestVSphereChaosCrawler {
 
         Assert.assertEquals(groups.size(), 2);
 
-        Assert.assertEquals(groups.get(0).type(), VSphereChaosCrawler.Types.VFG);
+        Assert.assertEquals(groups.get(0).type(), VFGChaosCrawler.Types.VFG);
         Assert.assertEquals(groups.get(0).name(), "DC1");
         Assert.assertEquals(groups.get(0).instances().size(), 1);
         Assert.assertEquals(groups.get(0).instances().get(0), "vm-0001");
 
-        Assert.assertEquals(groups.get(1).type(), VSphereChaosCrawler.Types.VFG);
+        Assert.assertEquals(groups.get(1).type(), VFGChaosCrawler.Types.VFG);
         Assert.assertEquals(groups.get(1).name(), "DC2");
         Assert.assertEquals(groups.get(1).instances().size(), 1);
         Assert.assertEquals(groups.get(1).instances().get(0), "vm-0002");
@@ -87,7 +87,7 @@ public class TestVSphereChaosCrawler {
         VSphereClient clientMock = mock(VSphereClient.class);
         Properties properties = new Properties();
         MonkeyConfiguration config = new BasicConfiguration(properties);
-        VSphereChaosCrawler crawler = new VSphereChaosCrawler(clientMock, config);
+        VFGChaosCrawler crawler = new VFGChaosCrawler(clientMock, config);
         crawler.groups();
     }
 }
