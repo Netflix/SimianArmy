@@ -16,13 +16,18 @@ import java.util.List;
  *  The Class VSphereChaosCrawler. This will crawl for all available virtual machines under folders
  *  defined by configuration simianarmy.client.vsphere.crawler.groups.
  */
-public class VSphereChaosCrawler implements ChaosCrawler{
+public class VSphereChaosCrawler implements ChaosCrawler {
 
     /** The vSphere client. */
     private final VSphereClient client;
     /** The config. */
     private final MonkeyConfiguration config;
 
+    /**
+     * Constructor.
+     * @param client
+     * @param config
+     */
     public VSphereChaosCrawler(VSphereClient client, MonkeyConfiguration config) {
         this.client = client;
         this.config = config;
@@ -50,10 +55,10 @@ public class VSphereChaosCrawler implements ChaosCrawler{
      * @throws RuntimeException If there is no fold specified by configuration simianarmy.client.vsphere.crawler.groups
      */
     public List<ChaosCrawler.InstanceGroup> groups() {
-        String groups = config.getStrOrElse("simianarmy.client.vsphere.crawler.groups","");
+        String groups = config.getStrOrElse("simianarmy.client.vsphere.crawler.groups", "");
         if ("".equals(groups.trim())) {
-            throw new RuntimeException("simianarmy.client.vsphere.crawler.groups must be defined as" +
-                    " Format: Datacenter/folder/../folder,Datacenter/folder/../folder");
+            throw new RuntimeException("simianarmy.client.vsphere.crawler.groups must be defined as"
+                    + " Format: Datacenter/folder/../folder,Datacenter/folder/../folder");
         }
         return groups(groups.split(","));
     }
