@@ -41,7 +41,8 @@ public class SshConfig {
     private final LoginCredentials sshCredentials;
 
     /**
-     * Constructor.
+     * Constructor. If it fails to build ssh credential by simianarmy.chaos.ssh.user and simianarmy.chaos.ssh.key,
+     * will try to build ssh credential by simianarmy.chaos.ssh.user and simianarmy.chaos.ssh.password.
      *
      * @param config
      *            Configuration to use

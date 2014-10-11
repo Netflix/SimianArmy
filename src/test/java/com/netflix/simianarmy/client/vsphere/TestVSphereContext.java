@@ -19,6 +19,8 @@ package com.netflix.simianarmy.client.vsphere;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
+import com.netflix.simianarmy.chaos.ChaosCrawler;
+import com.netflix.simianarmy.client.vsphere.chaos.VSphereChaosCrawler;
 import org.testng.annotations.Test;
 
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -33,5 +35,8 @@ public class TestVSphereContext {
         AWSClient awsClient = context.awsClient();
         assertNotNull(awsClient);
         assertTrue(awsClient instanceof VSphereClient);
+        ChaosCrawler crawler = context.chaosCrawler();
+        assertNotNull(crawler);
+        assertTrue(crawler instanceof VSphereChaosCrawler);
     }
 }

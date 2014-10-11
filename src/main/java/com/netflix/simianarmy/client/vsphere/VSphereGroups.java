@@ -30,6 +30,7 @@ import com.amazonaws.services.autoscaling.model.Instance;
  *
  * @author ingmar.krusch@immobilienscout24.de
  */
+@Deprecated
 class VSphereGroups {
     private final Map<String, AutoScalingGroup> map = new HashMap<String, AutoScalingGroup>();
 

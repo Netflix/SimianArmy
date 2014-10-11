@@ -10,19 +10,24 @@ import java.util.List;
  * The vSphere data type.
  * </p>
  */
-public class VSphereGroup {
+public class VSphereFolderGroup {
+    /**
+     * vSphere absolute folder path
+     */
+    private String groupName;
+    /**
+     * A list of Instances which use Virtual Machine ID as instance ID.
+     */
+    private java.util.List<Instance> instances;
 
-    VSphereGroup(String groupNme) {
-        this.groupNme = groupNme;
+    public VSphereFolderGroup(String groupName) {
+        this.groupName = groupName;
         instances = new ArrayList<Instance>();
     }
 
-    public String getGroupNme() {
-        return groupNme;
+    public String getGroupName() {
+        return groupName;
     }
-
-    private String groupNme;
-    private java.util.List<Instance> instances;
 
     /**
      * Provides a summary list of vSphere instances.
@@ -35,7 +40,7 @@ public class VSphereGroup {
 
     /**
      * Add vSphere instance to summary list.
-     * @param instanceId vSphere instance id
+     * @param instanceId Virtual Machine ID
      */
     public void addInstance(String instanceId) {
         Instance instance = new Instance();
