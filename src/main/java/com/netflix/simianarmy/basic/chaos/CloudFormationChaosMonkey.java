@@ -27,7 +27,7 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
         return super.isGroupEnabled(noSuffixGroup);
     }
-    
+
     /**
      * {@inheritDoc}
      */
@@ -66,15 +66,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     protected long getLastOptInMilliseconds(InstanceGroup group) {
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
         return super.getLastOptInMilliseconds(noSuffixGroup);
-    }
-
-    /**
-     * Handle email notifications for no suffix instance groups.
-     */
-    @Override
-    public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
-        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
-        super.sendTerminationNotification(noSuffixGroup, instance, chaosType);
     }
 
     /**
