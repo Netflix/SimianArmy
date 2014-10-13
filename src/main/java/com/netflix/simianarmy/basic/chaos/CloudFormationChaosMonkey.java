@@ -1,5 +1,6 @@
 package com.netflix.simianarmy.basic.chaos;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosType;
 
@@ -25,6 +26,15 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     protected boolean isGroupEnabled(InstanceGroup group) {
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
         return super.isGroupEnabled(noSuffixGroup);
+    }
+    
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Event terminateInstance(InstanceGroup group, String inst, ChaosType chaosType) {
+        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
+        return super.terminateInstance(noSuffixGroup, inst, chaosType);
     }
 
     /**
