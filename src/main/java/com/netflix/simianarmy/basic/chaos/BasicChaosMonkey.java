@@ -212,7 +212,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         context().recorder().recordEvent(evt);
         return evt;
     }
-
+    
     /** {@inheritDoc} */
     @Override
     public int getPreviousTerminationCount(InstanceGroup group, Date after) {
@@ -359,7 +359,7 @@ public class BasicChaosMonkey extends ChaosMonkey {
         return null;
     }
 
-    private Event terminateInstance(InstanceGroup group, String inst, ChaosType chaosType) {
+    protected Event terminateInstance(InstanceGroup group, String inst, ChaosType chaosType) {
         Validate.notNull(group);
         Validate.notEmpty(inst);
         String prop = NS + "leashed";
