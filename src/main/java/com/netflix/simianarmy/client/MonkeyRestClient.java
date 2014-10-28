@@ -3,13 +3,10 @@ package com.netflix.simianarmy.client;
 import org.apache.commons.lang.Validate;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.AutoRetryHttpClient;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultServiceUnavailableRetryStrategy;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
@@ -37,11 +34,14 @@ public abstract class MonkeyRestClient {
         Validate.isTrue(timeout >= 0);
         Validate.isTrue(maxRetries >= 0);
         Validate.isTrue(retryInterval > 0);
-
-        HttpParams httpParams = new BasicHttpParams();
-        HttpConnectionParams.setConnectionTimeout(httpParams, timeout);
-        httpClient = new AutoRetryHttpClient(new DefaultHttpClient(httpParams),
-                new DefaultServiceUnavailableRetryStrategy(maxRetries, retryInterval));
+        
+        RequestConfig config = RequestConfig.custom()
+            .setConnectTimeout(timeout)
+            .build();
+        httpClient = HttpClientBuilder.create()
+            .setDefaultRequestConfig(config)
+            .setServiceUnavailableRetryStrategy(new DefaultServiceUnavailableRetryStrategy(maxRetries, retryInterval))
+            .build();
     }
 
     /**
