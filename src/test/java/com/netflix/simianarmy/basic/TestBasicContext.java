@@ -38,4 +38,22 @@ public class TestBasicContext {
         // Verify that the property in chaos.properties overrides the same property in simianarmy.properties
         Assert.assertFalse(ctx.configuration().getBool("simianarmy.chaos.enabled"));
     }
+
+    @Test
+    public void testIsSafeToLogProperty() {
+        BasicChaosMonkeyContext ctx = new BasicChaosMonkeyContext();
+        Assert.assertTrue(ctx.isSafeToLog("simianarmy.client.aws.region"));
+    }
+
+    @Test
+    public void testIsNotSafeToLogProperty() {
+        BasicChaosMonkeyContext ctx = new BasicChaosMonkeyContext();
+        Assert.assertFalse(ctx.isSafeToLog("simianarmy.client.aws.secretKey"));
+    }
+
+    @Test
+    public void testIsNotSafeToLogVsphereProperty() {
+        BasicChaosMonkeyContext ctx = new BasicChaosMonkeyContext();
+        Assert.assertFalse(ctx.isSafeToLog("simianarmy.client.vsphere.password"));
+    }
 }
