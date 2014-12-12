@@ -49,6 +49,7 @@ Thumbs.db
 */bin
 /test-output
 */test-output
+/classes
 
 # IntelliJ specific files/directories
 out

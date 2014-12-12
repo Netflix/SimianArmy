@@ -19,6 +19,7 @@
 package com.netflix.simianarmy.chaos;
 
 import java.io.InputStream;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -33,15 +34,20 @@ import java.util.Properties;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.domain.ExecChannel;
 import org.jclouds.compute.domain.ExecResponse;
+
 import org.jclouds.domain.LoginCredentials;
+
 import org.jclouds.io.Payload;
+
 import org.jclouds.ssh.SshClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -58,13 +64,14 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         this(new Properties());
     }
 
-    protected TestChaosMonkeyContext(Properties properties) {
+    protected TestChaosMonkeyContext(final Properties properties) {
         super(ChaosMonkey.Type.CHAOS);
         cfg = new BasicConfiguration(properties);
     }
 
-    public TestChaosMonkeyContext(String propFile) {
+    public TestChaosMonkeyContext(final String propFile) {
         super(ChaosMonkey.Type.CHAOS);
+
         Properties props = new Properties();
         try {
             InputStream is = TestChaosMonkeyContext.class.getResourceAsStream(propFile);
@@ -76,6 +83,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         } catch (Exception e) {
             LOGGER.error("Unable to load properties file " + propFile, e);
         }
+
         cfg = new BasicConfiguration(props);
     }
 
@@ -90,7 +98,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final String region;
         private final List<String> instances = new ArrayList<String>();
 
-        public TestInstanceGroup(GroupType type, String name, String region, String... instances) {
+        public TestInstanceGroup(final GroupType type, final String name, final String region,
+                final String... instances) {
             this.type = type;
             this.name = name;
             this.region = region;
@@ -120,28 +129,32 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
 
         @Override
-        public void addInstance(String ignored) {
-        }
+        public void addInstance(final String ignored) { }
 
-        public void deleteInstance(String id) {
+        public void deleteInstance(final String id) {
             instances.remove(id);
         }
 
         @Override
-        public InstanceGroup copyAs(String newName) {
+        public InstanceGroup copyAs(final String newName) {
             return new TestInstanceGroup(this.type, newName, this.region, instances().toString());
         }
     }
 
     public enum CrawlerTypes implements GroupType {
-        TYPE_A, TYPE_B, TYPE_C, TYPE_D
-    };
+        TYPE_A,
+        TYPE_B,
+        TYPE_C,
+        TYPE_D
+    }
+    ;
 
     @Override
     public ChaosCrawler chaosCrawler() {
         return new ChaosCrawler() {
             @Override
-            public EnumSet<?> groupTypes() {
+            @SuppressWarnings("rawtypes")
+            public EnumSet groupTypes() {
                 return EnumSet.allOf(CrawlerTypes.class);
             }
 
@@ -155,30 +168,35 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
                         "3:i-123456785");
                 InstanceGroup gC2 = new TestInstanceGroup(CrawlerTypes.TYPE_C, "name5", "reg1", "3:i-123456786",
                         "3:i-123456787");
-                InstanceGroup gD0 = new TestInstanceGroup(CrawlerTypes.TYPE_D, "new-group-TestGroup1-XXXXXXXXX",
-                        "reg1", "3:i-123456786", "3:i-123456787");
+                InstanceGroup gD0 = new TestInstanceGroup(CrawlerTypes.TYPE_D, "new-group-TestGroup1-XXXXXXXXX", "reg1",
+                        "3:i-123456786", "3:i-123456787");
                 return Arrays.asList(gA0, gA1, gB2, gB3, gC1, gC2, gD0);
             }
 
             @Override
-            public List<InstanceGroup> groups(String... names) {
+            public List<InstanceGroup> groups(final String... names) {
                 Map<String, InstanceGroup> nameToGroup = new HashMap<String, InstanceGroup>();
                 for (InstanceGroup ig : groups()) {
                     nameToGroup.put(ig.name(), ig);
                 }
+
                 List<InstanceGroup> list = new LinkedList<InstanceGroup>();
                 for (String name : names) {
                     InstanceGroup ig = nameToGroup.get(name);
                     if (ig == null) {
                         continue;
                     }
+
                     for (String instanceId : selected) {
+
                         // Remove selected instances from crawler list
                         TestInstanceGroup testIg = (TestInstanceGroup) ig;
                         testIg.deleteInstance(instanceId);
                     }
+
                     list.add(ig);
                 }
+
                 return list;
             }
         };
@@ -194,8 +212,9 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     public ChaosInstanceSelector chaosInstanceSelector() {
         return new BasicChaosInstanceSelector() {
             @Override
-            public Collection<String> select(InstanceGroup group, double probability) {
+            public Collection<String> select(final InstanceGroup group, final double probability) {
                 selectedOn.add(group);
+
                 Collection<String> instances = super.select(group, probability);
                 selected.addAll(instances);
                 return instances;
@@ -217,47 +236,42 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     public CloudClient cloudClient() {
         return new CloudClient() {
             @Override
-            public void terminateInstance(String instanceId) {
+            public void terminateInstance(final String instanceId) {
                 terminated.add(instanceId);
             }
 
             @Override
-            public void createTagsForResources(Map<String, String> keyValueMap, String... resourceIds) {
-            }
+            public void createTagsForResources(final Map<String, String> keyValueMap, final String... resourceIds) { }
 
             @Override
-            public void deleteAutoScalingGroup(String asgName) {
-            }
+            public void deleteAutoScalingGroup(final String asgName) { }
 
             @Override
-            public void deleteVolume(String volumeId) {
-            }
+            public void deleteVolume(final String volumeId) { }
 
             @Override
-            public void deleteSnapshot(String snapshotId) {
-            }
+            public void deleteSnapshot(final String snapshotId) { }
 
             @Override
-            public void deleteImage(String imageId) {
-            }
+            public void deleteImage(final String imageId) { }
 
             @Override
-            public void deleteLaunchConfiguration(String launchConfigName) {
-            }
+            public void deleteLaunchConfiguration(final String launchConfigName) { }
 
             @Override
-            public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
+            public List<String> listAttachedVolumes(final String instanceId, final boolean includeRoot) {
                 List<String> volumes = Lists.newArrayList();
                 if (includeRoot) {
                     volumes.add("volume-0");
                 }
+
                 volumes.add("volume-1");
                 volumes.add("volume-2");
                 return volumes;
             }
 
             @Override
-            public void detachVolume(String instanceId, String volumeId, boolean force) {
+            public void detachVolume(final String instanceId, final String volumeId, final boolean force) {
                 cloudActions.add("detach:" + instanceId + ":" + volumeId);
             }
 
@@ -267,22 +281,23 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public String getJcloudsId(String instanceId) {
+            public String getJcloudsId(final String instanceId) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public SshClient connectSsh(String instanceId, LoginCredentials credentials) {
+            public SshClient connectSsh(final String instanceId, final LoginCredentials credentials) {
                 return new MockSshClient(instanceId, credentials);
             }
 
             @Override
-            public String findSecurityGroup(String instanceId, String groupName) {
+            public String findSecurityGroup(final String instanceId, final String groupName) {
                 return securityGroupNames.get(groupName);
             }
 
             @Override
-            public String createSecurityGroup(String instanceId, String groupName, String description) {
+            public String createSecurityGroup(final String instanceId, final String groupName,
+                    final String description) {
                 String id = "sg-" + (securityGroupNames.size() + 1);
                 securityGroupNames.put(groupName, id);
                 cloudActions.add("createSecurityGroup:" + instanceId + ":" + groupName);
@@ -290,12 +305,12 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
-            public boolean canChangeInstanceSecurityGroups(String instanceId) {
+            public boolean canChangeInstanceSecurityGroups(final String instanceId) {
                 return true;
             }
 
             @Override
-            public void setInstanceSecurityGroups(String instanceId, List<String> groupIds) {
+            public void setInstanceSecurityGroups(final String instanceId, final List<String> groupIds) {
                 cloudActions.add("setInstanceSecurityGroups:" + instanceId + ":" + Joiner.on(',').join(groupIds));
             }
         };
@@ -335,7 +350,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final String instanceId;
         private final LoginCredentials credentials;
 
-        public MockSshClient(String instanceId, LoginCredentials credentials) {
+        public MockSshClient(final String instanceId, final LoginCredentials credentials) {
             this.instanceId = instanceId;
             this.credentials = credentials;
         }
@@ -351,17 +366,17 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
 
         @Override
-        public void put(String path, Payload contents) {
+        public void put(final String path, final Payload contents) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public Payload get(String path) {
+        public Payload get(final String path) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public ExecResponse exec(String command) {
+        public ExecResponse exec(final String command) {
             SshAction action = new SshAction();
             action.method = "exec";
             action.instanceId = instanceId;
@@ -375,20 +390,18 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
 
         @Override
-        public ExecChannel execChannel(String command) {
+        public ExecChannel execChannel(final String command) {
             throw new UnsupportedOperationException();
         }
 
         @Override
-        public void connect() {
-        }
+        public void connect() { }
 
         @Override
-        public void disconnect() {
-        }
+        public void disconnect() { }
 
         @Override
-        public void put(String path, String contents) {
+        public void put(final String path, final String contents) {
             SshAction action = new SshAction();
             action.method = "put";
             action.instanceId = instanceId;
@@ -405,7 +418,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final String instance;
         private final ChaosType chaosType;
 
-        public Notification(String instance, ChaosType chaosType) {
+        public Notification(final String instance, final ChaosType chaosType) {
             this.instance = instance;
             this.chaosType = chaosType;
         }
@@ -423,27 +436,29 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
     public ChaosEmailNotifier chaosEmailNotifier() {
         return new ChaosEmailNotifier(null) {
             @Override
-            public String getSourceAddress(String to) {
+            public String getSourceAddress(final String to) {
                 return "source@chaosMonkey.foo";
             }
 
             @Override
-            public String[] getCcAddresses(String to) {
+            public String[] getCcAddresses(final String to) {
                 return new String[] {};
             }
 
             @Override
-            public String buildEmailSubject(String to) {
+            public String buildEmailSubject(final String to) {
                 return String.format("Testing Chaos termination notification for %s", to);
             }
 
             @Override
-            public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+            public void sendTerminationNotification(final InstanceGroup group, final String instance,
+                    final ChaosType chaosType) {
                 groupNotified.add(new Notification(instance, chaosType));
             }
 
             @Override
-            public void sendTerminationGlobalNotification(InstanceGroup group, String instance, ChaosType chaosType) {
+            public void sendTerminationGlobalNotification(final InstanceGroup group, final String instance,
+                    final ChaosType chaosType) {
                 globallyNotified.add(new Notification(instance, chaosType));
             }
         };
