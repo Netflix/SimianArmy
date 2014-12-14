@@ -31,11 +31,11 @@ apply plugin: 'idea'
 
 dependencies {
     // for the VMWareClient
-    compile 'com.cloudbees.thirdparty:vijava:latest.release'
+    compile 'com.cloudbees.thirdparty:vijava:5.0.0'
     compile 'dom4j:dom4j:1.6.1'
 
     // for DB support outside of AWS (SimpleDB not available)
-    compile 'org.mapdb:mapdb:latest.release'
+    compile 'org.mapdb:mapdb:0.9.5'
 
     compile 'javax.ws.rs:jsr311-api:1.1.1'
     compile 'com.sun.jersey:jersey-core:1.11'
@@ -45,12 +45,12 @@ dependencies {
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
     compile 'com.netflix.eureka:eureka-client:1.1.22'
-    compile 'com.amazonaws:aws-java-sdk:latest.release'
+    compile 'com.amazonaws:aws-java-sdk:1.8.11'
     compile 'commons-lang:commons-lang:2.6'
     compile 'joda-time:joda-time:2.0'
-    compile 'com.google.guava:guava:11.+'
-    compile 'org.apache.httpcomponents:httpclient:4.2.1'
-    compile 'org.apache.httpcomponents:httpcore:4.2.1'
+    compile 'com.google.guava:guava:11.0.2'
+    compile 'org.apache.httpcomponents:httpclient:4.3'
+    compile 'org.apache.httpcomponents:httpcore:4.3'
     compile 'org.jclouds.driver:jclouds-jsch:1.6.0'
     compile 'org.jclouds.driver:jclouds-slf4j:1.6.0'
     compile 'org.jclouds.api:ec2:1.6.0'
