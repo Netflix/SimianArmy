@@ -30,7 +30,6 @@ public class BurnCpuChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public BurnCpuChaosType(MonkeyConfiguration config) {
         super(config, "BurnCpu");

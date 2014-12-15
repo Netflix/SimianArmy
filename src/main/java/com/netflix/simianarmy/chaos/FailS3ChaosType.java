@@ -28,7 +28,6 @@ public class FailS3ChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public FailS3ChaosType(MonkeyConfiguration config) {
         super(config, "FailS3");

@@ -28,7 +28,6 @@ public class NetworkLossChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public NetworkLossChaosType(MonkeyConfiguration config) {
         super(config, "NetworkLoss");

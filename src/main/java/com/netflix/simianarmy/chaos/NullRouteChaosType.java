@@ -33,7 +33,6 @@ public class NullRouteChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public NullRouteChaosType(MonkeyConfiguration config) {
         super(config, "NullRoute");

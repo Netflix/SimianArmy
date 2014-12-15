@@ -116,8 +116,8 @@ public class TestBasicChaosInstanceSelector {
 
         // allow for 4% variation over all the selection runs
         int avg = Double.valueOf((RUNS / (double) group.instances().size()) * probability).intValue();
-        int max = Double.valueOf(avg + (avg * 0.04)).intValue();
-        int min = Double.valueOf(avg - (avg * 0.04)).intValue();
+        int max = Double.valueOf(avg + avg * 0.04).intValue();
+        int min = Double.valueOf(avg - avg * 0.04).intValue();
 
         for (Map.Entry<String, Integer> pair : selectMap.entrySet()) {
             Assert.assertTrue(pair.getValue() > min && pair.getValue() < max, pair.getKey() + " selected " + avg

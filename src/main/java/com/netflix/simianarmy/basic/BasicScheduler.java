@@ -109,7 +109,7 @@ public class BasicScheduler implements MonkeyScheduler {
             // we have events, so set the start time to the time left in what would have been the last cycle
             Date eventTime = events.get(0).eventTime();
             Date now = new Date();
-            long init = cycle - (now.getTime() - eventTime.getTime());
+            long init = cycle - now.getTime() + eventTime.getTime();
             LOGGER.info("Detected previous events within cycle, setting " + monkey.type().name() + " start to "
                     + new Date(now.getTime() + init));
             futures.put(monkey.type().name(),

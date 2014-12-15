@@ -28,7 +28,6 @@ public class FailDynamoDbChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public FailDynamoDbChaosType(MonkeyConfiguration config) {
         super(config, "FailDynamoDb");

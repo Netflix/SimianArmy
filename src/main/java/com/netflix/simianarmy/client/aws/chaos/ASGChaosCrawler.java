@@ -23,6 +23,7 @@ import java.util.List;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
 import com.amazonaws.services.autoscaling.model.Instance;
+
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
@@ -38,45 +39,55 @@ public class ASGChaosCrawler implements ChaosCrawler {
      */
     public enum Types implements GroupType {
 
-        /** only crawls AutoScalingGroups. */
+        /**
+         * only crawls AutoScalingGroups.
+         */
         ASG;
     }
 
-    /** The aws client. */
+    /**
+     * The aws client.
+     */
     private final AWSClient awsClient;
 
     /**
      * Instantiates a new basic chaos crawler.
      *
-     * @param awsClient
-     *            the aws client
+     * @param  awsClient  the aws client
      */
-    public ASGChaosCrawler(AWSClient awsClient) {
+    public ASGChaosCrawler(final AWSClient awsClient) {
         this.awsClient = awsClient;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public EnumSet<?> groupTypes() {
+    @SuppressWarnings("rawtypes")
+    public EnumSet groupTypes() {
         return EnumSet.allOf(Types.class);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<InstanceGroup> groups() {
         return groups((String[]) null);
     }
 
     @Override
-    public List<InstanceGroup> groups(String... names) {
+    public List<InstanceGroup> groups(final String... names) {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
         for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(names)) {
             InstanceGroup ig = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
             for (Instance inst : asg.getInstances()) {
                 ig.addInstance(inst.getInstanceId());
             }
+
             list.add(ig);
         }
+
         return list;
     }
 }
