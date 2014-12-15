@@ -42,7 +42,6 @@ public class FillDiskChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public FillDiskChaosType(MonkeyConfiguration config) {
         super(config, "FillDisk");

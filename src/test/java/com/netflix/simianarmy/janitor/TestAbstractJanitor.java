@@ -522,7 +522,7 @@ class TestJanitorResourceTracker implements JanitorResourceTracker {
         List<Resource> result = new ArrayList<Resource>();
         for (Resource r : resources.values()) {
             if (r.getResourceType().equals(resourceType)
-                    && (r.getState() != null && r.getState().equals(state))
+                    && r.getState() != null && r.getState().equals(state)
                     && r.getRegion().equals(region)) {
                 result.add(r.cloneResource());
             }

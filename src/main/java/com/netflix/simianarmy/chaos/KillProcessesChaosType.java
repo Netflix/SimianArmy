@@ -30,7 +30,6 @@ public class KillProcessesChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public KillProcessesChaosType(MonkeyConfiguration config) {
         super(config, "KillProcesses");

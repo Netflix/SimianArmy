@@ -313,8 +313,8 @@ public class VolumeTaggingMonkey extends Monkey {
      */
     private static boolean needsUpdate(Map<String, String> metadata,
             String owner, String instance, Date lastDetachTime) {
-        return (owner != null && !StringUtils.equals(metadata.get(JanitorMonkey.OWNER_TAG_KEY), owner))
-                || (instance != null && !StringUtils.equals(metadata.get(JanitorMonkey.INSTANCE_TAG_KEY), instance))
+        return owner != null && !StringUtils.equals(metadata.get(JanitorMonkey.OWNER_TAG_KEY), owner)
+                || instance != null && !StringUtils.equals(metadata.get(JanitorMonkey.INSTANCE_TAG_KEY), instance)
                 || lastDetachTime != null;
     }
 

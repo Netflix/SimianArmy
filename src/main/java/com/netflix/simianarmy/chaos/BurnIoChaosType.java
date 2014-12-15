@@ -59,7 +59,6 @@ public class BurnIoChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public BurnIoChaosType(MonkeyConfiguration config) {
         super(config, "BurnIO");

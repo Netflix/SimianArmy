@@ -142,6 +142,6 @@ public abstract class ChaosType {
         List<String> withRoot = cloudClient.listAttachedVolumes(instanceId, true);
         List<String> withoutRoot = cloudClient.listAttachedVolumes(instanceId, false);
 
-        return (withRoot.size() != withoutRoot.size());
+        return withRoot.size() != withoutRoot.size();
     }
 }

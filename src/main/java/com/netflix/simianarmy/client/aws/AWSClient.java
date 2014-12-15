@@ -312,7 +312,7 @@ public class AWSClient implements CloudClient {
     /**
      * Describe a set of specific ELBs.
      *
-     * @param names the ELB names
+     * @param name the ELB name
      * @return the ELBs
      */
     public LoadBalancerAttributes describeElasticLoadBalancerAttributes(String name) {

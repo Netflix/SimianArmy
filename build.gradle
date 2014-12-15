@@ -69,7 +69,7 @@ test {
     useTestNG()
 }
 
-tasks.withType(Compile) {
+tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint" << "-Werror"
 }
 
