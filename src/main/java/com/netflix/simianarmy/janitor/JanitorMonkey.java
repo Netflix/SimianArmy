@@ -72,6 +72,12 @@ public abstract class JanitorMonkey extends Monkey {
         String region();
 
         /**
+         * The accountName the monkey is running in.
+         * @return the accountName the monkey is running in.
+         */
+        String accountName();
+
+        /**
          * The Janitor resource tracker.
          * @return the Janitor resource tracker.
          */
