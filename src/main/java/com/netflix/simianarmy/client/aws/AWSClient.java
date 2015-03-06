@@ -114,6 +114,9 @@ public class AWSClient implements CloudClient {
     /** The region. */
     private final String region;
 
+    /** The plain name for AWS account */
+    private final String accountName;
+
     private final AWSCredentialsProvider awsCredentialsProvider;
 
     private ComputeService jcloudsComputeService;
@@ -152,6 +155,7 @@ public class AWSClient implements CloudClient {
      */
     public AWSClient(String region) {
         this.region = region;
+        this.accountName = "Default";
         this.awsCredentialsProvider = null;
     }
 
@@ -164,6 +168,7 @@ public class AWSClient implements CloudClient {
      */
     public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider) {
         this.region = region;
+        this.accountName = "Default";
         this.awsCredentialsProvider = awsCredentialsProvider;
     }
 
@@ -174,6 +179,16 @@ public class AWSClient implements CloudClient {
      */
     public String region() {
         return region;
+    }
+
+    /**
+     * The accountName.
+     *
+     * @accountName the plain name for the aws account easier to identify which account
+     * monkey is running in
+     */
+    public String accountName() {
+        return accountName;
     }
 
     /**

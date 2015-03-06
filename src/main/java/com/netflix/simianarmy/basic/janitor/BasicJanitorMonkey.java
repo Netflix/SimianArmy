@@ -53,6 +53,8 @@ public class BasicJanitorMonkey extends JanitorMonkey {
 
     private final String region;
 
+    private final String accountName;
+
     private final JanitorResourceTracker resourceTracker;
 
     private final MonkeyRecorder recorder;
@@ -72,6 +74,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         janitors = ctx.janitors();
         emailNotifier = ctx.emailNotifier();
         region = ctx.region();
+        accountName = ctx.accountName();
         resourceTracker = ctx.resourceTracker();
         recorder = ctx.recorder();
         calendar = ctx.calendar();
@@ -192,7 +195,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
      * @return the subject of the summary email
      */
     protected String getSummaryEmailSubject() {
-        return String.format("Janitor monkey execution summary (%s)", region);
+        return String.format("Janitor monkey execution summary (%s, %s)", accountName, region);
     }
 
     /**

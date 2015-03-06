@@ -222,7 +222,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
 
     @Override
     public String buildEmailSubject(String email) {
-        return String.format("Janitor Monkey Notification for %s", email);
+        return String.format("Janitor Monkey Notification for %s from buildEmailSubject", email);
     }
 
     /**
