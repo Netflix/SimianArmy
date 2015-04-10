@@ -1,5 +1,5 @@
 plugins {
-    id 'nebula.netflixoss' version '2.2.5'
+    id 'nebula.netflixoss' version '2.2.9'
 }
 
 // Establish version and status
@@ -9,7 +9,7 @@ apply plugin:'eclipse-wtp'
 
 repositories { 
     mavenLocal()
-    jcenter()
+    mavenCentral()
 }
 
 apply plugin: 'war'
