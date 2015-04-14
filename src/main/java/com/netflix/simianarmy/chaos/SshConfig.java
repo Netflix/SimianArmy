@@ -41,7 +41,8 @@ public class SshConfig {
     private final LoginCredentials sshCredentials;
 
     /**
-     * Constructor.
+     * Constructor. If it fails to build ssh credential by simianarmy.chaos.ssh.user and simianarmy.chaos.ssh.key,
+     * will try to build ssh credential by simianarmy.chaos.ssh.user and simianarmy.chaos.ssh.password.
      *
      * @param config
      *            Configuration to use
@@ -74,7 +75,12 @@ public class SshConfig {
         }
 
         if (privateKey == null) {
-            this.sshCredentials = null;
+            String sshPassword = config.getStrOrElse("simianarmy.chaos.ssh.password", null);
+            if (sshPassword == null) {
+                this.sshCredentials = null;
+            } else {
+                this.sshCredentials = LoginCredentials.builder().user(sshUser).password(sshPassword).build();
+            }
         } else {
             this.sshCredentials = LoginCredentials.builder().user(sshUser).privateKey(privateKey).build();
         }

@@ -18,7 +18,9 @@ package com.netflix.simianarmy.client.vsphere;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import com.amazonaws.AmazonServiceException;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -28,6 +30,8 @@ import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.ServiceInstance;
 import com.vmware.vim25.mo.VirtualMachine;
+import com.vmware.vim25.mo.Datacenter;
+import com.vmware.vim25.mo.Folder;
 
 /**
  * Wraps the connection to VSphere and handles the raw service calls.
@@ -42,6 +46,8 @@ import com.vmware.vim25.mo.VirtualMachine;
 public class VSphereServiceConnection {
     /** The type of managedEntity we operate on are virtual machines. */
     public static final String VIRTUAL_MACHINE_TYPE_NAME = "VirtualMachine";
+    /** The type of managedEntity we operate on are data center. */
+    public static final String DC_TYPE_NAME = "Datacenter";
 
     /** The username that is used to connect to VSpehere Center. */
     private String username = null;
@@ -121,6 +127,91 @@ public class VSphereServiceConnection {
                     );
         } else {
             return Arrays.copyOf(mes, mes.length, VirtualMachine[].class);
+        }
+    }
+
+    /**
+     * Return all VirtualMachines from VSpehere Center according to the absolute folder path.
+     * @param absolutePath path like datacenter/folder/../folder
+     * @throws AmazonServiceException
+     *             If there is any communication error. */
+    public List<VirtualMachine> describeVirtualMachines(String absolutePath) throws AmazonServiceException {
+        ArrayList<VirtualMachine> vmList = new ArrayList<VirtualMachine>();
+        String[] paths = absolutePath.split("/");
+        List<ManagedEntity> dcList = searchManagedEntities(DC_TYPE_NAME);
+        for (ManagedEntity datacenter: dcList) {
+            if (paths[0].equals(datacenter.getName())) {
+                Folder parent = null;
+                try {
+                    parent = ((Datacenter) datacenter).getVmFolder();
+                } catch (RemoteException e) {
+                    throw new AmazonServiceException("Can not query root folder from datacenter "
+                            + datacenter.getName(), e);
+                }
+                for (int i = 1; i < paths.length; i++) {
+                    boolean isFound = false;
+                    for (ManagedEntity entity: getChildEntity(parent)) {
+                        if (entity instanceof Folder && paths[i].equals(entity.getName())) {
+                            parent = (Folder) entity;
+                            isFound = true;
+                            break;
+                        }
+                    }
+                    if (!isFound) {
+                        throw new AmazonServiceException("Can not find " + paths[i] + " under " + paths[i - 1]);
+                    }
+                }
+                for (ManagedEntity entity: getChildEntity(parent)) {
+                    if (entity instanceof VirtualMachine) {
+                        vmList.add((VirtualMachine) entity);
+                    }
+                }
+                break;
+            }
+        }
+        return vmList;
+    }
+
+    /**
+     * Return all ManagedEntitys under a folder.
+     * @param parent folder entity.
+     * @throws AmazonServiceException
+     *             If there is any communication error.*/
+    public List<ManagedEntity> getChildEntity(Folder parent) throws AmazonServiceException {
+        ManagedEntity[] mes;
+        try {
+            mes = parent.getChildEntity();
+        } catch (RemoteException e) {
+            throw new AmazonServiceException("Can not query child entities from folder " + parent.getName(), e);
+        }
+        if (mes != null && mes.length > 0) {
+            return Arrays.asList(mes);
+        } else {
+            return new ArrayList<ManagedEntity>();
+        }
+    }
+
+    /**
+     * Return all ManagedEntitys from VSpehere Center.
+     * @param type Managed entity type.
+     * @throws AmazonServiceException
+     *             If there is any communication error.*/
+    public List<ManagedEntity> searchManagedEntities(String type) throws AmazonServiceException {
+        ManagedEntity[] mes;
+        try {
+            mes = getInventoryNavigator().searchManagedEntities(type);
+        } catch (InvalidProperty e) {
+            throw new AmazonServiceException("cannot query VSphere", e);
+        } catch (RuntimeFault e) {
+            throw new AmazonServiceException("cannot query VSphere", e);
+        } catch (RemoteException e) {
+            throw new AmazonServiceException("cannot query VSphere", e);
+        }
+
+        if (mes != null && mes.length > 0) {
+            return Arrays.asList(mes);
+        } else {
+            return new ArrayList<ManagedEntity>();
         }
     }
 

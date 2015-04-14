@@ -17,19 +17,30 @@ package com.netflix.simianarmy.client.vsphere;
 
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.basic.BasicChaosMonkeyContext;
+import com.netflix.simianarmy.client.vsphere.chaos.VFGChaosCrawler;
 
 /**
- * This Context extends the BasicContext in order to provide a different client: the VSphereClient.
- *
+ * This Context extends the BasicContext in order to provide a different client: the VSphereClient and
+ * add a different crawler: the VFGChaosCrawler.
  * @author ingmar.krusch@immobilienscout24.de
  */
 public class VSphereContext extends BasicChaosMonkeyContext {
+    private VSphereClient client;
+    private MonkeyConfiguration config;
+
+    /**
+     * Constructor.
+     */
+    public VSphereContext() {
+        setChaosCrawler(new VFGChaosCrawler(client, config));
+    }
+
     @Override
     protected void createClient() {
-        MonkeyConfiguration config = configuration();
+        config = configuration();
         final PropertyBasedTerminationStrategy terminationStrategy = new PropertyBasedTerminationStrategy(config);
         final VSphereServiceConnection connection = new VSphereServiceConnection(config);
-        final VSphereClient client = new VSphereClient(terminationStrategy, connection);
+        client = new VSphereClient(terminationStrategy, connection);
         setCloudClient(client);
     }
 }

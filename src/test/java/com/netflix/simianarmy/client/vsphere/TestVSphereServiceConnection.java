@@ -17,6 +17,7 @@
 package com.netflix.simianarmy.client.vsphere;
 
 import static com.netflix.simianarmy.client.vsphere.VSphereServiceConnection.VIRTUAL_MACHINE_TYPE_NAME;
+import static com.netflix.simianarmy.client.vsphere.VSphereServiceConnection.DC_TYPE_NAME;
 import static junit.framework.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 
 import java.rmi.RemoteException;
+import java.util.List;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -35,6 +37,8 @@ import com.vmware.vim25.RuntimeFault;
 import com.vmware.vim25.mo.InventoryNavigator;
 import com.vmware.vim25.mo.ManagedEntity;
 import com.vmware.vim25.mo.VirtualMachine;
+import com.vmware.vim25.mo.Datacenter;
+import com.vmware.vim25.mo.Folder;
 
 /**
  * @author ingmar.krusch@immobilienscout24.de
@@ -99,6 +103,80 @@ public class TestVSphereServiceConnection {
 
         verify(inventoryNavigatorMock).searchManagedEntities(VIRTUAL_MACHINE_TYPE_NAME);
         assertSame(meMocks[0], actualVMs[0]);
+    }
+
+    @Test
+    public void shouldTraverseDataCenterAndFolderAtLeastOneVMIsReturned() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        InventoryNavigator inventoryNavigatorMock = service.getInventoryNavigatorMock();
+
+        Datacenter[] dcMocks = new Datacenter[] {mock(Datacenter.class)};
+        Folder rootFolderMock = mock(Folder.class);
+        Folder[] folderMocks = new Folder[] {mock(Folder.class), mock(Folder.class)};
+        VirtualMachine[] vmMocks = new VirtualMachine[] {mock(VirtualMachine.class)};
+        when(inventoryNavigatorMock.searchManagedEntities(DC_TYPE_NAME)).thenReturn(dcMocks);
+        when(dcMocks[0].getName()).thenReturn("DC");
+        when(dcMocks[0].getVmFolder()).thenReturn(rootFolderMock);
+        when(rootFolderMock.getChildEntity()).thenReturn(folderMocks);
+        when(folderMocks[0].getName()).thenReturn("Folder-001");
+        when(folderMocks[1].getName()).thenReturn("Folder-002");
+        when(folderMocks[1].getChildEntity()).thenReturn(vmMocks);
+        List<VirtualMachine> actualVMs = service.describeVirtualMachines("DC/Folder-002");
+        assertSame(vmMocks[0], actualVMs.get(0));
+    }
+
+    @Test(expectedExceptions = AmazonServiceException.class)
+    public void shouldEncapsulateRemoteExceptionWhenGetVmFolder() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        InventoryNavigator inventoryNavigatorMock = service.getInventoryNavigatorMock();
+
+        Datacenter[] dcMocks = new Datacenter[] {mock(Datacenter.class)};
+        when(inventoryNavigatorMock.searchManagedEntities(DC_TYPE_NAME)).thenReturn(dcMocks);
+        when(dcMocks[0].getName()).thenReturn("DC");
+        when(dcMocks[0].getVmFolder()).thenThrow(new RemoteException());
+        service.describeVirtualMachines("DC");
+    }
+
+    @Test(expectedExceptions = AmazonServiceException.class)
+    public void shouldEncapsulateInvalidPropertyExceptionWhenSearchManagedEntities() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        InventoryNavigator inventoryNavigatorMock = service.getInventoryNavigatorMock();
+        when(inventoryNavigatorMock.searchManagedEntities(DC_TYPE_NAME)).thenThrow(new InvalidProperty());
+
+        service.searchManagedEntities(DC_TYPE_NAME);
+    }
+
+    @Test(expectedExceptions = AmazonServiceException.class)
+    public void shouldEncapsulateIRuntimeFaultExceptionWhenSearchManagedEntities() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        InventoryNavigator inventoryNavigatorMock = service.getInventoryNavigatorMock();
+        when(inventoryNavigatorMock.searchManagedEntities(DC_TYPE_NAME)).thenThrow(new RuntimeFault());
+
+        service.searchManagedEntities(DC_TYPE_NAME);
+    }
+
+    @Test(expectedExceptions = AmazonServiceException.class)
+    public void shouldEncapsulateRemoteExceptionWhenSearchManagedEntities() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        InventoryNavigator inventoryNavigatorMock = service.getInventoryNavigatorMock();
+        when(inventoryNavigatorMock.searchManagedEntities(DC_TYPE_NAME)).thenThrow(new RemoteException());
+
+        service.searchManagedEntities(DC_TYPE_NAME);
+    }
+
+    @Test(expectedExceptions = AmazonServiceException.class)
+    public void shouldEncapsulateRemoteExceptionWhenGetChildEntity() throws RemoteException {
+        VSphereServiceConnectionWithMockedInventoryNavigator service =
+                new VSphereServiceConnectionWithMockedInventoryNavigator();
+        Folder parent = mock(Folder.class);
+        when(parent.getChildEntity()).thenThrow(new RemoteException());
+
+        service.getChildEntity(parent);
     }
 
     @Test(expectedExceptions = AmazonServiceException.class)
