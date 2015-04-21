@@ -74,7 +74,7 @@ public class SshConfig {
         }
 
         if (privateKey == null) {
-            this.sshCredentials = null;
+        	   this.sshCredentials = LoginCredentials.builder().user(sshUser).build();
         } else {
             this.sshCredentials = LoginCredentials.builder().user(sshUser).privateKey(privateKey).build();
         }

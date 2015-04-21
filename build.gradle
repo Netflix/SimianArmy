@@ -35,8 +35,8 @@ dependencies {
     compile 'commons-lang:commons-lang:2.6'
     compile 'com.google.guava:guava:11.0.2'
     compile 'org.apache.httpcomponents:httpclient:4.3'
-    compile 'org.jclouds.driver:jclouds-jsch:1.6.0'
-    compile 'org.jclouds.api:ec2:1.6.0'
+    compile 'org.apache.jclouds.driver:jclouds-jsch:1.9.0'
+    compile 'org.apache.jclouds.api:ec2:1.9.0'
 
     testCompile 'org.testng:testng:6.3.1'
     testCompile 'org.mockito:mockito-core:1.8.5'
