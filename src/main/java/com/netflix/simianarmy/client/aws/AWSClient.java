@@ -88,6 +88,7 @@ import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.domain.LoginCredentials;
+import org.jclouds.ec2.EC2ApiMetadata;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
@@ -725,7 +726,7 @@ public class AWSClient implements CloudClient {
         if (jcloudsComputeService == null) {
             String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
             String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
-            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("ec2").credentials(username, password)
+            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder(new EC2ApiMetadata()).credentials(username, password)
                     .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
                     .buildView(ComputeServiceContext.class);
 
