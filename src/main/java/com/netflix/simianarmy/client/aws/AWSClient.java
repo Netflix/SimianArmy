@@ -726,7 +726,7 @@ public class AWSClient implements CloudClient {
         if (jcloudsComputeService == null) {
             String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
             String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
-            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder(new EC2ApiMetadata()).credentials(username, password)
+            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("aws-ec2").credentials(username, password)
                     .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
                     .buildView(ComputeServiceContext.class);
 

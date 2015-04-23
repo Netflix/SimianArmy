@@ -39,6 +39,8 @@ dependencies {
     compile 'org.apache.jclouds.driver:jclouds-jsch:1.9.0'
     compile 'org.apache.jclouds.driver:jclouds-slf4j:1.9.0'
     compile 'org.apache.jclouds.api:ec2:1.9.0'
+    compile 'org.apache.jclouds.provider:aws-ec2:1.9.0'
+    compile 'ch.qos.logback:logback-classic:1.0.13'
 
 
     testCompile 'org.testng:testng:6.3.1'
