@@ -38,6 +38,7 @@ dependencies {
     compile 'com.google.auto.service:auto-service:1.0-rc2'
     compile 'org.apache.jclouds.driver:jclouds-jsch:1.9.0'
     compile 'org.apache.jclouds.driver:jclouds-slf4j:1.9.0'
+    compile 'org.apache.jclouds.api:ec2:1.9.0'
 
 
     testCompile 'org.testng:testng:6.3.1'
