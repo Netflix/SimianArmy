@@ -35,7 +35,7 @@ public abstract class JanitorMonkey extends Monkey {
     /** The key name of the Janitor meta tag used to tag resources. */
     public static final String JANITOR_META_TAG = "JANITOR_META";
     /** The key name of the tag owner used to tag resources. */
-    public static final String OWNER_TAG_KEY = "owner";
+    public static String OWNER_TAG_KEY;
     /** The key name of the tag instance used to tag resources. */
     public static final String INSTANCE_TAG_KEY = "instance";
     /** The key name of the tag detach time used to tag resources. */
