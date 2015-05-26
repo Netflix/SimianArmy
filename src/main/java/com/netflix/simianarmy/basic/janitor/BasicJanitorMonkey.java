@@ -83,9 +83,6 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         cfg.reload();
         context().resetEventReport();
 
-        // Set the owner tag from properties
-        OWNER_TAG_KEY = cfg.getStrOrElse("simianarmy.janitor.tags.owner", "owner");
-
         if (!isJanitorMonkeyEnabled()) {
             return;
         } else {
