@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.amazonaws.AmazonServiceException;
 import com.google.common.collect.Maps;
 
 import org.apache.commons.lang.StringUtils;
@@ -268,13 +269,37 @@ public class VolumeTaggingMonkey extends Monkey {
         if (config.getBoolOrElse(prop, true)) {
             LOGGER.info("Volume tagging monkey is leashed. No real change is made to the volume.");
         } else {
-            try {
-                awsClient.createTagsForResources(janitorTags, volume.getVolumeId());
-                evt = context().recorder().newEvent(type(), EventTypes.TAGGING_JANITOR,
-                        awsClient.region(), volume.getVolumeId());
-                evt.addField(JanitorMonkey.JANITOR_META_TAG, meta);
-            } catch (Exception e) {
-                LOGGER.error(String.format("Failed to update the tag for volume %s", volume.getVolumeId()));
+            int currentTry = 0;
+            int maxRetries = 5;
+            while(maxRetries-- > 0) {
+                try {
+                    currentTry++;
+                    //call Amazon to set Volume Meta Tag
+                    awsClient.createTagsForResources(janitorTags, volume.getVolumeId());
+                    evt = context().recorder().newEvent(type(), EventTypes.TAGGING_JANITOR,
+                            awsClient.region(), volume.getVolumeId());
+                    evt.addField(JanitorMonkey.JANITOR_META_TAG, meta);
+                } catch (AmazonServiceException e) {
+                    if ("RequestLimitExceeded".equals(e.getErrorCode())) {
+                        //exponentially increase the backoff duration on each consecutive RequestLimitExceeded failure
+                        long backoffDuration = getSleepDuration(currentTry, 10, 5000);
+                        LOGGER.debug(String.format("RequestLimitExceeded when tagging volume %s", volume.getVolumeId()));
+                        if (maxRetries > 1) {
+                            LOGGER.debug(String.format("Will retry after %s ms backoff", backoffDuration));
+                        } else {
+                            LOGGER.debug(String.format("Will not retry after backoff"));
+                        }
+                        try {
+                            Thread.sleep(backoffDuration);
+                        } catch (InterruptedException e1) {
+                            LOGGER.error(String.format("Failed to update the tag for volume %s", volume.getVolumeId()));
+                        }
+                    } else {
+                        LOGGER.error(String.format("Failed to update the tag for volume %s ; AWS Exception Error Code: %s", volume.getVolumeId(), e.getErrorCode()));
+                    }
+                } catch (Exception e) {
+                    LOGGER.error(String.format("Failed to update the tag for volume %s : Exception caught", volume.getVolumeId()));
+                }
             }
         }
         return evt;
@@ -296,6 +321,13 @@ public class VolumeTaggingMonkey extends Monkey {
         meta.append(String.format("%s=%s", JanitorMonkey.DETACH_TIME_TAG_KEY,
                 lastDetachTime == null ? "" : AWSResource.DATE_FORMATTER.print(lastDetachTime.getTime())));
         return meta.toString();
+    }
+
+    /* exponential backoff algorithm to deal with Rate Limit Exceeded */
+    public static long getSleepDuration(int currentTry, long minSleepMillis, long maxSleepMillis) {
+        currentTry = Math.max(0, currentTry);
+        long currentSleepMillis = (long) (minSleepMillis*Math.pow(2, currentTry));
+        return Math.min(currentSleepMillis, maxSleepMillis);
     }
 
     private static String getTagValue(String key, List<Tag> tags) {
