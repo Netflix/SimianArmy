@@ -25,6 +25,7 @@ import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.aws.janitor.crawler.InstanceJanitorCrawler;
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import com.netflix.simianarmy.client.edda.EddaClient;
 import com.netflix.simianarmy.janitor.JanitorCrawler;
 
@@ -96,7 +97,8 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
 
     @Override
     public String getOwnerEmailForResource(Resource resource) {
-        return null;
+        Validate.notNull(resource);
+        return resource.getTag(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
     }
 
     private List<Resource> getInstanceResources(String... instanceIds) {
@@ -170,7 +172,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
                 resource.setTag(key, value);
                 if ("aws:autoscaling:groupName".equals(key)) {
                     asgName = value;
-                } else if (owner == null && "owner".equals(key)) {
+                } else if (owner == null && BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY.equals(key)) {
                     resource.setOwnerEmail(value);
                 }
             }
@@ -257,8 +259,8 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
                 JsonNode tags = image.get("tags");
                 for (Iterator<JsonNode> tagIt = tags.getElements(); tagIt.hasNext();) {
                     JsonNode tag = tagIt.next();
-                    if (tag.get("owner") != null) {
-                        imageToOwner.put(imageId, tag.get("owner").getTextValue());
+                    if (tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY) != null) {
+                        imageToOwner.put(imageId, tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY).getTextValue());
                         break;
                     }
                 }
