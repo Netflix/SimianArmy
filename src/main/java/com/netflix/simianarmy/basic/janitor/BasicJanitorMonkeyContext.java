@@ -46,6 +46,7 @@ import com.netflix.simianarmy.aws.janitor.rule.asg.DiscoveryASGInstanceValidator
 import com.netflix.simianarmy.aws.janitor.rule.asg.DummyASGInstanceValidator;
 import com.netflix.simianarmy.aws.janitor.rule.asg.OldEmptyASGRule;
 import com.netflix.simianarmy.aws.janitor.rule.asg.SuspendedASGRule;
+import com.netflix.simianarmy.aws.janitor.rule.generic.UntaggedRule;
 import com.netflix.simianarmy.aws.janitor.rule.instance.OrphanedInstanceRule;
 import com.netflix.simianarmy.aws.janitor.rule.launchconfig.OldUnusedLaunchConfigRule;
 import com.netflix.simianarmy.aws.janitor.rule.snapshot.NoGeneratedAMIRule;
@@ -186,6 +187,15 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                                     instanceValidator
                     ));
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
+
         JanitorCrawler crawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             crawler = new EddaASGJanitorCrawler(createEddaClient(), awsClient().region());
@@ -210,6 +220,15 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                                             "simianarmy.janitor.rule.orphanedInstanceRule.retentionDaysWithoutOwner",
                                             8)));
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
+
         JanitorCrawler instanceCrawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             instanceCrawler = new EddaInstanceJanitorCrawler(createEddaClient(), awsClient().region());
@@ -237,6 +256,15 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                         "simianarmy.janitor.rule.deleteOnTerminationRule.retentionDays", 3)));
             }
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
+
         JanitorCrawler volumeCrawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             volumeCrawler = new EddaEBSVolumeJanitorCrawler(createEddaClient(), awsClient().region());
@@ -258,6 +286,15 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.noGeneratedAMIRule.retentionDays", 7)));
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
+
         JanitorCrawler snapshotCrawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             snapshotCrawler = new EddaEBSSnapshotJanitorCrawler(
@@ -281,6 +318,15 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.oldUnusedLaunchConfigRule.retentionDays", 3)));
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
+
         JanitorCrawler crawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
             crawler = new EddaLaunchConfigJanitorCrawler(
@@ -313,6 +359,14 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.unusedImageRule.lastReferenceDaysThreshold", 45)));
         }
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
+                    (int) configuration().getNumOrElse(
+                            "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
+                            (int) configuration().getNumOrElse(
+                                    "simianarmy.janitor.rule.untaggedRule.retentionDaysWithoutOwner",
+                                    8)));
+        }
 
         BasicJanitorContext janitorCtx = new BasicJanitorContext(
                 monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
@@ -336,6 +390,17 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             }
         }
         return enabledResourceSet;
+    }
+
+    private Set<String> getPropertySet(String property) {
+        Set<String> propertyValueSet = new HashSet<String>();
+        String propertyValue = configuration().getStr(property);
+        if (StringUtils.isNotBlank(propertyValue)) {
+            for (String propertyValueItem : propertyValue.split(",")) {
+                propertyValueSet.add(propertyValueItem.trim());
+            }
+        }
+        return propertyValueSet;
     }
 
     public JanitorEmailNotifier.Context getJanitorEmailNotifierContext() {
