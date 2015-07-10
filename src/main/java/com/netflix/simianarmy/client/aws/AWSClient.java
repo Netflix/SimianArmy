@@ -18,6 +18,7 @@
 package com.netflix.simianarmy.client.aws;
 
 import com.amazonaws.AmazonServiceException;
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
@@ -117,6 +118,8 @@ public class AWSClient implements CloudClient {
 
     private final AWSCredentialsProvider awsCredentialsProvider;
 
+    private final ClientConfiguration awsClientConfig;
+
     private ComputeService jcloudsComputeService;
 
     /**
@@ -154,6 +157,7 @@ public class AWSClient implements CloudClient {
     public AWSClient(String region) {
         this.region = region;
         this.awsCredentialsProvider = null;
+        this.awsClientConfig = null;
     }
 
     /**
@@ -166,6 +170,35 @@ public class AWSClient implements CloudClient {
     public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider) {
         this.region = region;
         this.awsCredentialsProvider = awsCredentialsProvider;
+        this.awsClientConfig = null;
+    }
+
+    /**
+     * The constructor allows you to provide your own AWS client configuration.
+     * @param region
+     *          the region
+     * @param awsClientConfig
+     *          the AWS client configuration
+     */
+    public AWSClient(String region, ClientConfiguration awsClientConfig) {
+        this.region = region;
+        this.awsCredentialsProvider = null;
+        this.awsClientConfig = awsClientConfig;
+    }
+
+    /**
+     * The constructor allows you to provide your own AWS credentials provider and client config.
+     * @param region
+     *          the region
+     * @param awsCredentialsProvider
+     *          the AWS credentials provider
+     * @param awsClientConfig
+     *          the AWS client configuration
+     */
+    public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider, ClientConfiguration awsClientConfig) {
+        this.region = region;
+        this.awsCredentialsProvider = awsCredentialsProvider;
+        this.awsClientConfig = awsClientConfig;
     }
 
     /**
@@ -184,10 +217,18 @@ public class AWSClient implements CloudClient {
      */
     protected AmazonEC2 ec2Client() {
         AmazonEC2 client;
-        if (awsCredentialsProvider == null) {
-            client = new AmazonEC2Client();
+        if (awsClientConfig == null) {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonEC2Client();
+            } else {
+                client = new AmazonEC2Client(awsCredentialsProvider);
+            }
         } else {
-            client = new AmazonEC2Client(awsCredentialsProvider);
+            if (awsCredentialsProvider == null) {
+                client = new AmazonEC2Client(awsClientConfig);
+            } else {
+                client = new AmazonEC2Client(awsCredentialsProvider, awsClientConfig);
+            }
         }
         client.setEndpoint("ec2." + region + ".amazonaws.com");
         return client;
@@ -200,10 +241,18 @@ public class AWSClient implements CloudClient {
      */
     protected AmazonAutoScalingClient asgClient() {
         AmazonAutoScalingClient client;
-        if (awsCredentialsProvider == null) {
-            client = new AmazonAutoScalingClient();
+        if (awsClientConfig == null) {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonAutoScalingClient();
+            } else {
+                client = new AmazonAutoScalingClient(awsCredentialsProvider);
+            }
         } else {
-            client = new AmazonAutoScalingClient(awsCredentialsProvider);
+            if (awsCredentialsProvider == null) {
+                client = new AmazonAutoScalingClient(awsClientConfig);
+            } else {
+                client = new AmazonAutoScalingClient(awsCredentialsProvider, awsClientConfig);
+            }
         }
         client.setEndpoint("autoscaling." + region + ".amazonaws.com");
         return client;
@@ -216,10 +265,18 @@ public class AWSClient implements CloudClient {
      */
     protected AmazonElasticLoadBalancingClient elbClient() {
         AmazonElasticLoadBalancingClient client;
-        if (awsCredentialsProvider == null) {
-            client = new AmazonElasticLoadBalancingClient();
+        if (awsClientConfig == null) {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonElasticLoadBalancingClient();
+            } else {
+                client = new AmazonElasticLoadBalancingClient(awsCredentialsProvider);
+            }
         } else {
-            client = new AmazonElasticLoadBalancingClient(awsCredentialsProvider);
+            if (awsCredentialsProvider == null) {
+                client = new AmazonElasticLoadBalancingClient(awsClientConfig);
+            } else {
+                client = new AmazonElasticLoadBalancingClient(awsCredentialsProvider, awsClientConfig);
+            }
         }
         client.setEndpoint("elasticloadbalancing." + region + ".amazonaws.com");
         return client;
@@ -232,10 +289,18 @@ public class AWSClient implements CloudClient {
      */
     public AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client;
-        if (awsCredentialsProvider == null) {
-            client = new AmazonSimpleDBClient();
+        if (awsClientConfig == null) {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonSimpleDBClient();
+            } else {
+                client = new AmazonSimpleDBClient(awsCredentialsProvider);
+            }
         } else {
-            client = new AmazonSimpleDBClient(awsCredentialsProvider);
+            if (awsCredentialsProvider == null) {
+                client = new AmazonSimpleDBClient(awsClientConfig);
+            } else {
+                client = new AmazonSimpleDBClient(awsCredentialsProvider, awsClientConfig);
+            }
         }
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
@@ -311,9 +376,9 @@ public class AWSClient implements CloudClient {
     }
 
     /**
-     * Describe a set of specific ELBs.
+     * Describe a specific ELB.
      *
-     * @param names the ELB names
+     * @param name the ELB names
      * @return the ELBs
      */
     public LoadBalancerAttributes describeElasticLoadBalancerAttributes(String name) {
