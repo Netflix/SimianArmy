@@ -28,6 +28,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 
@@ -86,6 +87,17 @@ public class BasicSimianArmyContext implements Monkey.Context {
 
     private final String region;
 
+    private ClientConfiguration awsClientConfig = new ClientConfiguration();
+
+    /* If configured, the proxy to be used when making AWS API requests */
+    private final String proxyHost;
+
+    private final String proxyPort;
+
+    private final String proxyUsernaem;
+
+    private final String proxyPassword;
+
     /** protected constructor as the Shell is meant to be subclassed. */
     protected BasicSimianArmyContext(String... configFiles) {
         eventReport = new LinkedList<Event>();
@@ -105,9 +117,23 @@ public class BasicSimianArmyContext implements Monkey.Context {
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
+        // Check for and configure optional proxy configuration
+        proxyHost = config.getStr("simianarmy.client.aws.proxyHost");
+        proxyPort = config.getStr("simianarmy.client.aws.proxyPort");
+        proxyUsernaem = config.getStr("simianarmy.client.aws.proxyUser");
+        proxyPassword = config.getStr("simianarmy.client.aws.proxyPassword");
+        if ((proxyHost != null) && (proxyPort != null)) {
+            awsClientConfig.setProxyHost(proxyHost);
+            awsClientConfig.setProxyPort(Integer.parseInt(proxyPort));
+            if ((proxyUsernaem != null) && (proxyPassword != null)) {
+                awsClientConfig.setProxyUsername(proxyUsernaem);
+                awsClientConfig.setProxyPassword(proxyPassword);
+            }
+        }
+
         assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
         if (assumeRoleArn != null) {
-            this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn);
+            this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn, awsClientConfig);
         }
 
         // if credentials are set explicitly make them available to the AWS SDK
@@ -173,11 +199,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
     }
 
     /**
-     * Create the specific client within passed region, using the appropriate AWS credentials provider.
+     * Create the specific client within passed region, using the appropriate AWS credentials provider
+     * and client configuration.
      * @param clientRegion
      */
     protected void createClient(String clientRegion) {
-        this.client = new AWSClient(clientRegion, awsCredentialsProvider);
+        this.client = new AWSClient(clientRegion, awsCredentialsProvider, awsClientConfig);
         setCloudClient(this.client);
     }
 
