@@ -73,10 +73,13 @@ public class BasicJanitorRuleEngine implements JanitorRuleEngine {
             Date nearestTerminationTime = null;
             for (Rule rule : rules) {
                 Resource clone = resource.cloneResource();
-                if (!rule.isValid(clone) && (nearestTerminationTime == null
-                        || nearestTerminationTime.after(clone.getExpectedTerminationTime()))) {
-                    nearestRule = rule;
-                    nearestTerminationTime = clone.getExpectedTerminationTime();
+                if (!rule.isValid(clone)) {
+                    if (clone.getExpectedTerminationTime() != null) {
+                        if (nearestTerminationTime == null || nearestTerminationTime.after(clone.getExpectedTerminationTime())) {
+                            nearestRule = rule;
+                            nearestTerminationTime = clone.getExpectedTerminationTime();
+                        }
+                    }
                 }
             }
         }

@@ -86,6 +86,9 @@ public class BasicSimianArmyContext implements Monkey.Context {
 
     private final String region;
 
+    /** The key name of the tag owner used to tag resources - across all Monkeys */
+    public static String GLOBAL_OWNER_TAGKEY;
+
     /** protected constructor as the Shell is meant to be subclassed. */
     protected BasicSimianArmyContext(String... configFiles) {
         eventReport = new LinkedList<Event>();
@@ -104,6 +107,8 @@ public class BasicSimianArmyContext implements Monkey.Context {
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
+
+        GLOBAL_OWNER_TAGKEY = config.getStrOrElse("simianarmy.tags.owner", "owner");
 
         assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
         if (assumeRoleArn != null) {

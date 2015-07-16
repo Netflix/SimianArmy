@@ -7,6 +7,7 @@ import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import com.netflix.simianarmy.client.edda.EddaClient;
 import com.netflix.simianarmy.janitor.JanitorCrawler;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
@@ -103,7 +104,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
             for (Iterator<JsonNode> tagsIt = tags.getElements(); tagsIt.hasNext();) {
                 JsonNode tag = tagsIt.next();
                 String tagKey = tag.get("key").getTextValue();
-                if ("owner".equals(tagKey)) {
+                if (BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY.equals(tagKey)) {
                     instanceToOwner.put(instanceId, tag.get("value").getTextValue());
                     break;
                 }
@@ -131,7 +132,8 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
 
     @Override
     public String getOwnerEmailForResource(Resource resource) {
-        return null;
+        Validate.notNull(resource);
+        return resource.getTag(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
     }
 
     private List<Resource> getVolumeResources(String... volumeIds) {
@@ -316,7 +318,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
         StringBuilder meta = new StringBuilder();
         meta.append(String.format("%s=%s;",
                 JanitorMonkey.INSTANCE_TAG_KEY, instance == null ? "" : instance));
-        meta.append(String.format("%s=%s;", JanitorMonkey.OWNER_TAG_KEY, owner == null ? "" : owner));
+        meta.append(String.format("%s=%s;", BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY, owner == null ? "" : owner));
         meta.append(String.format("%s=%s", JanitorMonkey.DETACH_TIME_TAG_KEY,
                 lastDetachTime == null ? "" : AWSResource.DATE_FORMATTER.print(lastDetachTime)));
         return meta.toString();

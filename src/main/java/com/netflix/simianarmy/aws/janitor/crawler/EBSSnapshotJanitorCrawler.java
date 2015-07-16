@@ -26,7 +26,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,7 +113,8 @@ public class EBSSnapshotJanitorCrawler extends AbstractAWSJanitorCrawler {
 
     @Override
     public String getOwnerEmailForResource(Resource resource) {
-        String owner = resource.getTag("creator");
+        Validate.notNull(resource);
+        String owner = resource.getTag(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
         if (owner == null) {
             owner = super.getOwnerEmailForResource(resource);
         }

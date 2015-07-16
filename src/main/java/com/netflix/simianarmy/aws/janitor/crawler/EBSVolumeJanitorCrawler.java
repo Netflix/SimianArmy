@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,7 +110,7 @@ public class EBSVolumeJanitorCrawler extends AbstractAWSJanitorCrawler {
             // try to find the owner from Janitor Metadata tag set by the volume tagging monkey.
             Map<String, String> janitorTag = VolumeTaggingMonkey.parseJanitorMetaTag(resource.getTag(
                     JanitorMonkey.JANITOR_META_TAG));
-            owner = janitorTag.get(JanitorMonkey.OWNER_TAG_KEY);
+            owner = janitorTag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
         }
         return owner;
     }
