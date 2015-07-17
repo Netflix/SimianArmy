@@ -31,7 +31,7 @@ dependencies {
     compile('com.netflix.eureka:eureka-client:1.1.22') {
         exclude group: 'com.sun.jersey', module: 'jersey-bundle'
     }
-    compile 'com.amazonaws:aws-java-sdk:1.8.11'
+    compile 'com.amazonaws:aws-java-sdk:1.10.5.1'
     compile 'commons-lang:commons-lang:2.6'
     compile 'com.google.guava:guava:11.0.2'
     compile 'org.apache.httpcomponents:httpclient:4.3'
