@@ -107,7 +107,12 @@ public class BasicSimianArmyContext implements Monkey.Context {
         }
         LOGGER.info("The following are properties in the context.");
         for (Entry<Object, Object> prop : properties.entrySet()) {
-            LOGGER.info(String.format("%s = %s", prop.getKey(), prop.getValue()));
+            Object propertyKey = prop.getKey();
+            if (isSafeToLog(propertyKey)) {
+                LOGGER.info(String.format("%s = %s", propertyKey, prop.getValue()));
+            } else {
+                LOGGER.info(String.format("%s = (not shown here)", propertyKey));
+            }
         }
 
         config = new BasicConfiguration(properties);
@@ -147,6 +152,18 @@ public class BasicSimianArmyContext implements Monkey.Context {
 
         createRecorder();
 
+    }
+
+    /**
+     * Checks whether it is safe to log the property based on the given
+     * property key.
+     * @param propertyKey The key for the property, expected to be resolvable to a String
+     * @return A boolean indicating whether it is safe to log the corresponding property
+     */
+    protected boolean isSafeToLog(Object propertyKey) {
+        String propertyKeyName = propertyKey.toString();
+        return !propertyKeyName.contains("secretKey")
+                && !propertyKeyName.contains("vsphere.password");
     }
 
     /** loads the given config on top of the config read by previous calls. */
