@@ -1,5 +1,6 @@
 package com.netflix.simianarmy.basic.chaos;
 
+import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosType;
 
@@ -31,6 +32,15 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
      * {@inheritDoc}
      */
     @Override
+    protected Event terminateInstance(InstanceGroup group, String inst, ChaosType chaosType) {
+        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
+        return super.terminateInstance(noSuffixGroup, inst, chaosType);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     protected boolean isMaxTerminationCountExceeded(InstanceGroup group) {
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
         return super.isMaxTerminationCountExceeded(noSuffixGroup);
@@ -56,15 +66,6 @@ public class CloudFormationChaosMonkey extends BasicChaosMonkey {
     protected long getLastOptInMilliseconds(InstanceGroup group) {
         InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
         return super.getLastOptInMilliseconds(noSuffixGroup);
-    }
-
-    /**
-     * Handle email notifications for no suffix instance groups.
-     */
-    @Override
-    public void sendTerminationNotification(InstanceGroup group, String instance, ChaosType chaosType) {
-        InstanceGroup noSuffixGroup = noSuffixInstanceGroup(group);
-        super.sendTerminationNotification(noSuffixGroup, instance, chaosType);
     }
 
     /**
