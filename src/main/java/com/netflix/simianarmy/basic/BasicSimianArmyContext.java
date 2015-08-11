@@ -81,6 +81,8 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** If configured, the ARN of Role to be assumed. */
     private final String assumeRoleArn;
 
+    private final String accountName;
+
     private final String account;
 
     private final String secret;
@@ -120,6 +122,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
 
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
+        accountName = config.getStrOrElse("simianarmy.client.aws.accountName", "Default");
         region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
 
         // Check for and configure optional proxy configuration
@@ -239,6 +242,14 @@ public class BasicSimianArmyContext implements Monkey.Context {
      */
     public String region() {
         return region;
+    }
+
+    /**
+     * Gets the accountName
+     * @return the accountName
+     */
+    public String accountName() {
+        return accountName;
     }
 
     @Override
