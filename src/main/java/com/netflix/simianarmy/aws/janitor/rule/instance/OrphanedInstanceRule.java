@@ -42,6 +42,7 @@ public class OrphanedInstanceRule implements Rule {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrphanedInstanceRule.class);
 
     private static final String TERMINATION_REASON = "No ASG is associated with this instance";
+    private static final String ASG_OR_OPSWORKS_TERMINATION_REASON = "No ASG or OpsWorks stack is associated with this instance";
 
     private final MonkeyCalendar calendar;
 
@@ -50,6 +51,8 @@ public class OrphanedInstanceRule implements Rule {
     private final int retentionDaysWithOwner;
 
     private final int retentionDaysWithoutOwner;
+    
+    private final boolean respectOpsWorksParentage;
 
     /**
      * Constructor for OrphanedInstanceRule.
@@ -64,9 +67,11 @@ public class OrphanedInstanceRule implements Rule {
      * @param retentionDaysWithoutOwner
      *            The number of days that the orphaned instance is retained before being terminated
      *            when the instance has no owner specified
+     * @param respectOpsWorksParentage
+     *            If true, don't consider members of an OpsWorks stack as orphans 
      */
     public OrphanedInstanceRule(MonkeyCalendar calendar,
-            int instanceAgeThreshold, int retentionDaysWithOwner, int retentionDaysWithoutOwner) {
+            int instanceAgeThreshold, int retentionDaysWithOwner, int retentionDaysWithoutOwner, boolean respectOpsWorksParentage) {
         Validate.notNull(calendar);
         Validate.isTrue(instanceAgeThreshold >= 0);
         Validate.isTrue(retentionDaysWithOwner >= 0);
@@ -75,6 +80,12 @@ public class OrphanedInstanceRule implements Rule {
         this.instanceAgeThreshold = instanceAgeThreshold;
         this.retentionDaysWithOwner = retentionDaysWithOwner;
         this.retentionDaysWithoutOwner = retentionDaysWithoutOwner;
+        this.respectOpsWorksParentage = respectOpsWorksParentage;
+    }
+    
+    public OrphanedInstanceRule(MonkeyCalendar calendar,
+            int instanceAgeThreshold, int retentionDaysWithOwner, int retentionDaysWithoutOwner) {
+        this(calendar, instanceAgeThreshold, retentionDaysWithOwner, retentionDaysWithoutOwner, false);
     }
 
     @Override
@@ -92,7 +103,9 @@ public class OrphanedInstanceRule implements Rule {
         }
         AWSResource instanceResource = (AWSResource) resource;
         String asgName = instanceResource.getAdditionalField(InstanceJanitorCrawler.INSTANCE_FIELD_ASG_NAME);
-        if (StringUtils.isEmpty(asgName)) {
+        String opsworkStackName = instanceResource.getAdditionalField(InstanceJanitorCrawler.INSTANCE_FIELD_OPSWORKS_STACK_NAME);
+        // If there is no ASG AND it isn't an OpsWorks stack (or OpsWorks isn't respected as a parent), we have an orphan
+        if (StringUtils.isEmpty(asgName) && (!respectOpsWorksParentage || StringUtils.isEmpty(opsworkStackName))) {
             if (resource.getLaunchTime() == null) {
                 LOGGER.error(String.format("The instance %s has no launch time.", resource.getId()));
                 return true;
@@ -113,7 +126,7 @@ public class OrphanedInstanceRule implements Rule {
                     }
                     Date terminationTime = calendar.getBusinessDay(new Date(now.getMillis()), retentionDays);
                     resource.setExpectedTerminationTime(terminationTime);
-                    resource.setTerminationReason(TERMINATION_REASON);
+                    resource.setTerminationReason((respectOpsWorksParentage) ? ASG_OR_OPSWORKS_TERMINATION_REASON : TERMINATION_REASON);
                 }
                 return false;
             }

@@ -208,7 +208,10 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                                     "simianarmy.janitor.rule.orphanedInstanceRule.retentionDaysWithOwner", 3),
                                     (int) configuration().getNumOrElse(
                                             "simianarmy.janitor.rule.orphanedInstanceRule.retentionDaysWithoutOwner",
-                                            8)));
+                                            8),
+                                    configuration().getBoolOrElse(
+                                            "simianarmy.janitor.rule.orphanedInstanceRule.opsworks.parentage",
+                                            false)));
         }
         JanitorCrawler instanceCrawler;
         if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {

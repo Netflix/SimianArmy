@@ -45,6 +45,9 @@ public class InstanceJanitorCrawler extends AbstractAWSJanitorCrawler {
     /** The name representing the additional field name of ASG's name. */
     public static final String INSTANCE_FIELD_ASG_NAME = "ASG_NAME";
 
+    /** The name representing the additional field name of the OpsWork stack name. */
+    public static final String  INSTANCE_FIELD_OPSWORKS_STACK_NAME = "OPSWORKS_STACK_NAME";
+
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(InstanceJanitorCrawler.class);
 
@@ -101,6 +104,11 @@ public class InstanceJanitorCrawler extends AbstractAWSJanitorCrawler {
                 instanceResource.setAdditionalField(INSTANCE_FIELD_ASG_NAME, asgName);
                 LOGGER.info(String.format("instance %s has a ASG tag name %s.", instanceResource.getId(), asgName));
             }
+            String opsworksStackName = getOpsWorksStackName(instanceResource);
+            if (opsworksStackName != null) {
+                instanceResource.setAdditionalField(INSTANCE_FIELD_OPSWORKS_STACK_NAME, opsworksStackName);
+                LOGGER.info(String.format("instance %s is part of an OpsWorks stack named %s.", instanceResource.getId(), opsworksStackName));
+            }
             if (instance.getState() != null) {
                 ((AWSResource) instanceResource).setAWSResourceState(instance.getState().getName());
             }
@@ -121,5 +129,9 @@ public class InstanceJanitorCrawler extends AbstractAWSJanitorCrawler {
             }
         }
         return asgName;
+    }
+
+    private String getOpsWorksStackName(Resource instanceResource) {
+        return instanceResource.getTag("opsworks:stack");
     }
 }
