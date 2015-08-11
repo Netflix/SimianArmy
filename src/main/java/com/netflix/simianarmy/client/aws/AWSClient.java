@@ -187,6 +187,7 @@ public class AWSClient implements CloudClient {
      */
     public AWSClient(String region, ClientConfiguration awsClientConfig) {
         this.region = region;
+        this.accountName = "Default";
         this.awsCredentialsProvider = null;
         this.awsClientConfig = awsClientConfig;
     }
@@ -202,6 +203,7 @@ public class AWSClient implements CloudClient {
      */
     public AWSClient(String region, AWSCredentialsProvider awsCredentialsProvider, ClientConfiguration awsClientConfig) {
         this.region = region;
+        this.accountName = "Default";
         this.awsCredentialsProvider = awsCredentialsProvider;
         this.awsClientConfig = awsClientConfig;
     }
