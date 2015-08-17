@@ -59,7 +59,7 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
     @Override
     public void sendEmail(String to, String subject, String body) {
         if (!isValidEmail(to)) {
-            LOGGER.error(String.format("The destination email address %s is not valid,  no email is sent.", to));
+            LOGGER.error(String.format("The destination email address %s is not valid, no email is sent.", to));
             return;
         }
         if (sesClient == null) {

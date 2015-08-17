@@ -100,6 +100,7 @@ public class EddaLaunchConfigJanitorCrawler implements JanitorCrawler {
 
     @Override
     public String getOwnerEmailForResource(Resource resource) {
+        //Launch Configs don't have Tags
         return null;
     }
 

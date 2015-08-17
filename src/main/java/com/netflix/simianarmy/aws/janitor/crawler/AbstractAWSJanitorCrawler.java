@@ -17,6 +17,7 @@
  */
 package com.netflix.simianarmy.aws.janitor.crawler;
 
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import org.apache.commons.lang.Validate;
 
 import com.netflix.simianarmy.Resource;
@@ -40,14 +41,14 @@ public abstract class AbstractAWSJanitorCrawler implements JanitorCrawler {
     }
 
     /**
-     * Gets the owner email from the resource's tag "owner".
+     * Gets the owner email from the resource's tag key set in GLOBAL_OWNER_TAGKEY.
      * @param resource the resource
      * @return the owner email specified in the resource's tags
      */
     @Override
     public String getOwnerEmailForResource(Resource resource) {
         Validate.notNull(resource);
-        return resource.getTag("owner");
+        return resource.getTag(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
     }
 
     /**

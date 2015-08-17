@@ -25,6 +25,7 @@ import java.util.Map;
 
 import com.google.common.collect.Maps;
 
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,7 @@ public class VolumeTaggingMonkey extends Monkey {
             awsClientToInstanceToOwner.put(awsClient, instanceToOwner);
             for (Instance instance : awsClient.describeInstances()) {
                 for (Tag tag : instance.getTags()) {
-                    if (tag.getKey().equals(JanitorMonkey.OWNER_TAG_KEY)) {
+                    if (tag.getKey().equals(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY)) {
                         instanceToOwner.put(instance.getInstanceId(), tag.getValue());
                     }
                 }
@@ -187,7 +188,7 @@ public class VolumeTaggingMonkey extends Monkey {
                 // The volume is currently attached to an instance
                 lastDetachTime = null;
             }
-            String existingOwner = janitorMetadata.get(JanitorMonkey.OWNER_TAG_KEY);
+            String existingOwner = janitorMetadata.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
             if (owner == null && existingOwner != null) {
                 // Save the current owner in the tag when we are not able to find a owner.
                 owner = existingOwner;
@@ -206,10 +207,10 @@ public class VolumeTaggingMonkey extends Monkey {
         // The owner of the volume is set as the owner of the last instance attached to it.
         String owner = awsClientToInstanceToOwner.get(awsClient).get(instanceId);
         if (owner == null) {
-            owner = janitorMetadata.get(JanitorMonkey.OWNER_TAG_KEY);
+            owner = janitorMetadata.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
         }
         if (owner == null) {
-            owner = getTagValue(JanitorMonkey.OWNER_TAG_KEY, tags);
+            owner = getTagValue(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY, tags);
         }
         String emailDomain = getOwnerEmailDomain();
         if (owner != null && !owner.contains("@")
@@ -292,7 +293,7 @@ public class VolumeTaggingMonkey extends Monkey {
         StringBuilder meta = new StringBuilder();
         meta.append(String.format("%s=%s;",
                 JanitorMonkey.INSTANCE_TAG_KEY, instance == null ? "" : instance));
-        meta.append(String.format("%s=%s;", JanitorMonkey.OWNER_TAG_KEY, owner == null ? "" : owner));
+        meta.append(String.format("%s=%s;", BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY, owner == null ? "" : owner));
         meta.append(String.format("%s=%s", JanitorMonkey.DETACH_TIME_TAG_KEY,
                 lastDetachTime == null ? "" : AWSResource.DATE_FORMATTER.print(lastDetachTime.getTime())));
         return meta.toString();
@@ -313,7 +314,7 @@ public class VolumeTaggingMonkey extends Monkey {
      */
     private static boolean needsUpdate(Map<String, String> metadata,
             String owner, String instance, Date lastDetachTime) {
-        return (owner != null && !StringUtils.equals(metadata.get(JanitorMonkey.OWNER_TAG_KEY), owner))
+        return (owner != null && !StringUtils.equals(metadata.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY), owner))
                 || (instance != null && !StringUtils.equals(metadata.get(JanitorMonkey.INSTANCE_TAG_KEY), instance))
                 || lastDetachTime != null;
     }
