@@ -68,6 +68,41 @@ public class TestBasicChaosEmailNotifier {
     }
 
     @Test
+    public void testInvalidEmailAddresses() {
+        String[] invalidEmails = new String[] { "username",
+                                                "username@.com.my",
+                                                "username123@example.a",
+                                                "username123@.com",
+                                                "username123@.com.com",
+                                                "username()*@example.com",
+                                                "username@%*.com"};
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
+
+        for (String emailAddress : invalidEmails) {
+            Assert.assertFalse(basicChaosEmailNotifier.isValidEmail(emailAddress));
+        }
+    }
+
+    @Test
+    public void testValidEmailAddresses() {
+        String[] validEmails = new String[] { "username-100@example.com",
+                                              "name.surname+ml-info@example.com",
+                                              "username.100@example.com",
+                                              "username111@example.com",
+                                              "username-100@username.net",
+                                              "username.100@example.com.au",
+                                              "username@1.com",
+                                              "username@example.com",
+                                              "username+100@example.com",
+                                              "username-100@example-test.com" };
+        basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
+
+        for (String emailAddress : validEmails) {
+            Assert.assertTrue(basicChaosEmailNotifier.isValidEmail(emailAddress));
+        }
+    }
+
+    @Test
     public void testbuildEmailSubject() {
         basicChaosEmailNotifier = new BasicChaosEmailNotifier(new BasicConfiguration(properties), sesClient, null);
         String subject = basicChaosEmailNotifier.buildEmailSubject(to);
