@@ -18,6 +18,8 @@
 package com.netflix.simianarmy.basic.janitor;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
@@ -120,6 +122,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
         janitorEmailBuilder = new BasicJanitorEmailBuilder();
         sesClient = new AmazonSimpleEmailServiceClient();
+	sesClient.setRegion(Region.getRegion(Regions.fromName(region())));
         defaultEmail = configuration().getStrOrElse("simianarmy.janitor.notification.defaultEmail", "");
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.janitor.notification.ccEmails", ""), ",");

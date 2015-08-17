@@ -18,6 +18,8 @@
 package com.netflix.simianarmy.basic.conformity;
 
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.netflix.discovery.DiscoveryClient;
@@ -162,6 +164,7 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         clusterCrawler = new AWSClusterCrawler(regionToAwsClient, configuration());
         sesClient = new AmazonSimpleEmailServiceClient();
+	sesClient.setRegion(Region.getRegion(Regions.fromName(region())));
         defaultEmail = configuration().getStrOrElse("simianarmy.conformity.notification.defaultEmail", null);
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.conformity.notification.ccEmails", ""), ",");
