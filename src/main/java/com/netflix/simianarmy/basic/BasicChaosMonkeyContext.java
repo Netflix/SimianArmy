@@ -17,6 +17,8 @@
  */
 package com.netflix.simianarmy.basic;
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.basic.chaos.BasicChaosEmailNotifier;
@@ -51,7 +53,9 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
         setChaosCrawler(new ASGChaosCrawler(awsClient()));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
         MonkeyConfiguration cfg = configuration();
-        setChaosEmailNotifier(new BasicChaosEmailNotifier(cfg, new AmazonSimpleEmailServiceClient(), null));
+        AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient();
+        sesClient.setRegion(Region.getRegion(Regions.fromName(region())));
+        setChaosEmailNotifier(new BasicChaosEmailNotifier(cfg, sesClient, null));
     }
 
     /** {@inheritDoc} */
