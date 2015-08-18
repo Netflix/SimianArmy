@@ -17,6 +17,8 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.janitor;
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.netflix.discovery.DiscoveryManager;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -60,6 +62,7 @@ import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,6 +123,9 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
         janitorEmailBuilder = new BasicJanitorEmailBuilder();
         sesClient = new AmazonSimpleEmailServiceClient();
+        if (configuration().getStr("simianarmy.aws.email.region") != null) {
+           sesClient.setRegion(Region.getRegion(Regions.fromName(configuration().getStr("simianarmy.aws.email.region"))));
+        }
         defaultEmail = configuration().getStrOrElse("simianarmy.janitor.notification.defaultEmail", "");
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.janitor.notification.ccEmails", ""), ",");
