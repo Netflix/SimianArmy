@@ -570,7 +570,7 @@ class ImmediateCleanupRule implements Rule {
     @Override
     public boolean isValid(Resource resource) {
         resource.setExpectedTerminationTime(new Date(now.minusMinutes(10).getMillis()));
-        resource.setNotificationTime(new Date(now.getMillis()));
+        resource.setNotificationTime(new Date(now.getMillis()-5000));
         return false;
     }
 }
