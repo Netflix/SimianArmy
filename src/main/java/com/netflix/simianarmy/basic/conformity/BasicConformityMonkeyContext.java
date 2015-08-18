@@ -17,6 +17,8 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.conformity;
 
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -162,6 +164,9 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         clusterCrawler = new AWSClusterCrawler(regionToAwsClient, configuration());
         sesClient = new AmazonSimpleEmailServiceClient();
+        if (configuration().getStr("simianarmy.aws.email.region") != null) {
+          sesClient.setRegion(Region.getRegion(Regions.fromName(configuration().getStr("simianarmy.aws.email.region"))));
+        }        
         defaultEmail = configuration().getStrOrElse("simianarmy.conformity.notification.defaultEmail", null);
         ccEmails = StringUtils.split(
                 configuration().getStrOrElse("simianarmy.conformity.notification.ccEmails", ""), ",");
