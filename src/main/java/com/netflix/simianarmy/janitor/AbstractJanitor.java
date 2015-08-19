@@ -295,8 +295,8 @@ public abstract class AbstractJanitor implements Janitor {
                         markedResource.setState(Resource.CleanupState.JANITOR_TERMINATED);
                         resourceTracker.addOrUpdate(markedResource);
                     } catch (Exception e) {
-                        LOGGER.error(String.format("Failed to clean up the resource %s.",
-                                markedResource.getId()), e);
+                        LOGGER.error(String.format("Failed to clean up the resource %s of type %s.",
+                                markedResource.getId(), markedResource.getResourceType().name()), e);
                         failedToCleanResources.add(markedResource);
                         continue;
                     }
