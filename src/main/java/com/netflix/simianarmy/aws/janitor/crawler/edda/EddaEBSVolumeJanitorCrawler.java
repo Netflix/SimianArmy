@@ -166,7 +166,7 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
      * Gets all volumes that are not attached to any instance. Janitor Monkey only considers unattached volumes
      * as cleanup candidates, so there is no need to get volumes that are in-use.
      * @param region
-     * @return
+     * @return list of resources that are not attached to any instance
      */
     private List<Resource> getUnattachedVolumeResourcesInRegion(String region, String... volumeIds) {
         String url = eddaClient.getBaseUrl(region) + "/aws/volumes;";

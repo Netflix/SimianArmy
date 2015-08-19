@@ -119,11 +119,16 @@ public class AWSClient implements CloudClient {
     /** The plain name for AWS account */
     private final String accountName;
 
+    /** Maximum retry count for Simple DB */
+    private static final int SIMPLE_DB_MAX_RETRY = 11;
+
     private final AWSCredentialsProvider awsCredentialsProvider;
 
     private final ClientConfiguration awsClientConfig;
 
     private ComputeService jcloudsComputeService;
+    
+    
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -220,7 +225,7 @@ public class AWSClient implements CloudClient {
     /**
      * The accountName.
      *
-     * @accountName the plain name for the aws account easier to identify which account
+     * @return the plain name for the aws account easier to identify which account
      * monkey is running in
      */
     public String accountName() {
@@ -306,19 +311,19 @@ public class AWSClient implements CloudClient {
      */
     public AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client;
-        if (awsClientConfig == null) {
-            if (awsCredentialsProvider == null) {
-                client = new AmazonSimpleDBClient();
-            } else {
-                client = new AmazonSimpleDBClient(awsCredentialsProvider);
-            }
-        } else {
-            if (awsCredentialsProvider == null) {
-                client = new AmazonSimpleDBClient(awsClientConfig);
-            } else {
-                client = new AmazonSimpleDBClient(awsCredentialsProvider, awsClientConfig);
-            }
+        ClientConfiguration cc = awsClientConfig;
+        
+        if (cc == null) { 
+          cc = new ClientConfiguration();
+          cc.setMaxErrorRetry(SIMPLE_DB_MAX_RETRY);
         }
+        
+        if (awsCredentialsProvider == null) {
+            client = new AmazonSimpleDBClient(cc);
+        } else {
+            client = new AmazonSimpleDBClient(awsCredentialsProvider, cc);
+        }
+        
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
         if (region == null || region.equals("us-east-1")) {
@@ -328,7 +333,7 @@ public class AWSClient implements CloudClient {
         }
         return client;
     }
-
+    
     /**
      * Describe auto scaling groups.
      *

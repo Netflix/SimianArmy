@@ -397,7 +397,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
      * (Duplicates a method in MonkeyServer; refactor to util?).
      *
      * @param key
-     * @return
+     * @return the loaded class or null if the class is not found
      */
     @SuppressWarnings("rawtypes")
     private Class loadClientClass(String key) {
