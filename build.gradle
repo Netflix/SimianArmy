@@ -1,6 +1,7 @@
 plugins {
     id 'nebula.netflixoss' version '2.2.9'
     id 'net.saliman.cobertura' version '2.2.7'
+    id 'com.github.hierynomus.license' version '0.11.0'
 }
 
 // Establish version and status
@@ -62,8 +63,9 @@ tasks.withType(JavaCompile) {
 artifacts {
     archives tasks.jar
 }
-import nl.javadude.gradle.plugins.license.License
-tasks.withType(License).each { licenseTask ->
-    licenseTask.exclude '**/*.json'
-    licenseTask.exclude '**/*.properties'
+
+license {
+  exclude '**/*.properties'
+  exclude '**/*.json'
+  exclude '**/*.sh'
 }
