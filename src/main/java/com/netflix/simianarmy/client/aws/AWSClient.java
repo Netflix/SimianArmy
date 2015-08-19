@@ -225,7 +225,7 @@ public class AWSClient implements CloudClient {
     /**
      * The accountName.
      *
-     * @accountName the plain name for the aws account easier to identify which account
+     * @return the plain name for the aws account easier to identify which account
      * monkey is running in
      */
     public String accountName() {
