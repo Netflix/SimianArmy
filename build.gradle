@@ -62,6 +62,7 @@ tasks.withType(JavaCompile) {
 
 artifacts {
     archives tasks.jar
+    archives jar
 }
 
 license {
