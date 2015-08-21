@@ -60,13 +60,21 @@ tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint"
 }
 
-artifacts {
-    archives tasks.jar
-    archives jar
+license {
+    exclude '**/*.properties'
+    exclude '**/*.json'
+    exclude '**/*.sh'
 }
 
-license {
-  exclude '**/*.properties'
-  exclude '**/*.json'
-  exclude '**/*.sh'
+publishing {
+    publications {
+        monkeyJars(MavenPublication) {
+            from components.java
+            artifact tasks.jar
+        }
+    }
+}
+
+artifactoryPublish {
+    publications('monkeyJars')
 }
