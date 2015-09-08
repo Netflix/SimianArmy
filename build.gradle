@@ -66,15 +66,20 @@ license {
     exclude '**/*.sh'
 }
 
+task coreJar(type: Jar) {
+    from sourceSets.main.output
+    include '**'
+}
+
 publishing {
     publications {
-        monkeyJars(MavenPublication) {
-            from components.java
-            artifact tasks.jar
+        mavenWar(MavenPublication) {
+            from components.web
+            artifact coreJar { classifier "core" }
         }
     }
 }
 
 artifactoryPublish {
-    publications('monkeyJars')
+    publications('mavenWar')
 }
