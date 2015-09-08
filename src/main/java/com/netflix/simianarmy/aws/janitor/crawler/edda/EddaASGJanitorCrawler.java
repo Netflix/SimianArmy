@@ -213,7 +213,9 @@ public class EddaASGJanitorCrawler implements JanitorCrawler {
         if (lc != null) {
             String lcName = lc.getTextValue();
             Long lcCreationTime = lcNameToCreationTime.get(lcName);
-            resource.setAdditionalField(ASG_FIELD_LC_NAME, lcName);
+            if (lcName != null) {
+                resource.setAdditionalField(ASG_FIELD_LC_NAME, lcName);
+            }
             if (lcCreationTime != null) {
                 resource.setAdditionalField(ASG_FIELD_LC_CREATION_TIME, String.valueOf(lcCreationTime));
             }
