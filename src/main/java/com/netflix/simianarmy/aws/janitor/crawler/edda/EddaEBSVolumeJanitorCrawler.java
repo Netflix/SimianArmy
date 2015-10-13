@@ -96,9 +96,9 @@ public class EddaEBSVolumeJanitorCrawler implements JanitorCrawler {
         LOGGER.info(String.format("Getting owners for all instances in region %s", region));
 
         long startTime = DateTime.now().minusDays(LOOKBACK_DAYS).getMillis();
-        String url = String.format("%s/view/instances;_since=%d;state.name=running;tags.key=owner;"
+        String url = String.format("%1$s/view/instances;_since=%2$d;state.name=running;tags.key=%3$s;"
                 + "_expand:(instanceId,tags:(key,value))",
-                eddaClient.getBaseUrl(region), startTime);
+                eddaClient.getBaseUrl(region), startTime, BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
         JsonNode jsonNode = null;
         try {
             jsonNode = eddaClient.getJsonNodeFromUrl(url);

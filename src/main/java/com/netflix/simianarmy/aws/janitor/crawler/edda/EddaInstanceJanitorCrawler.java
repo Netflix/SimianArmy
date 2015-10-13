@@ -242,7 +242,7 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
             HashMap<String, String> imageToOwner = new HashMap<String, String>();
             String url = eddaClient.getBaseUrl(region) + "/aws/images/";
             url += StringUtils.join(imageIds, ',');
-            url += ";tags.key=owner;public=false;_expand:(imageId,tags:(owner))";
+            url += String.format(";tags.key=%1$s;public=false;_expand:(imageId,tags:(%1$s))", BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
             JsonNode imageJsonNode = null;
             try {
                 imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
