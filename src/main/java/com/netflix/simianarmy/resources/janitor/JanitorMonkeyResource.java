@@ -21,9 +21,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Map;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
@@ -111,6 +114,29 @@ public class JanitorMonkeyResource {
         gen.close();
         LOGGER.info("entity content is '{}'", baos.toString("UTF-8"));
         return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
+    }
+
+    /**
+     * Gets the janitor status (e.g. to support an AWS ELB Healthcheck on an instance running JanitorMonkey).
+     * Creates GET /api/v1/janitor api which responds 200 OK if JanitorMonkey is running.
+     *
+     * @param uriInfo
+     *            the uri info
+     * @return the chaos events json response
+     * @throws IOException
+     *             Signals that an I/O exception has occurred.
+     */
+    @GET
+    public Response getJanitorStatus(@Context UriInfo uriInfo) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JsonGenerator gen = JSON_FACTORY.createJsonGenerator(baos, JsonEncoding.UTF8);
+        gen.writeStartArray();
+	gen.writeStartObject();
+	gen.writeStringField("JanitorMonkeyStatus", "OnLikeDonkeyKong");
+	gen.writeEndObject();
+        gen.writeEndArray();
+        gen.close();
+        return Response.status(Response.Status.OK).entity(baos.toString("UTF-8")).build();
     }
 
     private Response.Status optInResource(String resourceId, boolean optIn, JsonGenerator gen)
