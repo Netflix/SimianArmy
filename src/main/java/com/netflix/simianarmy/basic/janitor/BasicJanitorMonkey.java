@@ -19,11 +19,15 @@ package com.netflix.simianarmy.basic.janitor;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.netflix.servo.annotations.DataSourceType;
+import com.netflix.servo.annotations.Monitor;
+import com.netflix.servo.monitor.Monitors;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
@@ -60,6 +64,9 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     private final MonkeyRecorder recorder;
 
     private final MonkeyCalendar calendar;
+    
+    /** Keep track of the number of monkey runs */
+    protected final AtomicLong monkeyRuns = new AtomicLong(0);    
 
     /**
      * Instantiates a new basic janitor monkey.
@@ -78,6 +85,9 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         resourceTracker = ctx.resourceTracker();
         recorder = ctx.recorder();
         calendar = ctx.calendar();
+
+        // register this janitor with servo
+        Monitors.registerObject("simianarmy.janitor", this);                
     }
 
     /** {@inheritDoc} */
@@ -90,6 +100,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             return;
         } else {
             LOGGER.info(String.format("Marking resources with %d janitors.", janitors.size()));
+            monkeyRuns.incrementAndGet();
             for (AbstractJanitor janitor : janitors) {
                 LOGGER.info(String.format("Running janitor for region %s", janitor.getRegion()));
                 janitor.markResources();
@@ -220,5 +231,10 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         }
         LOGGER.info("JanitorMonkey disabled, set {}=true", prop);
         return false;
+    }
+    
+    @Monitor(name="runs", type=DataSourceType.COUNTER)
+    public AtomicLong getMonkeyRuns() {
+      return monkeyRuns;
     }
 }
