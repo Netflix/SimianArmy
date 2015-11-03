@@ -19,6 +19,9 @@
 package com.netflix.simianarmy.janitor;
 
 import com.google.common.collect.Maps;
+import com.netflix.servo.annotations.DataSourceType;
+import com.netflix.servo.annotations.Monitor;
+import com.netflix.servo.annotations.MonitorTags;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
@@ -41,6 +44,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
+
+import com.netflix.servo.monitor.Monitors;
+import com.netflix.servo.tag.BasicTagList;
+import com.netflix.servo.tag.TagList;
 
 /**
  * An abstract implementation of Janitor. It marks resources that the rule engine considers
@@ -55,12 +63,28 @@ public abstract class AbstractJanitor implements Janitor {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJanitor.class);
 
+    /** Keep track of the number of cleaned resources */
+    protected final AtomicLong cleanedResourcesCount = new AtomicLong(0);
+
+    /** Keep track of the number of marked resources */
+    protected final AtomicLong markedResourcesCount = new AtomicLong(0);
+
+    /** Keep track of the number of failed to clean resources */
+    protected final AtomicLong failedToCleanResourcesCount = new AtomicLong(0);
+
+    /** Keep track of the number of unmarked resources */
+    protected final AtomicLong unmarkedResourcesCount = new AtomicLong(0);
+    
+    /** Tags to attach to servo metrics */
+    @MonitorTags
+    protected TagList tags;
+
     private final String region;
     /** The region the janitor is running in. */
     public String getRegion() {
         return region;
     }
-
+    
     /**
      * The rule engine used to decide if a resource should be a cleanup
      * candidate.
@@ -183,6 +207,13 @@ public abstract class AbstractJanitor implements Janitor {
         Validate.notNull(resourceType);
         // recorder could be null and no events are recorded when it is.
         this.recorder = ctx.recorder();
+        
+        // setup servo tags, currently just tag each published metric with the region
+        this.tags = BasicTagList.of("simianarmy.janitor.region", ctx.region());        
+        
+        // register this janitor with servo
+        String monitorObjName = String.format("simianarmy.janitor.%s.%s", this.resourceType.name(), this.region);
+        Monitors.registerObject(monitorObjName, this);        
     }
 
     @Override
@@ -222,6 +253,7 @@ public abstract class AbstractJanitor implements Janitor {
                         recorder.recordEvent(evt);
                     }
                     resourceTracker.addOrUpdate(resource);
+                    markedResourcesCount.incrementAndGet();
                     postMark(resource);
                 } else {
                     LOGGER.info(String.format(
@@ -247,6 +279,7 @@ public abstract class AbstractJanitor implements Janitor {
                             resource.getId()));
                 }
                 unmarkedResources.add(resource);
+                unmarkedResourcesCount.incrementAndGet();
             }
         }
 
@@ -291,6 +324,7 @@ public abstract class AbstractJanitor implements Janitor {
                             recorder.recordEvent(evt);
                         }
                         cleanup(markedResource);
+                        cleanedResourcesCount.incrementAndGet();                    
                         markedResource.setActualTerminationTime(now);
                         markedResource.setState(Resource.CleanupState.JANITOR_TERMINATED);
                         resourceTracker.addOrUpdate(markedResource);
@@ -298,6 +332,7 @@ public abstract class AbstractJanitor implements Janitor {
                         LOGGER.error(String.format("Failed to clean up the resource %s of type %s.",
                                 markedResource.getId(), markedResource.getResourceType().name()), e);
                         failedToCleanResources.add(markedResource);
+                        failedToCleanResourcesCount.incrementAndGet();                        
                         continue;
                     }
                     postCleanup(markedResource);
@@ -392,7 +427,28 @@ public abstract class AbstractJanitor implements Janitor {
                                     markedResource.getId()));
                 }
                 unmarkedResources.add(markedResource);
+                unmarkedResourcesCount.incrementAndGet();
             }
         }
     }
+    
+    @Monitor(name="cleanedResourcesCount", type=DataSourceType.COUNTER)
+    long getResourcesCleanedCount() {
+      return cleanedResourcesCount.get();
+    }
+
+    @Monitor(name="markedResourcesCount", type=DataSourceType.COUNTER)
+    long getMarkedResourcesCount() {
+      return markedResourcesCount.get();
+    }
+
+    @Monitor(name="failedToCleanResourcesCount", type=DataSourceType.COUNTER)
+    long getFailedToCleanResourcesCount() {
+      return failedToCleanResourcesCount.get();
+    }    
+
+    @Monitor(name="unmarkedResourcesCount", type=DataSourceType.COUNTER)
+    long getUnmarkedResourcesCount() {
+      return unmarkedResourcesCount.get();
+    }    
 }
