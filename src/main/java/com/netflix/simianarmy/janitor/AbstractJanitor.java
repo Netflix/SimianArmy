@@ -433,22 +433,22 @@ public abstract class AbstractJanitor implements Janitor {
     }
     
     @Monitor(name="cleanedResourcesCount", type=DataSourceType.COUNTER)
-    long getResourcesCleanedCount() {
+    public long getResourcesCleanedCount() {
       return cleanedResourcesCount.get();
     }
 
     @Monitor(name="markedResourcesCount", type=DataSourceType.COUNTER)
-    long getMarkedResourcesCount() {
+    public long getMarkedResourcesCount() {
       return markedResourcesCount.get();
     }
 
     @Monitor(name="failedToCleanResourcesCount", type=DataSourceType.COUNTER)
-    long getFailedToCleanResourcesCount() {
+    public long getFailedToCleanResourcesCount() {
       return failedToCleanResourcesCount.get();
     }    
 
     @Monitor(name="unmarkedResourcesCount", type=DataSourceType.COUNTER)
-    long getUnmarkedResourcesCount() {
+    public long getUnmarkedResourcesCount() {
       return unmarkedResourcesCount.get();
     }    
 }
