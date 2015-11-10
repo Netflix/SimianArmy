@@ -234,7 +234,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     }
     
     @Monitor(name="runs", type=DataSourceType.COUNTER)
-    public AtomicLong getMonkeyRuns() {
-      return monkeyRuns;
+    public long getMonkeyRuns() {
+      return monkeyRuns.get();
     }
 }
