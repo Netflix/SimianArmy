@@ -98,8 +98,8 @@ public class ChaosMonkeyResource {
 
     /**
      * Gets the chaos events. Creates GET /api/v1/chaos api which outputs the chaos events in json. Users can specify
-     * cgi query params to filter the results and use "since" query param to set the start of a timerange. "since" will
-     * number of milliseconds since the epoch.
+     * cgi query params to filter the results and use "since" query param to set the start of a timerange. "since" should
+     * be specified in milliseconds since the epoch.
      *
      * @param uriInfo
      *            the uri info
