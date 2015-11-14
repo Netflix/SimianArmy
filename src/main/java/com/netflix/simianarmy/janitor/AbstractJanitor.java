@@ -62,18 +62,6 @@ public abstract class AbstractJanitor implements Janitor {
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AbstractJanitor.class);
-
-    /** Keep track of the number of cleaned resources */
-    protected final AtomicLong cleanedResourcesCount = new AtomicLong(0);
-
-    /** Keep track of the number of marked resources */
-    protected final AtomicLong markedResourcesCount = new AtomicLong(0);
-
-    /** Keep track of the number of failed to clean resources */
-    protected final AtomicLong failedToCleanResourcesCount = new AtomicLong(0);
-
-    /** Keep track of the number of unmarked resources */
-    protected final AtomicLong unmarkedResourcesCount = new AtomicLong(0);
     
     /** Tags to attach to servo metrics */
     @MonitorTags
@@ -213,7 +201,7 @@ public abstract class AbstractJanitor implements Janitor {
         
         // register this janitor with servo
         String monitorObjName = String.format("simianarmy.janitor.%s.%s", this.resourceType.name(), this.region);
-        Monitors.registerObject(monitorObjName, this);        
+        Monitors.registerObject(monitorObjName, this);     
     }
 
     @Override
@@ -227,7 +215,7 @@ public abstract class AbstractJanitor implements Janitor {
      */
     @Override
     public void markResources() {
-        markedResources.clear();
+        markedResources.clear();        
         unmarkedResources.clear();
         Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
 
@@ -253,7 +241,6 @@ public abstract class AbstractJanitor implements Janitor {
                         recorder.recordEvent(evt);
                     }
                     resourceTracker.addOrUpdate(resource);
-                    markedResourcesCount.incrementAndGet();
                     postMark(resource);
                 } else {
                     LOGGER.info(String.format(
@@ -279,7 +266,6 @@ public abstract class AbstractJanitor implements Janitor {
                             resource.getId()));
                 }
                 unmarkedResources.add(resource);
-                unmarkedResourcesCount.incrementAndGet();
             }
         }
 
@@ -324,7 +310,6 @@ public abstract class AbstractJanitor implements Janitor {
                             recorder.recordEvent(evt);
                         }
                         cleanup(markedResource);
-                        cleanedResourcesCount.incrementAndGet();                    
                         markedResource.setActualTerminationTime(now);
                         markedResource.setState(Resource.CleanupState.JANITOR_TERMINATED);
                         resourceTracker.addOrUpdate(markedResource);
@@ -332,7 +317,6 @@ public abstract class AbstractJanitor implements Janitor {
                         LOGGER.error(String.format("Failed to clean up the resource %s of type %s.",
                                 markedResource.getId(), markedResource.getResourceType().name()), e);
                         failedToCleanResources.add(markedResource);
-                        failedToCleanResourcesCount.incrementAndGet();                        
                         continue;
                     }
                     postCleanup(markedResource);
@@ -427,28 +411,27 @@ public abstract class AbstractJanitor implements Janitor {
                                     markedResource.getId()));
                 }
                 unmarkedResources.add(markedResource);
-                unmarkedResourcesCount.incrementAndGet();
             }
         }
     }
     
-    @Monitor(name="cleanedResourcesCount", type=DataSourceType.COUNTER)
-    public long getResourcesCleanedCount() {
-      return cleanedResourcesCount.get();
+    @Monitor(name="cleanedResourcesCount", type=DataSourceType.GAUGE)
+    public int getResourcesCleanedCount() {
+      return cleanedResources.size();
     }
 
-    @Monitor(name="markedResourcesCount", type=DataSourceType.COUNTER)
-    public long getMarkedResourcesCount() {
-      return markedResourcesCount.get();
+    @Monitor(name="markedResourcesCount", type=DataSourceType.GAUGE)
+    public int getMarkedResourcesCount() {
+      return markedResources.size();
     }
 
-    @Monitor(name="failedToCleanResourcesCount", type=DataSourceType.COUNTER)
-    public long getFailedToCleanResourcesCount() {
-      return failedToCleanResourcesCount.get();
+    @Monitor(name="failedToCleanResourcesCount", type=DataSourceType.GAUGE)
+    public int getFailedToCleanResourcesCount() {
+      return failedToCleanResources.size();
     }    
 
-    @Monitor(name="unmarkedResourcesCount", type=DataSourceType.COUNTER)
-    public long getUnmarkedResourcesCount() {
-      return unmarkedResourcesCount.get();
+    @Monitor(name="unmarkedResourcesCount", type=DataSourceType.GAUGE)
+    public int getUnmarkedResourcesCount() {
+      return unmarkedResources.size();
     }    
 }
