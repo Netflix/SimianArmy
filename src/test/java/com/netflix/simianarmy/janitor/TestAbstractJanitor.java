@@ -391,7 +391,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         janitor.markResources();
         Assert.assertEquals(janitor.getMarkedResources().size(), n / 2);
         Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
-        Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
+        Assert.assertEquals(janitor.getMarkedResourcesCount(), n / 2);
 
         // No resource is really changed in tracker
         Assert.assertEquals(resourceTracker.getResources(
