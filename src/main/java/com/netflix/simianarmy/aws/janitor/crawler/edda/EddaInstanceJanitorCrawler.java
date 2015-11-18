@@ -37,6 +37,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
@@ -60,6 +61,8 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
     private final List<String> regions = Lists.newArrayList();
     private final Map<String, String> instanceToAsg = Maps.newHashMap();
 
+    /** Max image ids per Edda Query */
+    private static final int MAX_IMAGE_IDS_PER_QUERY = 40;
 
     /**
      * Instantiates a new basic instance crawler.
@@ -232,39 +235,54 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
     }
 
    private void refreshOwnerByImage(String region, List<Resource> resources) {
-        HashSet<String> imageIds = new HashSet<String>();
+        HashSet<String> imageIds = new HashSet<>();
         for (Resource resource: resources) {
             if (resource.getOwnerEmail() == null) {
                 imageIds.add(resource.getAdditionalField("imageId"));
             }
         }
         if  (imageIds.size() > 0) {
-            HashMap<String, String> imageToOwner = new HashMap<String, String>();
-            String url = eddaClient.getBaseUrl(region) + "/aws/images/";
-            url += StringUtils.join(imageIds, ',');
-            url += String.format(";tags.key=%1$s;public=false;_expand:(imageId,tags:(%1$s))", BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY);
-            JsonNode imageJsonNode = null;
-            try {
-                imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
-            } catch (Exception e) {
-                LOGGER.error(String.format(
-                        "Failed to get Json node from edda for AMIs in region %s.", region), e);
-            }
-            if (imageJsonNode == null) {
-                return;
-            }
-            for (Iterator<JsonNode> it = imageJsonNode.getElements(); it.hasNext();) {
-                JsonNode image = it.next();
-                String imageId = image.get("imageId").getTextValue();
-                JsonNode tags = image.get("tags");
-                for (Iterator<JsonNode> tagIt = tags.getElements(); tagIt.hasNext();) {
-                    JsonNode tag = tagIt.next();
-                    if (tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY) != null) {
-                        imageToOwner.put(imageId, tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY).getTextValue());
-                        break;
-                    }
+            HashMap<String, String> imageToOwner = new HashMap<>();
+            String baseurl = eddaClient.getBaseUrl(region) + "/aws/images/";
+  
+            Iterator<String> itr = imageIds.iterator();
+            long leftToQuery = imageIds.size();
+            while (leftToQuery > 0) {
+                long batchcount = leftToQuery > MAX_IMAGE_IDS_PER_QUERY ? MAX_IMAGE_IDS_PER_QUERY : leftToQuery;
+                leftToQuery -= batchcount;
+              
+                ArrayList<String> batch = new ArrayList<>();
+                for(int i=0;i<batchcount; i++) {
+                    batch.add(itr.next());
                 }
-            }
+  
+                String url = baseurl;
+                url += StringUtils.join(batch, ',');
+                url += ";tags.key=owner;public=false;_expand:(imageId,tags:(owner))";
+                JsonNode imageJsonNode = null;
+                try {
+                    imageJsonNode = eddaClient.getJsonNodeFromUrl(url);
+                } catch (Exception e) {
+                    LOGGER.error(String.format(
+                            "Failed to get Json node from edda for AMIs in region %s.", region), e);
+                }
+                
+                if (imageJsonNode != null) {
+                    for (Iterator<JsonNode> it = imageJsonNode.getElements(); it.hasNext();) {
+                        JsonNode image = it.next();
+                        String imageId = image.get("imageId").getTextValue();
+                        JsonNode tags = image.get("tags");
+                        for (Iterator<JsonNode> tagIt = tags.getElements(); tagIt.hasNext();) {
+                            JsonNode tag = tagIt.next();
+                            if (tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY) != null) {
+                                imageToOwner.put(imageId, tag.get(BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY).getTextValue());
+                                break;
+                            }
+                        }
+                    }
+                }            
+            }  
+            
             if (imageToOwner.size() > 0) {
                 for (Resource resource: resources) {
                     if (resource.getOwnerEmail() == null
@@ -275,6 +293,6 @@ public class EddaInstanceJanitorCrawler implements JanitorCrawler {
                     }
                 }
             }
-        }
+        }       
     }
 }
