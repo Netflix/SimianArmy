@@ -24,6 +24,8 @@ import java.util.TimeZone;
 import java.util.TreeSet;
 
 import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -34,6 +36,9 @@ import com.netflix.simianarmy.MonkeyConfiguration;
  * The Class BasicCalendar.
  */
 public class BasicCalendar implements MonkeyCalendar {
+
+    /** The Constant LOGGER. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(BasicCalendar.class);
 
     /** The open hour. */
     private final int openHour;
@@ -78,6 +83,23 @@ public class BasicCalendar implements MonkeyCalendar {
         closeHour = close;
         tz = timezone;
     }
+    
+    /**
+     * Instantiates a new basic calendar.
+     *
+     * @param open
+     *            the open hour
+     * @param close
+     *            the close hour
+     * @param timezone
+     *            the timezone
+     */
+    public BasicCalendar(MonkeyConfiguration cfg, int open, int close, TimeZone timezone) {
+        this.cfg = cfg;
+        openHour = open;
+        closeHour = close;
+        tz = timezone;
+    }
 
     /** {@inheritDoc} */
     @Override
@@ -100,25 +122,32 @@ public class BasicCalendar implements MonkeyCalendar {
     /** {@inheritDoc} */
     @Override
     public boolean isMonkeyTime(Monkey monkey) {
-        if (cfg != null && cfg.getStrOrElse("simianarmy.calendar.isMonkeyTime", null) != null) {
-            return cfg.getBool("simianarmy.calendar.isMonkeyTime");
+        if (cfg != null && cfg.getStr("simianarmy.calendar.isMonkeyTime") != null) {
+        	boolean monkeyTime = cfg.getBool("simianarmy.calendar.isMonkeyTime");
+        	String msg = monkeyTime ? "Time for monkey." : "Not time for monkey.";
+        	LOGGER.debug("isMonkeyTime: Found property 'simianarmy.calendar.isMonkeyTime': " + monkeyTime + ". " + msg);
+            return monkeyTime;
         }
 
         Calendar now = now();
         int dow = now.get(Calendar.DAY_OF_WEEK);
         if (dow == Calendar.SATURDAY || dow == Calendar.SUNDAY) {
+        	LOGGER.debug("isMonkeyTime: Happy Weekend! Not time for monkey.");
             return false;
         }
 
         int hour = now.get(Calendar.HOUR_OF_DAY);
         if (hour < openHour || hour > closeHour) {
+        	LOGGER.debug("isMonkeyTime: Not inside open hours. Not time for monkey.");
             return false;
         }
 
         if (isHoliday(now)) {
+        	LOGGER.debug("isMonkeyTime: Happy Holiday! Not time for monkey.");
             return false;
         }
 
+    	LOGGER.debug("isMonkeyTime: Time for monkey.");
         return true;
     }
 

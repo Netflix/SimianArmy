@@ -106,6 +106,9 @@ public abstract class AbstractJanitor implements Janitor {
     private boolean leashed;
 
     private final MonkeyRecorder recorder;
+       
+    /** The number of resources that have been checked on this run. */
+    private int checkedResourcesCount;
 
     /**
      * Sets the flag to indicate if the janitor is leashed.
@@ -217,6 +220,7 @@ public abstract class AbstractJanitor implements Janitor {
     public void markResources() {
         markedResources.clear();        
         unmarkedResources.clear();
+        checkedResourcesCount = 0;
         Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
 
         List<Resource> crawledResources = crawler.resources(resourceType);
@@ -224,6 +228,7 @@ public abstract class AbstractJanitor implements Janitor {
                 crawledResources.size()));
         Date now = calendar.now().getTime();
         for (Resource resource : crawledResources) {
+        	checkedResourcesCount++;
             Resource trackedResource = trackedMarkedResources.get(resource.getId());
             if (!ruleEngine.isValid(resource)) {
                 // If the resource is already marked, ignore it
@@ -238,6 +243,7 @@ public abstract class AbstractJanitor implements Janitor {
                 if (!leashed) {
                     if (recorder != null) {
                         Event evt = recorder.newEvent(Type.JANITOR, EventTypes.MARK_RESOURCE, region, resource.getId());
+                        addFieldsAndTagsToEvent(resource, evt);
                         recorder.recordEvent(evt);
                     }
                     resourceTracker.addOrUpdate(resource);
@@ -257,6 +263,7 @@ public abstract class AbstractJanitor implements Janitor {
                     if (recorder != null) {
                         Event evt = recorder.newEvent(
                                 Type.JANITOR, EventTypes.UNMARK_RESOURCE, region, resource.getId());
+                        addFieldsAndTagsToEvent(resource, evt);
                         recorder.recordEvent(evt);
                     }
                     resourceTracker.addOrUpdate(resource);
@@ -337,8 +344,11 @@ public abstract class AbstractJanitor implements Janitor {
 	 * @param event    the event that will hold the source data as additional fields
      */
     private void addFieldsAndTagsToEvent(Resource resource, Event event) {
-    	for(String key : resource.getAllTagKeys()) {
-    		event.addField(key, resource.getTag(key));
+    	if (resource == null) return;
+    	if (resource.getAllTagKeys() != null) {
+	    	for(String key : resource.getAllTagKeys()) {
+	    		event.addField(key, resource.getTag(key));
+	    	}
     	}
     	event.addField("ResourceDescription", resource.getDescription());
     	event.addField("ResourceType", resource.getResourceType().toString());		
@@ -448,4 +458,10 @@ public abstract class AbstractJanitor implements Janitor {
     public int getUnmarkedResourcesCount() {
       return unmarkedResources.size();
     }    
+    
+    @Monitor(name="checkedResourcesCount", type=DataSourceType.GAUGE)
+    public int getCheckedResourcesCount() {
+      return checkedResourcesCount;
+    }    
+    
 }

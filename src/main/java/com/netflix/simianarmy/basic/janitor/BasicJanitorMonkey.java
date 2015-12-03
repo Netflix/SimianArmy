@@ -68,6 +68,12 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     /** Keep track of the number of monkey runs */
     protected final AtomicLong monkeyRuns = new AtomicLong(0);    
 
+    /** Keep track of the number of monkey errors */
+    protected final AtomicLong monkeyErrors = new AtomicLong(0);    
+    
+    /** Emit a servor signal to track the running monkey */
+    protected final AtomicLong monkeyRunning = new AtomicLong(0);    
+    
     /**
      * Instantiates a new basic janitor monkey.
      *
@@ -101,9 +107,15 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         } else {
             LOGGER.info(String.format("Marking resources with %d janitors.", janitors.size()));
             monkeyRuns.incrementAndGet();
+            monkeyRunning.set(1);
             for (AbstractJanitor janitor : janitors) {
-                LOGGER.info(String.format("Running janitor for region %s", janitor.getRegion()));
-                janitor.markResources();
+                LOGGER.info(String.format("Running %s janitor for region %s", janitor.getResourceType(), janitor.getRegion()));
+                try {
+                	janitor.markResources();
+                } catch (Exception e) {
+                	monkeyErrors.incrementAndGet();
+                	LOGGER.error(String.format("Got an exception while %s janitor was marking for region %s", janitor.getResourceType()), janitor.getRegion(), e);
+                }
                 LOGGER.info(String.format("Marked %d resources of type %s in the last run.",
                         janitor.getMarkedResources().size(), janitor.getResourceType().name()));
                 LOGGER.info(String.format("Unmarked %d resources of type %s in the last run.",
@@ -118,7 +130,12 @@ public class BasicJanitorMonkey extends JanitorMonkey {
 
             LOGGER.info(String.format("Cleaning resources with %d janitors.", janitors.size()));
             for (AbstractJanitor janitor : janitors) {
-                janitor.cleanupResources();
+            	try {
+            		janitor.cleanupResources();
+                } catch (Exception e) {
+                	monkeyErrors.incrementAndGet();
+                	LOGGER.error(String.format("Got an exception while %s janitor was cleaning for region %s", janitor.getResourceType()), janitor.getRegion(), e);
+                }
                 LOGGER.info(String.format("Cleaned %d resources of type %s in the last run.",
                         janitor.getCleanedResources().size(), janitor.getResourceType()));
                 LOGGER.info(String.format("Failed to clean %d resources of type %s in the last run.",
@@ -127,6 +144,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             if (cfg.getBoolOrElse(NS + "summaryEmail.enabled", true)) {
                 sendJanitorSummaryEmail();
             }
+        	monkeyRunning.set(0);
         }
     }
 
@@ -237,4 +255,15 @@ public class BasicJanitorMonkey extends JanitorMonkey {
     public long getMonkeyRuns() {
       return monkeyRuns.get();
     }
+
+    @Monitor(name="errors", type=DataSourceType.GAUGE)
+    public long getMonkeyErrors() {
+      return monkeyErrors.get();
+    }
+
+    @Monitor(name="running", type=DataSourceType.GAUGE)
+    public long getMonkeyRunning() {
+      return monkeyRunning.get();
+    }
+    
 }

@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -71,6 +72,23 @@ public class JanitorMonkeyResource {
      */
     public JanitorMonkeyResource() {
         this.monkey = MonkeyRunner.getInstance().factory(JanitorMonkey.class);
+    }
+    
+    /**
+     * GET /api/v1/janitor/addEvent will try to a add a new event with the information in the url query string.
+     * This is the same as the regular POST addEvent except through a query string. This technically isn't
+     * very REST-ful as it is a GET call that creates an Opt-out/in event, but is a convenience method 
+     * for exposing opt-in/opt-out functionality more directly, for example in an email notification.
+     *
+     * @param eventType eventType from the query string
+     * @param resourceId resourceId from the query string
+     * @return the response
+     * @throws IOException
+     */
+    @GET @Path("addEvent")
+    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {
+    	String content = "{\"eventType\":\"" + eventType + "\",\"resourceId\":\"" + resourceId + "\"}";    	
+        return addEvent(content);        
     }
 
     /**
