@@ -114,7 +114,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
                 	janitor.markResources();
                 } catch (Exception e) {
                 	monkeyErrors.incrementAndGet();
-                	LOGGER.error(String.format("Got an exception while %s janitor was marking for region %s", janitor.getResourceType()), janitor.getRegion(), e);
+                	LOGGER.error(String.format("Got an exception while %s janitor was marking for region %s", janitor.getResourceType(), janitor.getRegion()), e);
                 }
                 LOGGER.info(String.format("Marked %d resources of type %s in the last run.",
                         janitor.getMarkedResources().size(), janitor.getResourceType().name()));
