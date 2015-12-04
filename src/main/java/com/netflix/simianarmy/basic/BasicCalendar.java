@@ -124,9 +124,12 @@ public class BasicCalendar implements MonkeyCalendar {
     public boolean isMonkeyTime(Monkey monkey) {
         if (cfg != null && cfg.getStr("simianarmy.calendar.isMonkeyTime") != null) {
         	boolean monkeyTime = cfg.getBool("simianarmy.calendar.isMonkeyTime");
-        	String msg = monkeyTime ? "Time for monkey." : "Not time for monkey.";
-        	LOGGER.debug("isMonkeyTime: Found property 'simianarmy.calendar.isMonkeyTime': " + monkeyTime + ". " + msg);
-            return monkeyTime;
+        	if (monkeyTime) {
+        		LOGGER.debug("isMonkeyTime: Found property 'simianarmy.calendar.isMonkeyTime': " + monkeyTime + ". Time for monkey.");
+        		return monkeyTime;
+        	} else {
+        		LOGGER.debug("isMonkeyTime: Found property 'simianarmy.calendar.isMonkeyTime': " + monkeyTime + ". Continuing regular calendar check for monkey time.");
+        	}
         }
 
         Calendar now = now();
