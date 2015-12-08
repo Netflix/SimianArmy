@@ -162,6 +162,36 @@ public class TestNoGeneratedAMIRule {
         Assert.assertEquals(oldTermReason, resource.getTerminationReason());
     }
 
+    @Test
+    public void testOldSnapshotWithoutAMIWithOwnerOverride() {
+        int ageThreshold = 5;
+        DateTime now = DateTime.now();
+        Resource resource = new AWSResource().withId("snap123").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+                .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
+        ((AWSResource) resource).setAWSResourceState("completed");
+        int retentionDays = 4;
+        NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(),
+                ageThreshold, retentionDays, "new_owner@netflix.com");
+        Assert.assertFalse(rule.isValid(resource));
+        Assert.assertEquals(resource.getOwnerEmail(), "new_owner@netflix.com");
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
+    }
+
+    @Test
+    public void testOldSnapshotWithoutAMIWithoutOwnerOverride() {
+        int ageThreshold = 5;
+        DateTime now = DateTime.now();
+        Resource resource = new AWSResource().withId("snap123").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+                .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
+        ((AWSResource) resource).setAWSResourceState("completed");
+        int retentionDays = 4;
+        NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(),
+                ageThreshold, retentionDays);
+        Assert.assertFalse(rule.isValid(resource));
+        Assert.assertEquals(resource.getOwnerEmail(), "owner@netflix.com");
+        TestUtils.verifyTerminationTimeRough(resource, retentionDays, now);
+    }
+    
     @Test(expectedExceptions = IllegalArgumentException.class)
     public void testNullResource() {
         NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(), 5, 4);

@@ -44,6 +44,8 @@ public class NoGeneratedAMIRule implements Rule {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(NoGeneratedAMIRule.class);
 
+    private String ownerEmailOverride = null;
+    
     private static final String TERMINATION_REASON = "No AMI is generated for this snapshot";
 
     private final MonkeyCalendar calendar;
@@ -67,14 +69,33 @@ public class NoGeneratedAMIRule implements Rule {
      *            as cleanup candidate
      */
     public NoGeneratedAMIRule(MonkeyCalendar calendar, int ageThreshold, int retentionDays) {
+    	this(calendar, ageThreshold, retentionDays, null);
+    }
+
+	/**
+     * Constructor.
+     *
+     * @param calendar
+     *            The calendar used to calculate the termination time
+     * @param ageThreshold
+     *            The number of days that a snapshot is considered as cleanup candidate since it is created
+     * @param retentionDays
+     *            The number of days that the volume is retained before being terminated after being marked
+     *            as cleanup candidate
+     * @param ownerEmailOverride
+     *            If null, send notifications to the resource owner.
+     *            If not null, send notifications to the provided owner email address instead of the resource owner.
+     */
+    public NoGeneratedAMIRule(MonkeyCalendar calendar, int ageThreshold, int retentionDays, String ownerEmailOverride) {
         Validate.notNull(calendar);
         Validate.isTrue(ageThreshold >= 0);
         Validate.isTrue(retentionDays >= 0);
         this.calendar = calendar;
         this.ageThreshold = ageThreshold;
         this.retentionDays = retentionDays;
+        this.ownerEmailOverride = ownerEmailOverride;
     }
-
+    
     @Override
     public boolean isValid(Resource resource) {
         Validate.notNull(resource);
@@ -96,6 +117,9 @@ public class NoGeneratedAMIRule implements Rule {
                 Date userSpecifiedDate = new Date(TERMINATION_DATE_FORMATTER.parseDateTime(janitorTag).getMillis());
                 resource.setExpectedTerminationTime(userSpecifiedDate);
                 resource.setTerminationReason(String.format("User specified termination date %s", janitorTag));
+                if (ownerEmailOverride != null) {
+                	resource.setOwnerEmail(ownerEmailOverride);
+                }
                 return false;
             } catch (Exception e) {
                 LOGGER.error(String.format("The janitor tag is not a user specified date: %s", janitorTag));
@@ -113,6 +137,9 @@ public class NoGeneratedAMIRule implements Rule {
         DateTime launchTime = new DateTime(resource.getLaunchTime().getTime());
         DateTime now = new DateTime(calendar.now().getTimeInMillis());
         if (launchTime.plusDays(ageThreshold).isBefore(now)) {
+            if (ownerEmailOverride != null) {
+            	resource.setOwnerEmail(ownerEmailOverride);
+            }
             if (resource.getExpectedTerminationTime() == null) {
                 Date terminationTime = calendar.getBusinessDay(new Date(now.getMillis()), retentionDays);
                 resource.setExpectedTerminationTime(terminationTime);
