@@ -86,11 +86,45 @@ public class JanitorMonkeyResource {
      * @throws IOException
      */
     @GET @Path("addEvent")
-    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {
-    	String content = "{\"eventType\":\"" + eventType + "\",\"resourceId\":\"" + resourceId + "\"}";    	
-        return addEvent(content);        
+    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {    	
+        Response.Status responseStatus;
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        baos.write("<html><body style=\"text-align:center\"><img src=\"https://raw.githubusercontent.com/Netflix/SimianArmy/master/assets/janitor.png\" height=\"300\" width=\"300\"><br/>".getBytes());
+        if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(resourceId)) {
+            responseStatus = Response.Status.BAD_REQUEST;            
+            baos.write("<p>NOPE!<br/><br/>Janitor didn't get that: eventType and resourceId parameters are both required</p>".getBytes());
+        } else {
+            ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
+            JsonGenerator gen = JSON_FACTORY.createJsonGenerator(baos2, JsonEncoding.UTF8);
+            gen.writeStartObject();
+            gen.writeStringField("eventType", eventType);
+            gen.writeStringField("resourceId", resourceId);
+            
+        	if (eventType.equals("OPTIN")) {
+                responseStatus = optInResource(resourceId, true, gen);
+            } else if (eventType.equals("OPTOUT")) {
+                responseStatus = optInResource(resourceId, false, gen);
+            } else {
+                responseStatus = Response.Status.BAD_REQUEST;
+                gen.writeStringField("message", String.format("Unrecognized event type: %s", eventType));
+            }
+            gen.writeEndObject();
+            gen.close();
+        	
+        	if(responseStatus == Response.Status.OK) {
+        		baos.write(("<p>SUCCESS!<br/><br/>Resource <strong>" + resourceId + "</strong> has been " + eventType + " of Janitor Monkey!</p>").getBytes());
+        	} else {
+        		baos.write(("<p>NOPE!<br/><br/>Janitor is Confused! Error processing Resource <strong>" + resourceId + "</strong></p>").getBytes());
+        	}
+        	
+        	String jsonout = String.format("<p><em>Monkey JSON Response:</em><br/><br/><textarea cols=40 rows=20>%s</textarea></p>", baos2.toString());
+   	    	baos.write(jsonout.getBytes());
+        	        	        	
+        }
+    	baos.write("</body></html>".getBytes());
+        return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
     }
-
+    
     /**
      * POST /api/v1/janitor will try a add a new event with the information in the url context.
      *
