@@ -293,7 +293,9 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             ruleEngine.addRule(new NoGeneratedAMIRule(monkeyCalendar,
                     (int) configuration().getNumOrElse("simianarmy.janitor.rule.noGeneratedAMIRule.ageThreshold", 30),
                     (int) configuration().getNumOrElse(
-                            "simianarmy.janitor.rule.noGeneratedAMIRule.retentionDays", 7)));
+                            "simianarmy.janitor.rule.noGeneratedAMIRule.retentionDays", 7),
+                    configuration().getStrOrElse(
+                            "simianarmy.janitor.rule.noGeneratedAMIRule.ownerEmail", null)));
         }
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
