@@ -108,6 +108,12 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             LOGGER.info(String.format("Marking resources with %d janitors.", janitors.size()));
             monkeyRuns.incrementAndGet();
             monkeyRunning.set(1);
+            
+            // prepare to run, this just resets the counts so monitoring is sane
+            for (AbstractJanitor janitor : janitors) {
+            	janitor.prepareToRun();
+            }
+            
             for (AbstractJanitor janitor : janitors) {
                 LOGGER.info(String.format("Running %s janitor for region %s", janitor.getResourceType(), janitor.getRegion()));
                 try {
