@@ -17,7 +17,7 @@ public class TestTunablyAggressiveChaosMonkey {
   public void testFullProbability_basic() {
     TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("fullProbability.properties");
 
-    TunablyAggresiveChaosMonkey chaos = new TunablyAggresiveChaosMonkey(ctx);
+    TunablyAggressiveChaosMonkey chaos = new TunablyAggressiveChaosMonkey(ctx);
 
     InstanceGroup basic = new BasicInstanceGroup("basic", GroupTypes.TYPE_A, "region");
     
@@ -30,7 +30,7 @@ public class TestTunablyAggressiveChaosMonkey {
   public void testFullProbability_tuned() {
     TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("fullProbability.properties");
 
-    TunablyAggresiveChaosMonkey chaos = new TunablyAggresiveChaosMonkey(ctx);
+    TunablyAggressiveChaosMonkey chaos = new TunablyAggressiveChaosMonkey(ctx);
 
     TunableInstanceGroup tuned = new TunableInstanceGroup("basic", GroupTypes.TYPE_A, "region");
     tuned.setAggressionCoefficient(0.5);
