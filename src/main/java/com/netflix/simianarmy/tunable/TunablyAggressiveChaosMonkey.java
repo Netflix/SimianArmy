@@ -9,7 +9,7 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
  * 
  * @author jeffggardner
  */
-public class TunablyAggresiveChaosMonkey extends BasicChaosMonkey {
+public class TunablyAggressiveChaosMonkey extends BasicChaosMonkey {
 
   public TunablyAggresiveChaosMonkey(Context ctx) {
     super(ctx);
