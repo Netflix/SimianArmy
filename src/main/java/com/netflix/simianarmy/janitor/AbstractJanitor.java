@@ -211,6 +211,28 @@ public abstract class AbstractJanitor implements Janitor {
     public ResourceType getResourceType() {
         return resourceType;
     }
+    
+    /**
+     * Clears this object's internal resource lists in preparation for a new
+     * run.
+     * 
+     * This is an optional method as regular Janitor processing will 
+     * automatically clear resource lists as it runs.  
+     * 
+     * This method offers an explicit clear so that the resources will be
+     * consistent across the run.  For example, when starting a run after a
+     * previous run has finished, cleanedResources will be holding the cleaned 
+     * resources from the prior run until cleanupResources() is called.  By 
+     * calling prepareToRun() first, the resource lists will be consistent
+     * for the entire run.
+     */
+    public void prepareToRun() {
+        markedResources.clear();        
+        unmarkedResources.clear();
+        checkedResourcesCount = 0;    	
+        cleanedResources.clear();
+        failedToCleanResources.clear();
+    }        
 
     /**
      * Marks all resources obtained from the crawler as cleanup candidate if
