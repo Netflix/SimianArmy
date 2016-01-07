@@ -53,7 +53,7 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
         setChaosCrawler(new ASGChaosCrawler(awsClient()));
         setChaosInstanceSelector(new BasicChaosInstanceSelector());
         MonkeyConfiguration cfg = configuration();
-        AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient();
+        AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient(awsClientConfig);
         if (configuration().getStr("simianarmy.aws.email.region") != null) {
            sesClient.setRegion(Region.getRegion(Regions.fromName(configuration().getStr("simianarmy.aws.email.region"))));
         }
