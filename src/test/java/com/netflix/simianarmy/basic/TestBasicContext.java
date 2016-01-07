@@ -18,6 +18,8 @@
 // CHECKSTYLE IGNORE Javadoc
 package com.netflix.simianarmy.basic;
 
+import com.amazonaws.ClientConfiguration;
+
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -55,5 +57,29 @@ public class TestBasicContext {
     public void testIsNotSafeToLogVsphereProperty() {
         BasicChaosMonkeyContext ctx = new BasicChaosMonkeyContext();
         Assert.assertFalse(ctx.isSafeToLog("simianarmy.client.vsphere.password"));
+    }
+
+    @Test
+    public void testIsNotUsingProxyByDefault() {
+        BasicSimianArmyContext ctx = new BasicSimianArmyContext();
+
+        ClientConfiguration awsClientConfig = ctx.getAwsClientConfig();
+
+        Assert.assertNull(awsClientConfig.getProxyHost());
+        Assert.assertEquals(awsClientConfig.getProxyPort(), -1);
+        Assert.assertNull(awsClientConfig.getProxyUsername());
+        Assert.assertNull(awsClientConfig.getProxyPassword());
+    }
+
+    @Test
+    public void testIsAbleToUseProxyByConfiguration() {
+        BasicSimianArmyContext ctx = new BasicSimianArmyContext("proxy.properties");
+
+        ClientConfiguration awsClientConfig = ctx.getAwsClientConfig();
+
+        Assert.assertEquals(awsClientConfig.getProxyHost(), "192.168.0.0");
+        Assert.assertEquals(awsClientConfig.getProxyPort(), 80);
+        Assert.assertEquals(awsClientConfig.getProxyUsername(), "fakeUser");
+        Assert.assertEquals(awsClientConfig.getProxyPassword(), "fakePassword");
     }
 }
