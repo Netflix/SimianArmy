@@ -74,8 +74,7 @@ public class UntaggedRule implements Rule {
         Validate.notNull(resource);
         for (String tagName : this.tagNames) {
             if (((AWSResource) resource).getTag(tagName) == null) {
-                String terminationReason = String.format("does not have the required tag %s", resource.getId(),
-                        tagName);
+                String terminationReason = String.format(" does not have the required tag %s", tagName);
                 LOGGER.error(String.format("The resource %s %s", resource.getId(), terminationReason));
                 DateTime now = new DateTime(calendar.now().getTimeInMillis());
                 if (resource.getExpectedTerminationTime() == null) {
