@@ -31,6 +31,8 @@ import org.slf4j.LoggerFactory;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
+import com.amazonaws.regions.Region;
+import com.amazonaws.regions.Regions;
 
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.Monkey;
@@ -126,7 +128,15 @@ public class BasicSimianArmyContext implements Monkey.Context {
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         accountName = config.getStrOrElse("simianarmy.client.aws.accountName", "Default");
-        region = config.getStrOrElse("simianarmy.client.aws.region", "us-east-1");
+        
+        String defaultRegion = "us-east-1";
+        Region currentRegion = Regions.getCurrentRegion();
+        
+        if (currentRegion != null) {
+            defaultRegion = currentRegion.getName();
+        }
+        
+        region = config.getStrOrElse("simianarmy.client.aws.region", defaultRegion);
         GLOBAL_OWNER_TAGKEY = config.getStrOrElse("simianarmy.tags.owner", "owner");
 
         // Check for and configure optional proxy configuration
