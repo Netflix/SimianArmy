@@ -193,7 +193,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                                     instanceValidator
                     ));
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("ASG")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -229,7 +230,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                                             "simianarmy.janitor.rule.orphanedInstanceRule.opsworks.parentage",
                                             false)));
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("INSTANCE")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -265,7 +267,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                         "simianarmy.janitor.rule.deleteOnTerminationRule.retentionDays", 3)));
             }
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("EBS_VOLUME")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -297,7 +300,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     configuration().getStrOrElse(
                             "simianarmy.janitor.rule.noGeneratedAMIRule.ownerEmail", null)));
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("EBS_SNAPSHOT")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -329,7 +333,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.oldUnusedLaunchConfigRule.retentionDays", 3)));
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("LAUNCH_CONFIG")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -370,7 +375,8 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.unusedImageRule.lastReferenceDaysThreshold", 45)));
         }
-        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)
+            && getUntaggedRuleResourceSet().contains("IMAGE")) {
             ruleEngine.addRule(new UntaggedRule(monkeyCalendar, getPropertySet("simianarmy.janitor.rule.untaggedRule.requiredTags"),
                     (int) configuration().getNumOrElse(
                             "simianarmy.janitor.rule.untaggedRule.retentionDaysWithOwner", 3),
@@ -401,6 +407,19 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             }
         }
         return enabledResourceSet;
+    }
+    
+    private Set<String> getUntaggedRuleResourceSet() {
+        Set<String> untaggedRuleResourceSet = new HashSet<String>();
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.untaggedRule.enabled", false)) {
+            String untaggedRuleResources = configuration().getStr("simianarmy.janitor.rule.untaggedRule.resources");
+            if (StringUtils.isNotBlank(untaggedRuleResources)) {
+                for (String resourceType : untaggedRuleResources.split(",")) {
+                    untaggedRuleResourceSet.add(resourceType.trim().toUpperCase());
+                }
+            }
+        }
+        return untaggedRuleResourceSet;
     }
 
     private Set<String> getPropertySet(String property) {
