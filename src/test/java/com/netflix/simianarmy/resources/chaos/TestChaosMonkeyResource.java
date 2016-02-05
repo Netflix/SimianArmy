@@ -177,7 +177,7 @@ public class TestChaosMonkeyResource {
         Map<String, String> anyMap = anyMap();
 
         when(mockRecorder.findEvents(any(MonkeyType.class), any(EventType.class), anyMap, any(Date.class))).thenReturn(
-                Arrays.asList(mkEvent("i-1234356780"), mkEvent("i-123456781")));
+                Arrays.asList(mkEvent("i-123456789012345670"), mkEvent("i-123456789012345671")));
 
         try {
             Response resp = resource.getChaosEvents(mockUriInfo);

@@ -68,7 +68,7 @@ public class TestSimpleDBJanitorResourceTracker extends SimpleDBJanitorResourceT
 
     @Test
     public void testAddResource() {
-        String id = "i-1234567";
+        String id = "i-12345678901234567";
         AWSResourceType resourceType = AWSResourceType.INSTANCE;
         Resource.CleanupState state = Resource.CleanupState.MARKED;
         String description = "This is a test resource.";

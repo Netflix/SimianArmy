@@ -145,7 +145,7 @@ public class TestOldUnusedLaunchConfigRule {
 
     @Test
     public void testNonLaunchConfigResource() {
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         OldUnusedLaunchConfigRule rule = new OldUnusedLaunchConfigRule(new TestMonkeyCalendar(), 3, 60);
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());

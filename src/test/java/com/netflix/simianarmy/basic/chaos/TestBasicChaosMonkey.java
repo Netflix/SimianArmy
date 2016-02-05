@@ -82,8 +82,8 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(1).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
         Assert.assertEquals(selectedOn.get(1).name(), "name1");
         Assert.assertEquals(terminated.size(), 2);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
-        Assert.assertEquals(terminated.get(1), "1:i-123456781");
+        Assert.assertEquals(terminated.get(0), "0:i-123456789012345670");
+        Assert.assertEquals(terminated.get(1), "1:i-123456789012345671");
     }
 
     @Test
@@ -116,8 +116,8 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(1).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_B);
         Assert.assertEquals(selectedOn.get(1).name(), "name3");
         Assert.assertEquals(terminated.size(), 2);
-        Assert.assertEquals(terminated.get(0), "2:i-123456782");
-        Assert.assertEquals(terminated.get(1), "3:i-123456783");
+        Assert.assertEquals(terminated.get(0), "2:i-123456789012345672");
+        Assert.assertEquals(terminated.get(1), "3:i-123456789012345673");
     }
 
     @Test
@@ -132,7 +132,7 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(0).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
         Assert.assertEquals(selectedOn.get(0).name(), "name0");
         Assert.assertEquals(terminated.size(), 1);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
+        Assert.assertEquals(terminated.get(0), "0:i-123456789012345670");
     }
 
     @Test
@@ -147,7 +147,7 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(0).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_A);
         Assert.assertEquals(selectedOn.get(0).name(), "name0");
         Assert.assertEquals(terminated.size(), 1);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
+        Assert.assertEquals(terminated.get(0), "0:i-123456789012345670");
     }
 
     @Test
@@ -168,10 +168,10 @@ public class TestBasicChaosMonkey {
         Assert.assertEquals(selectedOn.get(3).type(), TestChaosMonkeyContext.CrawlerTypes.TYPE_B);
         Assert.assertEquals(selectedOn.get(3).name(), "name3");
         Assert.assertEquals(terminated.size(), 4);
-        Assert.assertEquals(terminated.get(0), "0:i-123456780");
-        Assert.assertEquals(terminated.get(1), "1:i-123456781");
-        Assert.assertEquals(terminated.get(2), "2:i-123456782");
-        Assert.assertEquals(terminated.get(3), "3:i-123456783");
+        Assert.assertEquals(terminated.get(0), "0:i-123456789012345670");
+        Assert.assertEquals(terminated.get(1), "1:i-123456789012345671");
+        Assert.assertEquals(terminated.get(2), "2:i-123456789012345672");
+        Assert.assertEquals(terminated.get(3), "3:i-123456789012345673");
     }
 
     @Test

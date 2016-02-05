@@ -75,7 +75,7 @@ public class TestSuspendedASGRule {
     public void testASGWithInstances() {
         Resource resource = new AWSResource().withId("asg1").withResourceType(AWSResourceType.ASG);
         resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_MAX_SIZE, "2");
-        resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_INSTANCES, "i-1,i-2");
+        resource.setAdditionalField(ASGJanitorCrawler.ASG_FIELD_INSTANCES, "123456789012345671,i-123456789012345672");
         int suspensionAgeThreshold = 2;
         MonkeyCalendar calendar = new TestMonkeyCalendar();
         DateTime now = new DateTime(calendar.now().getTimeInMillis());
@@ -177,7 +177,7 @@ public class TestSuspendedASGRule {
 
     @Test
     public void testNonASGResource() {
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         SuspendedASGRule rule = new SuspendedASGRule(new TestMonkeyCalendar(), 3, 2, new DummyASGInstanceValidator());
         Assert.assertTrue(rule.isValid(resource));
         Assert.assertNull(resource.getExpectedTerminationTime());

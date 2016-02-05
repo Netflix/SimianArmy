@@ -61,7 +61,7 @@ public class TestEBSSnapshotJanitorCrawler {
     public void testSnapshotsWithIds() {
         Date startTime = new Date();
         List<Snapshot> snapshotList = createSnapshotList(startTime);
-        String[] ids = {"snap-123456780", "snap-123456781"};
+        String[] ids = {"snap-12345678901234567", "snap-12345678901234567"};
         EBSSnapshotJanitorCrawler crawler = new EBSSnapshotJanitorCrawler(createMockAWSClient(snapshotList, ids));
         List<Resource> resources = crawler.resources(ids);
         verifySnapshotList(resources, snapshotList, startTime);
@@ -107,8 +107,8 @@ public class TestEBSSnapshotJanitorCrawler {
 
     private List<Snapshot> createSnapshotList(Date startTime) {
         List<Snapshot> snapshotList = new LinkedList<Snapshot>();
-        snapshotList.add(mkSnapshot("snap-123456780", startTime));
-        snapshotList.add(mkSnapshot("snap-123456781", startTime));
+        snapshotList.add(mkSnapshot("snap-12345678901234567", startTime));
+        snapshotList.add(mkSnapshot("snap-12345678901234567", startTime));
         return snapshotList;
     }
 

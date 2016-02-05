@@ -57,7 +57,7 @@ public class TestOldDetachedVolumeRule {
 
     @Test
     public void testUnavailableVolume() {
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME);
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME);
         ((AWSResource) resource).setAWSResourceState("stopped");
         OldDetachedVolumeRule rule = new OldDetachedVolumeRule(new TestMonkeyCalendar(), 0, 0);
         Assert.assertTrue(rule.isValid(resource));
@@ -68,7 +68,7 @@ public class TestOldDetachedVolumeRule {
     public void testTaggedAsNotMark() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         Date lastDetachTime = new Date(now.minusDays(ageThreshold + 1).getMillis());
@@ -86,7 +86,7 @@ public class TestOldDetachedVolumeRule {
     public void testNoMetaTag() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         int retentionDays = 4;
@@ -101,7 +101,7 @@ public class TestOldDetachedVolumeRule {
     public void testUserSpecifiedTerminationDate() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         int retentionDays = 4;
@@ -118,7 +118,7 @@ public class TestOldDetachedVolumeRule {
     public void testOldDetachedVolume() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         Date lastDetachTime = new Date(now.minusDays(ageThreshold + 1).getMillis());
@@ -158,7 +158,7 @@ public class TestOldDetachedVolumeRule {
         //here we set the create date to a few days before a known DST cutover, where
         //we observed DST failures
         DateTime closeToSpringAheadDst = new DateTime(2014, 3, 7, 0, 0, DateTimeZone.forID("America/Los_Angeles"));
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
             .withLaunchTime(new Date(closeToSpringAheadDst.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         Date lastDetachTime = new Date(closeToSpringAheadDst.minusDays(ageThreshold + 1).getMillis());
@@ -200,7 +200,7 @@ public class TestOldDetachedVolumeRule {
     public void testDetachedVolumeNotOld() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         Date lastDetachTime = new Date(now.minusDays(ageThreshold - 1).getMillis());
@@ -217,10 +217,10 @@ public class TestOldDetachedVolumeRule {
     public void testAttachedVolume() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
-        String metaTag = VolumeTaggingMonkey.makeMetaTag("i-123", "owner", null);
+        String metaTag = VolumeTaggingMonkey.makeMetaTag("i-12345678901234567", "owner", null);
         resource.setTag(JanitorMonkey.JANITOR_META_TAG, metaTag);
         int retentionDays = 4;
         OldDetachedVolumeRule rule = new OldDetachedVolumeRule(new TestMonkeyCalendar(),
@@ -236,7 +236,7 @@ public class TestOldDetachedVolumeRule {
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
         String oldTermReason = "Foo";
         int ageThreshold = 5;
-        Resource resource = new AWSResource().withId("vol-123").withResourceType(AWSResourceType.EBS_VOLUME)
+        Resource resource = new AWSResource().withId("vol-12345678901234567").withResourceType(AWSResourceType.EBS_VOLUME)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("available");
         Date lastDetachTime = new Date(now.minusDays(ageThreshold + 1).getMillis());
