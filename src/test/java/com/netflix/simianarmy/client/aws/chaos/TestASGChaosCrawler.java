@@ -70,8 +70,8 @@ public class TestASGChaosCrawler {
     @Test
     public void testGroups() {
         List<AutoScalingGroup> asgList = new LinkedList<AutoScalingGroup>();
-        asgList.add(mkAsg("asg1", "i-123456780"));
-        asgList.add(mkAsg("asg2", "i-123456781"));
+        asgList.add(mkAsg("asg1", "i-123456789012345670"));
+        asgList.add(mkAsg("asg2", "i-123456789012345671"));
 
         when(awsMock.describeAutoScalingGroups((String[]) null)).thenReturn(asgList);
 
@@ -84,17 +84,17 @@ public class TestASGChaosCrawler {
         Assert.assertEquals(groups.get(0).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(0).name(), "asg1");
         Assert.assertEquals(groups.get(0).instances().size(), 1);
-        Assert.assertEquals(groups.get(0).instances().get(0), "i-123456780");
+        Assert.assertEquals(groups.get(0).instances().get(0), "i-123456789012345670");
 
         Assert.assertEquals(groups.get(1).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(1).name(), "asg2");
         Assert.assertEquals(groups.get(1).instances().size(), 1);
-        Assert.assertEquals(groups.get(1).instances().get(0), "i-123456781");
+        Assert.assertEquals(groups.get(1).instances().get(0), "i-123456789012345671");
     }
     
     @Test
     public void testFindAggressionCoefficient() {
-      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456789012345670");
       Set<TagDescription> tagDescriptions = new HashSet<>();
       tagDescriptions.add(makeTunableTag("1.0"));
       asg1.setTags(tagDescriptions);
@@ -106,7 +106,7 @@ public class TestASGChaosCrawler {
     
     @Test
     public void testFindAggressionCoefficient_two() {
-      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456789012345670");
       Set<TagDescription> tagDescriptions = new HashSet<>();
       tagDescriptions.add(makeTunableTag("2.0"));
       asg1.setTags(tagDescriptions);
@@ -118,7 +118,7 @@ public class TestASGChaosCrawler {
     
     @Test
     public void testFindAggressionCoefficient_null() {
-      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456789012345670");
       Set<TagDescription> tagDescriptions = new HashSet<>();
       tagDescriptions.add(makeTunableTag(null));
       asg1.setTags(tagDescriptions);
@@ -130,7 +130,7 @@ public class TestASGChaosCrawler {
 
     @Test
     public void testFindAggressionCoefficient_unparsable() {
-      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg1 = mkAsg("asg1", "i-123456789012345670");
       Set<TagDescription> tagDescriptions = new HashSet<>();
       tagDescriptions.add(makeTunableTag("not a number"));
       asg1.setTags(tagDescriptions);
@@ -149,7 +149,7 @@ public class TestASGChaosCrawler {
     
     @Test 
     public void testGetInstanceGroup_basic() {
-      AutoScalingGroup asg = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg = mkAsg("asg1", "i-123456789012345670");
 
       InstanceGroup group = crawler.getInstanceGroup(asg, 1.0);
       
@@ -159,7 +159,7 @@ public class TestASGChaosCrawler {
 
     @Test 
     public void testGetInstanceGroup_tunable() {
-      AutoScalingGroup asg = mkAsg("asg1", "i-123456780");
+      AutoScalingGroup asg = mkAsg("asg1", "i-123456789012345670");
 
       InstanceGroup group = crawler.getInstanceGroup(asg, 2.0);
       

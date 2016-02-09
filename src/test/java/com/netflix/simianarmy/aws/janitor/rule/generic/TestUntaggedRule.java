@@ -40,7 +40,7 @@ public class TestUntaggedRule {
     @Test
     public void testUntaggedInstanceWithOwner() {
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withOwnerEmail("owner@foo.com");
         resource.setTag("tag1", "value1");
         ((AWSResource) resource).setAWSResourceState("running");
@@ -57,7 +57,7 @@ public class TestUntaggedRule {
     @Test
     public void testUntaggedInstanceWithoutOwner() {
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         resource.setTag("tag1", "value1");
         ((AWSResource) resource).setAWSResourceState("running");
         Set<String> tags = new HashSet<String>();
@@ -72,7 +72,7 @@ public class TestUntaggedRule {
 
     @Test
     public void testTaggedInstance() {
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         resource.setTag("tag1", "value1");
         resource.setTag("tag2", "value2");
         ((AWSResource) resource).setAWSResourceState("running");
@@ -90,7 +90,7 @@ public class TestUntaggedRule {
         DateTime now = DateTime.now();
         Resource imageResource = new AWSResource().withId("ami-123123").withResourceType(AWSResourceType.IMAGE);
         Resource asgResource = new AWSResource().withId("my-cool-asg").withResourceType(AWSResourceType.ASG);
-        Resource ebsSnapshotResource = new AWSResource().withId("snap-123123").withResourceType(AWSResourceType.EBS_SNAPSHOT);
+        Resource ebsSnapshotResource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT);
         Resource lauchConfigurationResource = new AWSResource().withId("my-cool-launch-configuration").withResourceType(AWSResourceType.LAUNCH_CONFIG);
         Set<String> tags = new HashSet<String>();
         tags.add("tag1");
@@ -113,7 +113,7 @@ public class TestUntaggedRule {
         DateTime now = DateTime.now();
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
         String oldTermReason = "Foo";
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withExpectedTerminationTime(oldTermDate)
                 .withTerminationReason(oldTermReason);
         ((AWSResource) resource).setAWSResourceState("running");

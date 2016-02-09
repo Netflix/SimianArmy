@@ -71,13 +71,13 @@ public class TestBasicContext {
         Assert.assertNull(awsClientConfig.getProxyPassword());
     }
 
-    @Test
+        @Test
     public void testIsAbleToUseProxyByConfiguration() {
         BasicSimianArmyContext ctx = new BasicSimianArmyContext("proxy.properties");
 
         ClientConfiguration awsClientConfig = ctx.getAwsClientConfig();
 
-        Assert.assertEquals(awsClientConfig.getProxyHost(), "192.168.0.0");
+        Assert.assertEquals(awsClientConfig.getProxyHost(), "127.0.0.1");
         Assert.assertEquals(awsClientConfig.getProxyPort(), 80);
         Assert.assertEquals(awsClientConfig.getProxyUsername(), "fakeUser");
         Assert.assertEquals(awsClientConfig.getProxyPassword(), "fakePassword");

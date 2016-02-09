@@ -48,7 +48,7 @@ public class TestBasicChaosEmailNotifier {
     private String name = "name0";
     private String region = "reg1";
     private String to = "foo@bar.com";
-    private String instanceId = "i-123456780";
+    private String instanceId = "i-12345678901234567";
     private String subjectPrefix = "Subject Prefix - ";
     private String subjectSuffix = " - Subject Suffix ";
     private String bodyPrefix = "Body Prefix - ";

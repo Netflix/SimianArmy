@@ -65,7 +65,7 @@ public class TestInstanceJanitorCrawler {
     public void testInstancesWithIds() {
         List<AutoScalingInstanceDetails> instanceDetailsList = createInstanceDetailsList();
         List<Instance> instanceList = createInstanceList();
-        String[] ids = {"i-123456780", "i-123456780"};
+        String[] ids = {"i-12345678901234560", "i-12345678901234561"};
         AWSClient awsMock = createMockAWSClient(instanceDetailsList, instanceList, ids);
         InstanceJanitorCrawler crawler = new InstanceJanitorCrawler(awsMock);
         List<Resource> resources = crawler.resources(ids);
@@ -125,8 +125,8 @@ public class TestInstanceJanitorCrawler {
 
     private List<AutoScalingInstanceDetails> createInstanceDetailsList() {
         List<AutoScalingInstanceDetails> instanceList = new LinkedList<AutoScalingInstanceDetails>();
-        instanceList.add(mkInstanceDetails("i-123456780", "asg1"));
-        instanceList.add(mkInstanceDetails("i-123456781", "asg2"));
+        instanceList.add(mkInstanceDetails("i-12345678901234560", "asg1"));
+        instanceList.add(mkInstanceDetails("i-12345678901234561", "asg2"));
         return instanceList;
     }
 
@@ -136,8 +136,8 @@ public class TestInstanceJanitorCrawler {
 
     private List<Instance> createInstanceList() {
         List<Instance> instanceList = new LinkedList<Instance>();
-        instanceList.add(mkInstance("i-123456780"));
-        instanceList.add(mkInstance("i-123456781"));
+        instanceList.add(mkInstance("i-12345678901234560"));
+        instanceList.add(mkInstance("i-12345678901234561"));
         return instanceList;
     }
 

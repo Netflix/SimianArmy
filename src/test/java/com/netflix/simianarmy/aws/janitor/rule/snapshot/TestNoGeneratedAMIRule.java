@@ -48,7 +48,7 @@ public class TestNoGeneratedAMIRule {
 
     @Test
     public void testUncompletedVolume() {
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT);
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT);
         ((AWSResource) resource).setAWSResourceState("stopped");
         NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(), 0, 0);
         Assert.assertTrue(rule.isValid(resource));
@@ -59,7 +59,7 @@ public class TestNoGeneratedAMIRule {
     public void testTaggedAsNotMark() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
@@ -74,7 +74,7 @@ public class TestNoGeneratedAMIRule {
     public void testUserSpecifiedTerminationDate() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
@@ -91,7 +91,7 @@ public class TestNoGeneratedAMIRule {
     public void testOldSnapshotWithoutAMI() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
@@ -105,7 +105,7 @@ public class TestNoGeneratedAMIRule {
     public void testSnapshotWithoutAMINotOld() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold - 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
@@ -119,7 +119,7 @@ public class TestNoGeneratedAMIRule {
     public void testWithAMIs() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         resource.setAdditionalField(EBSSnapshotJanitorCrawler.SNAPSHOT_FIELD_AMIS, "ami-123");
@@ -133,7 +133,7 @@ public class TestNoGeneratedAMIRule {
     @Test
     public void testSnapshotsWithoutLauchTime() {
         int ageThreshold = 5;
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT);
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT);
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
         NoGeneratedAMIRule rule = new NoGeneratedAMIRule(new TestMonkeyCalendar(),
@@ -147,7 +147,7 @@ public class TestNoGeneratedAMIRule {
     public void testResourceWithExpectedTerminationTimeSet() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
@@ -166,7 +166,7 @@ public class TestNoGeneratedAMIRule {
     public void testOldSnapshotWithoutAMIWithOwnerOverride() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;
@@ -181,7 +181,7 @@ public class TestNoGeneratedAMIRule {
     public void testOldSnapshotWithoutAMIWithoutOwnerOverride() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("snap123").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
+        Resource resource = new AWSResource().withId("snap-12345678901234567").withOwnerEmail("owner@netflix.com").withResourceType(AWSResourceType.EBS_SNAPSHOT)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("completed");
         int retentionDays = 4;

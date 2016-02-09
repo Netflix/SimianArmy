@@ -61,7 +61,7 @@ public class TestEBSVolumeJanitorCrawler {
     public void testVolumesWithIds() {
         Date createTime = new Date();
         List<Volume> volumeList = createVolumeList(createTime);
-        String[] ids = {"vol-123456780", "vol-123456781"};
+        String[] ids = {"vol-12345678901234567", "vol-12345678901234567"};
         EBSVolumeJanitorCrawler crawler = new EBSVolumeJanitorCrawler(createMockAWSClient(volumeList, ids));
         List<Resource> resources = crawler.resources(ids);
         verifyVolumeList(resources, volumeList, createTime);
@@ -107,8 +107,8 @@ public class TestEBSVolumeJanitorCrawler {
 
     private List<Volume> createVolumeList(Date createTime) {
         List<Volume> volumeList = new LinkedList<Volume>();
-        volumeList.add(mkVolume("vol-123456780", createTime));
-        volumeList.add(mkVolume("vol-123456781", createTime));
+        volumeList.add(mkVolume("vol-12345678901234567", createTime));
+        volumeList.add(mkVolume("vol-12345678901234567", createTime));
         return volumeList;
     }
 

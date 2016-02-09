@@ -39,7 +39,7 @@ public class TestOrphanedInstanceRule {
     public void testOrphanedInstancesWithOwner() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()))
                 .withOwnerEmail("owner@foo.com");
         ((AWSResource) resource).setAWSResourceState("running");
@@ -55,7 +55,7 @@ public class TestOrphanedInstanceRule {
     public void testOrphanedInstancesWithoutOwner() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("running");
         int retentionDaysWithOwner = 4;
@@ -69,7 +69,7 @@ public class TestOrphanedInstanceRule {
     @Test
     public void testOrphanedInstancesWithoutLaunchTime() {
         int ageThreshold = 5;
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         ((AWSResource) resource).setAWSResourceState("running");
         int retentionDaysWithOwner = 4;
         int retentionDaysWithoutOwner = 8;
@@ -83,7 +83,7 @@ public class TestOrphanedInstanceRule {
     public void testOrphanedInstancesWithLaunchTimeNotExpires() {
         int ageThreshold = 5;
         DateTime now = DateTime.now();
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold - 1).getMillis()));
         ((AWSResource) resource).setAWSResourceState("running");
         int retentionDaysWithOwner = 4;
@@ -97,7 +97,7 @@ public class TestOrphanedInstanceRule {
     @Test
     public void testNonOrphanedInstances() {
         int ageThreshold = 5;
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .setAdditionalField(InstanceJanitorCrawler.INSTANCE_FIELD_ASG_NAME, "asg1");
         ((AWSResource) resource).setAWSResourceState("running");
         int retentionDaysWithOwner = 4;
@@ -114,7 +114,7 @@ public class TestOrphanedInstanceRule {
         Date oldTermDate = new Date(now.plusDays(10).getMillis());
         String oldTermReason = "Foo";
         int ageThreshold = 5;
-        Resource resource = new AWSResource().withId("i-12345678").withResourceType(AWSResourceType.INSTANCE)
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE)
                 .withLaunchTime(new Date(now.minusDays(ageThreshold + 1).getMillis()))
                 .withExpectedTerminationTime(oldTermDate)
                 .withTerminationReason(oldTermReason);
@@ -165,7 +165,7 @@ public class TestOrphanedInstanceRule {
 
     @Test
     public void testNonRunningInstance() {
-        Resource resource = new AWSResource().withId("i-123").withResourceType(AWSResourceType.INSTANCE);
+        Resource resource = new AWSResource().withId("i-12345678901234567").withResourceType(AWSResourceType.INSTANCE);
         ((AWSResource) resource).setAWSResourceState("stopping");
         OrphanedInstanceRule rule = new OrphanedInstanceRule(new TestMonkeyCalendar(), 0, 0, 0);
         Assert.assertTrue(rule.isValid(resource));

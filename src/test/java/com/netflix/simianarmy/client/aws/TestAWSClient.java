@@ -75,13 +75,13 @@ public class TestAWSClient extends AWSClient {
 
         ArgumentCaptor<TerminateInstancesRequest> arg = ArgumentCaptor.forClass(TerminateInstancesRequest.class);
 
-        this.terminateInstance("fake:i-123456789");
+        this.terminateInstance("fake:i-12345678901234567");
 
         verify(ec2Mock).terminateInstances(arg.capture());
 
         List<String> instances = arg.getValue().getInstanceIds();
         Assert.assertEquals(instances.size(), 1);
-        Assert.assertEquals(instances.get(0), "fake:i-123456789");
+        Assert.assertEquals(instances.get(0), "fake:i-12345678901234567");
     }
 
     private DescribeAutoScalingGroupsResult mkAsgResult(String asgName, String instanceId) {
@@ -97,9 +97,9 @@ public class TestAWSClient extends AWSClient {
 
     @Test
     public void testDescribeAutoScalingGroups() {
-        DescribeAutoScalingGroupsResult result1 = mkAsgResult("asg1", "i-012345670");
+        DescribeAutoScalingGroupsResult result1 = mkAsgResult("asg1", "i-123456789012345670");
         result1.setNextToken("nextToken");
-        DescribeAutoScalingGroupsResult result2 = mkAsgResult("asg2", "i-012345671");
+        DescribeAutoScalingGroupsResult result2 = mkAsgResult("asg2", "i-123456789012345671");
 
         when(asgMock.describeAutoScalingGroups(any(DescribeAutoScalingGroupsRequest.class))).thenReturn(result1)
                 .thenReturn(result2);
@@ -113,10 +113,10 @@ public class TestAWSClient extends AWSClient {
         // 2 asgs with 1 instance each
         Assert.assertEquals(asgs.get(0).getAutoScalingGroupName(), "asg1");
         Assert.assertEquals(asgs.get(0).getInstances().size(), 1);
-        Assert.assertEquals(asgs.get(0).getInstances().get(0).getInstanceId(), "i-012345670");
+        Assert.assertEquals(asgs.get(0).getInstances().get(0).getInstanceId(), "i-123456789012345670");
 
         Assert.assertEquals(asgs.get(1).getAutoScalingGroupName(), "asg2");
         Assert.assertEquals(asgs.get(1).getInstances().size(), 1);
-        Assert.assertEquals(asgs.get(1).getInstances().get(0).getInstanceId(), "i-012345671");
+        Assert.assertEquals(asgs.get(1).getInstances().get(0).getInstanceId(), "i-123456789012345671");
     }
 }
