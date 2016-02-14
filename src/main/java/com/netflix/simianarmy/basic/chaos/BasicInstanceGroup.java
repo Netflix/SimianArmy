@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
@@ -38,6 +39,9 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** The region. */
     private final String region;
 
+    /** list of the tags of the ASG */
+    private final List<TagDescription> tags;
+
     /**
      * Instantiates a new basic instance group.
      *
@@ -45,12 +49,17 @@ public class BasicInstanceGroup implements InstanceGroup {
      *            the name
      * @param type
      *            the type
+     * @param tags
+     *            the ASG tags
      */
-    public BasicInstanceGroup(String name, GroupType type, String region) {
+    public BasicInstanceGroup(String name, GroupType type, String region, List<TagDescription> tags) {
         this.name = name;
         this.type = type;
         this.region = region;
+        this.tags = tags;
     }
+
+
 
     /** {@inheritDoc} */
     public GroupType type() {
@@ -65,6 +74,11 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** {@inheritDoc} */
     public String region() {
         return region;
+    }
+
+    /** {@inheritDoc} */
+    public List<TagDescription> tags() {
+        return tags;
     }
 
     /** The list. */
@@ -85,7 +99,7 @@ public class BasicInstanceGroup implements InstanceGroup {
     /** {@inheritDoc} */
     @Override
     public BasicInstanceGroup copyAs(String newName) {
-        BasicInstanceGroup newGroup = new BasicInstanceGroup(newName, this.type(), this.region());
+        BasicInstanceGroup newGroup = new BasicInstanceGroup(newName, this.type(), this.region(), this.tags());
         for (String instance: this.instances()) {
             newGroup.addInstance(instance);
         }

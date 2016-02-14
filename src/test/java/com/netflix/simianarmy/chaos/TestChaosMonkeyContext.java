@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.domain.ExecChannel;
 import org.jclouds.compute.domain.ExecResponse;
@@ -89,6 +90,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final String name;
         private final String region;
         private final List<String> instances = new ArrayList<String>();
+        private final List<TagDescription> tags = new ArrayList<TagDescription>();
 
         public TestInstanceGroup(GroupType type, String name, String region, String... instances) {
             this.type = type;
@@ -97,6 +99,11 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             for (String i : instances) {
                 this.instances.add(i);
             }
+        }
+
+        @Override
+        public List<TagDescription> tags() {
+            return tags;
         }
 
         @Override

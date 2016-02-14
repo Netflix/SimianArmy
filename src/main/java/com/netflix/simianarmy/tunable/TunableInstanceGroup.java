@@ -1,7 +1,10 @@
 package com.netflix.simianarmy.tunable;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
+
+import java.util.List;
 
 /**
  * Allows for individual InstanceGroups to alter the aggressiveness
@@ -12,8 +15,8 @@ import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
  */
 public class TunableInstanceGroup extends BasicInstanceGroup {
   
-  public TunableInstanceGroup(String name, GroupType type, String region) {
-    super(name, type, region);
+  public TunableInstanceGroup(String name, GroupType type, String region, List<TagDescription> tags) {
+    super(name, type, region, tags);
   }
 
   private double aggressionCoefficient = 1.0;

@@ -28,6 +28,8 @@ import com.netflix.simianarmy.chaos.ChaosEmailNotifier;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.client.aws.chaos.ASGChaosCrawler;
+import com.netflix.simianarmy.client.aws.chaos.FilteringChaosCrawler;
+import com.netflix.simianarmy.client.aws.chaos.TagPredicate;
 
 /**
  * The Class BasicContext. This provide the basic context needed for the Chaos Monkey to run. It will configure
@@ -50,9 +52,13 @@ public class BasicChaosMonkeyContext extends BasicSimianArmyContext implements C
      */
     public BasicChaosMonkeyContext() {
         super("simianarmy.properties", "client.properties", "chaos.properties");
-        setChaosCrawler(new ASGChaosCrawler(awsClient()));
-        setChaosInstanceSelector(new BasicChaosInstanceSelector());
         MonkeyConfiguration cfg = configuration();
+        String tagKey = cfg.getStrOrElse("simianarmy.chaos.ASGtag.key", "");
+        String tagValue = cfg.getStrOrElse("simianarmy.chaos.ASGtag.value", "");
+
+        ASGChaosCrawler chaosCrawler = new ASGChaosCrawler(awsClient());
+        setChaosCrawler(tagKey.isEmpty() ? chaosCrawler : new FilteringChaosCrawler(chaosCrawler, new TagPredicate(tagKey, tagValue)));
+        setChaosInstanceSelector(new BasicChaosInstanceSelector());
         AmazonSimpleEmailServiceClient sesClient = new AmazonSimpleEmailServiceClient(awsClientConfig);
         if (configuration().getStr("simianarmy.aws.email.region") != null) {
            sesClient.setRegion(Region.getRegion(Regions.fromName(configuration().getStr("simianarmy.aws.email.region"))));
