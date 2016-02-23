@@ -17,6 +17,9 @@ repositories {
 apply plugin: 'war'
 apply plugin: 'jetty'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 dependencies {
     // for the VMWareClient
     compile 'com.cloudbees.thirdparty:vijava:5.0.0'
