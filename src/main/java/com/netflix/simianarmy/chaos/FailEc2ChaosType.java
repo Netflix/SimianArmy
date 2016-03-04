@@ -28,7 +28,6 @@ public class FailEc2ChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public FailEc2ChaosType(MonkeyConfiguration config) {
         super(config, "FailEc2");

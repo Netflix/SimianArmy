@@ -42,7 +42,6 @@ public abstract class ScriptChaosType extends ChaosType {
      *            Configuration to use
      * @param key
      *            Key for the chaos money
-     * @throws IOException
      */
     public ScriptChaosType(MonkeyConfiguration config, String key) {
         super(config, key);

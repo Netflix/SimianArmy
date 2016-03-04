@@ -28,7 +28,6 @@ public class NetworkCorruptionChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public NetworkCorruptionChaosType(MonkeyConfiguration config) {
         super(config, "NetworkCorruption");

@@ -28,7 +28,6 @@ public class NetworkLatencyChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public NetworkLatencyChaosType(MonkeyConfiguration config) {
         super(config, "NetworkLatency");

@@ -20,7 +20,7 @@ package com.netflix.simianarmy.chaos;
 import com.netflix.simianarmy.MonkeyConfiguration;
 
 /**
- * Blocks TCP & UDP port 53, so DNS resolution fails.
+ * Blocks TCP and UDP port 53, so DNS resolution fails.
  */
 public class FailDnsChaosType extends ScriptChaosType {
     /**
@@ -28,7 +28,6 @@ public class FailDnsChaosType extends ScriptChaosType {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public FailDnsChaosType(MonkeyConfiguration config) {
         super(config, "FailDns");
