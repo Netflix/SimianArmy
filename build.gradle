@@ -23,6 +23,9 @@ repositories {
 apply plugin: 'war'
 apply plugin: 'jetty'
 
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
 dependencies {
     // for the VMWareClient
     compile 'com.cloudbees.thirdparty:vijava:5.0.0'
@@ -35,7 +38,7 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
-    compile('com.netflix.eureka:eureka-client:1.1.22') {
+    compile('com.netflix.eureka:eureka-client:1.4.1') {
         exclude group: 'com.sun.jersey', module: 'jersey-bundle'
     }
     compile 'com.amazonaws:aws-java-sdk:1.10.5.1'
