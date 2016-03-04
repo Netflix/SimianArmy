@@ -45,7 +45,6 @@ public class SshConfig {
      *
      * @param config
      *            Configuration to use
-     * @throws IOException
      */
     public SshConfig(MonkeyConfiguration config) {
         String sshUser = config.getStrOrElse("simianarmy.chaos.ssh.user", "root");
