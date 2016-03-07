@@ -20,7 +20,10 @@ package com.netflix.simianarmy.basic.janitor;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
-import com.netflix.discovery.DiscoveryManager;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import com.netflix.discovery.DiscoveryClient;
+import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
@@ -63,7 +66,6 @@ import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,7 +171,9 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         ASGInstanceValidator instanceValidator;
         if (discoveryEnabled) {
             LOGGER.info("Initializing Discovery client.");
-            instanceValidator = new DiscoveryASGInstanceValidator(DiscoveryManager.getInstance().getDiscoveryClient());
+            Injector injector = Guice.createInjector(new EurekaModule());
+            DiscoveryClient discoveryClient = injector.getInstance(DiscoveryClient.class);
+            instanceValidator = new DiscoveryASGInstanceValidator(discoveryClient);
         } else {
             LOGGER.info("Discovery/Eureka is not enabled, use the dummy instance validator.");
             instanceValidator = new DummyASGInstanceValidator();

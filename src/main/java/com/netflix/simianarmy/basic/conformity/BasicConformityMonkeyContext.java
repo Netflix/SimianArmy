@@ -22,8 +22,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import com.netflix.discovery.DiscoveryClient;
-import com.netflix.discovery.DiscoveryManager;
+import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.simianarmy.aws.conformity.SimpleDBConformityClusterTracker;
 import com.netflix.simianarmy.aws.conformity.crawler.AWSClusterCrawler;
 import com.netflix.simianarmy.aws.conformity.rule.BasicConformityEurekaClient;
@@ -45,7 +47,6 @@ import com.netflix.simianarmy.conformity.ConformityEmailNotifier;
 import com.netflix.simianarmy.conformity.ConformityMonkey;
 import com.netflix.simianarmy.conformity.ConformityRule;
 import com.netflix.simianarmy.conformity.ConformityRuleEngine;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -107,7 +108,8 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         if (eurekaEnabled) {
             LOGGER.info("Initializing Discovery client.");
-            DiscoveryClient discoveryClient = DiscoveryManager.getInstance().getDiscoveryClient();
+            Injector injector = Guice.createInjector(new EurekaModule());
+            DiscoveryClient discoveryClient = injector.getInstance(DiscoveryClient.class);
             ConformityEurekaClient conformityEurekaClient = new BasicConformityEurekaClient(discoveryClient);
             if (configuration().getBoolOrElse(
                     "simianarmy.conformity.rule.InstanceIsHealthyInEureka.enabled", false)) {
