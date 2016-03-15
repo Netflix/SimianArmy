@@ -33,14 +33,13 @@ dependencies {
     // for DB support outside of AWS (SimpleDB not available)
     compile 'org.mapdb:mapdb:0.9.5'
 
+    compile 'com.sun.jersey:jersey-bundle:1.11'
     compile 'com.sun.jersey:jersey-core:1.11'
     compile 'com.sun.jersey:jersey-servlet:1.11'
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
-    compile('com.netflix.eureka:eureka-client:1.4.1') {
-        exclude group: 'com.sun.jersey', module: 'jersey-bundle'
-    }
+    compile 'com.netflix.eureka:eureka-client:1.4.1'
     compile 'com.amazonaws:aws-java-sdk:1.10.5.1'
     compile 'commons-lang:commons-lang:2.6'
     compile 'com.google.guava:guava:11.0.2'
