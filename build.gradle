@@ -15,7 +15,7 @@ ext.githubProjectName = 'SimianArmy'
 group = "com.netflix.${project.name}"
 apply plugin:'eclipse-wtp'
 
-repositories { 
+repositories {
     mavenLocal()
     mavenCentral()
 }
@@ -47,7 +47,6 @@ dependencies {
     compile 'org.apache.jclouds.driver:jclouds-slf4j:1.9.0'
     compile 'org.apache.jclouds.api:ec2:1.9.0'
     compile 'org.apache.jclouds.provider:aws-ec2:1.9.0'
-    compile 'ch.qos.logback:logback-classic:1.0.13'
     compile 'com.netflix.servo:servo-core:0.9.4'
 
     testCompile 'org.testng:testng:6.3.1'
