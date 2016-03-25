@@ -1,5 +1,6 @@
 package com.netflix.simianarmy.tunable;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -7,6 +8,8 @@ import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
+
+import java.util.Collections;
 
 public class TestTunablyAggressiveChaosMonkey {
   private enum GroupTypes implements GroupType {
@@ -19,7 +22,7 @@ public class TestTunablyAggressiveChaosMonkey {
 
     TunablyAggressiveChaosMonkey chaos = new TunablyAggressiveChaosMonkey(ctx);
 
-    InstanceGroup basic = new BasicInstanceGroup("basic", GroupTypes.TYPE_A, "region");
+    InstanceGroup basic = new BasicInstanceGroup("basic", GroupTypes.TYPE_A, "region", Collections.<TagDescription>emptyList());
     
     double probability = chaos.getEffectiveProbability(basic);
     
@@ -32,7 +35,7 @@ public class TestTunablyAggressiveChaosMonkey {
 
     TunablyAggressiveChaosMonkey chaos = new TunablyAggressiveChaosMonkey(ctx);
 
-    TunableInstanceGroup tuned = new TunableInstanceGroup("basic", GroupTypes.TYPE_A, "region");
+    TunableInstanceGroup tuned = new TunableInstanceGroup("basic", GroupTypes.TYPE_A, "region", Collections.<TagDescription>emptyList());
     tuned.setAggressionCoefficient(0.5);
     
     double probability = chaos.getEffectiveProbability(tuned);

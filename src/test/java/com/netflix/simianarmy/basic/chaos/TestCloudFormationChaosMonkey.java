@@ -18,6 +18,7 @@
 // CHECKSTYLE IGNORE Javadoc
 package com.netflix.simianarmy.basic.chaos;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import static org.testng.Assert.assertEquals;
@@ -26,6 +27,8 @@ import static org.testng.Assert.assertFalse;
 
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+
+import java.util.Collections;
 
 public class TestCloudFormationChaosMonkey {
 
@@ -36,9 +39,9 @@ public class TestCloudFormationChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
         InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         InstanceGroup group2 = new BasicInstanceGroup("new-group-TestGroup2-XCFNGHFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         assertTrue(chaos.isGroupEnabled(group1));
         assertFalse(chaos.isGroupEnabled(group2));
     }
@@ -48,7 +51,7 @@ public class TestCloudFormationChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
         InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         assertFalse(chaos.isMaxTerminationCountExceeded(group1));
     }
 
@@ -57,7 +60,7 @@ public class TestCloudFormationChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
         InstanceGroup group1 = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         assertEquals(1.0, chaos.getEffectiveProbability(group1));
     }
 
@@ -66,7 +69,7 @@ public class TestCloudFormationChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("disabled.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
         InstanceGroup group = new BasicInstanceGroup("new-group-TestGroup-XCFNFNFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         InstanceGroup newGroup = chaos.noSuffixInstanceGroup(group);
         assertEquals(newGroup.name(), "new-group-TestGroup");
     }
@@ -76,7 +79,7 @@ public class TestCloudFormationChaosMonkey {
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("cloudformation.properties");
         CloudFormationChaosMonkey chaos = new CloudFormationChaosMonkey(ctx);
         InstanceGroup group = new BasicInstanceGroup("new-group-TestGroup1-XCFNFNFNF",
-                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region");
+                TestChaosMonkeyContext.CrawlerTypes.TYPE_D, "region", Collections.<TagDescription>emptyList());
         assertEquals(chaos.getLastOptInMilliseconds(group), EXPECTED_MILLISECONDS);
     }
 

@@ -18,6 +18,8 @@
 // CHECKSTYLE IGNORE Javadoc
 package com.netflix.simianarmy.basic.chaos;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -33,6 +35,7 @@ import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.TestChaosMonkeyContext;
 import com.netflix.simianarmy.resources.chaos.ChaosMonkeyResource;
+import com.amazonaws.services.autoscaling.model.TagDescription;
 
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestBasicChaosMonkey {
@@ -360,17 +363,18 @@ public class TestBasicChaosMonkey {
 
     @Test
     public void testGetValueFromCfgWithDefault() {
+
         TestChaosMonkeyContext ctx = new TestChaosMonkeyContext("propertiesWithDefaults.properties");
         BasicChaosMonkey chaos = new BasicChaosMonkey(ctx);
 
         // named 1 has actual values in config
-        InstanceGroup named1 = new BasicInstanceGroup("named1", GroupTypes.TYPE_A, "test-dev-1");
+        InstanceGroup named1 = new BasicInstanceGroup("named1", GroupTypes.TYPE_A, "test-dev-1", Collections.<TagDescription>emptyList());
 
         // named 2 doesn't have values but it's group has values
-        InstanceGroup named2 = new BasicInstanceGroup("named2", GroupTypes.TYPE_A, "test-dev-1");
+        InstanceGroup named2 = new BasicInstanceGroup("named2", GroupTypes.TYPE_A, "test-dev-1", Collections.<TagDescription>emptyList());
 
         // named 3 doesn't have values and it's group doesn't have values
-        InstanceGroup named3 = new BasicInstanceGroup("named3", GroupTypes.TYPE_B, "test-dev-1");
+        InstanceGroup named3 = new BasicInstanceGroup("named3", GroupTypes.TYPE_B, "test-dev-1", Collections.<TagDescription>emptyList());
 
         Assert.assertEquals(chaos.getBoolFromCfgOrDefault(named1, "enabled", true), false);
         Assert.assertEquals(chaos.getNumFromCfgOrDefault(named1, "probability", 3.0), 1.1);
