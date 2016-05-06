@@ -202,8 +202,8 @@ public class TestChaosMonkeyResource {
         final MonkeyType monkeyType = ChaosMonkey.Type.CHAOS;
         final EventType eventType = ChaosMonkey.EventTypes.CHAOS_TERMINATION;
         // SUPPRESS CHECKSTYLE MagicNumber
-        return new BasicRecorderEvent(monkeyType, eventType, "region", "id", 1330538400000L)
-        .addField("instanceId", instance).addField("groupType", "ASG").addField("groupName", "testGroup");
+        return new BasicRecorderEvent(monkeyType, eventType, "region", instance, 1330538400000L)
+        .addField("groupType", "ASG").addField("groupName", "testGroup");
     }
 
     public static class MockTestChaosMonkeyContext extends TestChaosMonkeyContext {
