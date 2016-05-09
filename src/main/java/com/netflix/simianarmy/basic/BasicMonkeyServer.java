@@ -147,7 +147,7 @@ public class BasicMonkeyServer extends HttpServlet {
         RUNNER.stop();
         LOGGER.info("Stopping Chaos Monkey.");
         RUNNER.removeMonkey(this.chaosClass);
-        LOGGER.info("Stopping volume tagging Monkey.");
+        LOGGER.info("Stopping Volume Tagging Monkey.");
         RUNNER.removeMonkey(VolumeTaggingMonkey.class);
         LOGGER.info("Stopping Janitor Monkey.");
         RUNNER.removeMonkey(BasicJanitorMonkey.class);
