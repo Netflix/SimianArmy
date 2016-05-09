@@ -151,6 +151,8 @@ public class BasicMonkeyServer extends HttpServlet {
         RUNNER.removeMonkey(VolumeTaggingMonkey.class);
         LOGGER.info("Stopping Janitor Monkey.");
         RUNNER.removeMonkey(BasicJanitorMonkey.class);
+        LOGGER.info("Stopping Conformity Monkey.");
+        RUNNER.removeMonkey(BasicConformityMonkey.class);
         super.destroy();
     }
 }
