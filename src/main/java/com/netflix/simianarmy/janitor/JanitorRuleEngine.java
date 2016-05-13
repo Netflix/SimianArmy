@@ -19,6 +19,7 @@
 package com.netflix.simianarmy.janitor;
 
 import com.netflix.simianarmy.Resource;
+import java.util.List;
 
 /**
  * The interface for janitor rule engine that can decide if a resource should be a candidate of cleanup
@@ -44,4 +45,11 @@ public interface JanitorRuleEngine {
      * @return The JanitorRuleEngine object.
      */
     JanitorRuleEngine addRule(Rule rule);
+    
+    /**
+     * Get rules to find out what's planned for enforcement.
+     *
+     * @return An ArrayList of Rules.
+     */
+    List<Rule> getRules();
 }
