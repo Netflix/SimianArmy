@@ -98,4 +98,10 @@ public class BasicJanitorRuleEngine implements JanitorRuleEngine {
         rules.add(rule);
         return this;
     }
+    
+   /** {@inheritDoc} */
+    @Override
+    public List<Rule> getRules() {
+        return this.rules;
+    }
 }
