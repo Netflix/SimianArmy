@@ -111,7 +111,7 @@ public class AWSClusterCrawler implements ClusterCrawler {
                         }
                     }
                 }
-                
+
                 updateCluster(cluster);
                 list.add(cluster);
             }
