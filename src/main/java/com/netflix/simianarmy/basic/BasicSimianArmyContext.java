@@ -33,7 +33,6 @@ import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
-
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyCalendar;
@@ -41,6 +40,7 @@ import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyScheduler;
+import com.netflix.simianarmy.aws.RDSRecorder;
 import com.netflix.simianarmy.aws.SimpleDBRecorder;
 import com.netflix.simianarmy.aws.STSAssumeRoleSessionCredentialsProvider;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -187,6 +187,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
     protected void loadConfigurationFileIntoProperties(String propertyFileName) {
         String propFile = System.getProperty(propertyFileName, "/" + propertyFileName);
         try {
+        	LOGGER.info("loading properties file: " + propFile);
             InputStream is = BasicSimianArmyContext.class.getResourceAsStream(propFile);
             try {
                 properties.load(is);
@@ -212,7 +213,17 @@ public class BasicSimianArmyContext implements Monkey.Context {
     private void createRecorder() {
         @SuppressWarnings("rawtypes")
         Class recorderClass = loadClientClass("simianarmy.client.recorder.class");
-        if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
+        if (recorderClass != null && recorderClass.equals(RDSRecorder.class)) {
+            String dbDriver = configuration().getStr("simianarmy.recorder.db.driver");
+            String dbUser = configuration().getStr("simianarmy.recorder.db.user");
+            String dbPass = configuration().getStr("simianarmy.recorder.db.pass");
+            String dbUrl = configuration().getStr("simianarmy.recorder.db.url");
+            String dbTable = configuration().getStr("simianarmy.recorder.db.table");
+            
+            RDSRecorder rdsRecorder = new RDSRecorder(dbDriver, dbUser, dbPass, dbUrl, dbTable, client.region());
+            rdsRecorder.init();
+            setRecorder(rdsRecorder);        	
+        } else if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
             String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
             if (client != null) {
                 SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, domain);

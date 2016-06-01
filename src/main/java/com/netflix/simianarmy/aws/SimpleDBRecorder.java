@@ -123,7 +123,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the e
      * @return the string
      */
-    private static String enumToValue(NamedType e) {
+    public static String enumToValue(NamedType e) {
         return String.format("%s|%s", e.name(), e.getClass().getName());
     }
 
@@ -134,7 +134,7 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *            the value
      * @return the enum
      */
-    private static <T extends NamedType> T valueToEnum(
+    public static <T extends NamedType> T valueToEnum(
             Class<T> type, String value) {
         // parts = [enum value, enum class type]
         String[] parts = value.split("\\|", 2);
