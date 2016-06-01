@@ -17,6 +17,13 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.conformity;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
@@ -26,6 +33,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.netflix.discovery.DiscoveryClient;
 import com.netflix.discovery.guice.EurekaModule;
+import com.netflix.simianarmy.aws.conformity.RDSConformityClusterTracker;
 import com.netflix.simianarmy.aws.conformity.SimpleDBConformityClusterTracker;
 import com.netflix.simianarmy.aws.conformity.crawler.AWSClusterCrawler;
 import com.netflix.simianarmy.aws.conformity.rule.BasicConformityEurekaClient;
@@ -47,12 +55,6 @@ import com.netflix.simianarmy.conformity.ConformityEmailNotifier;
 import com.netflix.simianarmy.conformity.ConformityMonkey;
 import com.netflix.simianarmy.conformity.ConformityRule;
 import com.netflix.simianarmy.conformity.ConformityRuleEngine;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Map;
 
 /**
  * The basic implementation of the context class for Conformity monkey.
@@ -101,7 +103,19 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         String sdbDomain = configuration().getStrOrElse("simianarmy.conformity.sdb.domain", "SIMIAN_ARMY");
 
-        clusterTracker = new SimpleDBConformityClusterTracker(awsClient(), sdbDomain);
+        String dbDriver = configuration().getStr("simianarmy.recorder.db.driver");
+        String dbUser = configuration().getStr("simianarmy.recorder.db.user");
+        String dbPass = configuration().getStr("simianarmy.recorder.db.pass");
+        String dbUrl = configuration().getStr("simianarmy.recorder.db.url");
+        String dbTable = configuration().getStr("simianarmy.conformity.resources.db.table");
+        
+        if (dbDriver == null) {       
+        	clusterTracker = new SimpleDBConformityClusterTracker(awsClient(), sdbDomain);
+        } else {
+        	RDSConformityClusterTracker rdsClusterTracker = new RDSConformityClusterTracker(dbDriver, dbUser, dbPass, dbUrl, dbTable);
+        	rdsClusterTracker.init();
+        	clusterTracker = rdsClusterTracker;
+        }
 
         ruleEngine = new ConformityRuleEngine();
         boolean eurekaEnabled = configuration().getBoolOrElse("simianarmy.conformity.Eureka.enabled", false);
