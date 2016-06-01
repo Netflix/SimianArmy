@@ -18,12 +18,9 @@
 // CHECKSTYLE IGNORE Javadoc
 package com.netflix.simianarmy.basic.chaos;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Arrays;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
@@ -59,6 +56,10 @@ public class TestBasicChaosInstanceSelector {
 
         public String region() {
             return "region";
+        }
+
+        public List<TagDescription> tags() {
+            return Collections.<TagDescription>emptyList();
         }
 
         public List<String> instances() {

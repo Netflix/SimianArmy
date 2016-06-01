@@ -1,5 +1,11 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+}
+
 plugins {
-    id 'nebula.netflixoss' version '2.2.9'
+    id 'nebula.netflixoss' version '3.2.3'
     id 'net.saliman.cobertura' version '2.2.7'
     id 'com.github.hierynomus.license' version '0.11.0'
 }
@@ -9,7 +15,7 @@ ext.githubProjectName = 'SimianArmy'
 group = "com.netflix.${project.name}"
 apply plugin:'eclipse-wtp'
 
-repositories { 
+repositories {
     mavenLocal()
     mavenCentral()
 }
@@ -27,14 +33,11 @@ dependencies {
     // for DB support outside of AWS (SimpleDB not available)
     compile 'org.mapdb:mapdb:0.9.5'
 
-    compile 'com.sun.jersey:jersey-core:1.11'
-    compile 'com.sun.jersey:jersey-servlet:1.11'
+    compile 'com.sun.jersey:jersey-servlet:1.19'
     compile 'org.slf4j:slf4j-api:1.7.2'
     compile 'org.codehaus.jackson:jackson-core-asl:1.9.2'
     compile 'org.codehaus.jackson:jackson-mapper-asl:1.9.2'
-    compile('com.netflix.eureka:eureka-client:1.4.1') {
-        exclude group: 'com.sun.jersey', module: 'jersey-bundle'
-    }
+    compile 'com.netflix.eureka:eureka-client:1.4.1'
     compile 'com.amazonaws:aws-java-sdk:1.10.5.1'
     compile 'commons-lang:commons-lang:2.6'
     compile 'com.google.guava:guava:11.0.2'
@@ -44,7 +47,6 @@ dependencies {
     compile 'org.apache.jclouds.driver:jclouds-slf4j:1.9.0'
     compile 'org.apache.jclouds.api:ec2:1.9.0'
     compile 'org.apache.jclouds.provider:aws-ec2:1.9.0'
-    compile 'ch.qos.logback:logback-classic:1.0.13'
     compile 'com.netflix.servo:servo-core:0.9.4'
 
     testCompile 'org.testng:testng:6.3.1'

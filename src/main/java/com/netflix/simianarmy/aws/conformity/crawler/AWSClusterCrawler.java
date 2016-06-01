@@ -18,11 +18,13 @@
 package com.netflix.simianarmy.aws.conformity.crawler;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
+import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.SuspendedProcess;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.conformity.Cluster;
@@ -97,7 +99,19 @@ public class AWSClusterCrawler implements ClusterCrawler {
                         conformityAsg.setSuspended(true);
                     }
                 }
+
                 Cluster cluster = new Cluster(asg.getAutoScalingGroupName(), region, conformityAsg);
+                
+                List<TagDescription> tagDescriptions = asg.getTags();
+                for (TagDescription tagDescription : tagDescriptions) {
+                    if ( BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY.equalsIgnoreCase(tagDescription.getKey()) ) {
+                        String value = tagDescription.getValue();
+                        if (value != null) {
+                            cluster.setOwnerEmail(value);
+                        }
+                    }
+                }
+
                 updateCluster(cluster);
                 list.add(cluster);
             }
@@ -143,11 +157,18 @@ public class AWSClusterCrawler implements ClusterCrawler {
         String prop = String.format("%s.%s.ownerEmail", NS, cluster.getName());
         String ownerEmail = cfg.getStr(prop);
         if (ownerEmail == null) {
-            LOGGER.info(String.format("No owner email is found for cluster %s in configuration"
-                    + "please set property %s for it.", cluster.getName(), prop));
+            ownerEmail = cluster.getOwnerEmail();
+            if (ownerEmail == null) {
+                LOGGER.info(String.format("No owner email is found for cluster %s in configuration "
+                    + "%s or tag %s.", cluster.getName(), prop, BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY));
+            } else {
+                LOGGER.info(String.format("Found owner email %s for cluster %s in tag %s.",
+                        ownerEmail, cluster.getName(), BasicSimianArmyContext.GLOBAL_OWNER_TAGKEY));
+                return ownerEmail;
+            }
         } else {
-            LOGGER.info(String.format("Found owner email %s for cluster %s in configuration.",
-                    ownerEmail, cluster.getName()));
+            LOGGER.info(String.format("Found owner email %s for cluster %s in configuration %s.",
+                    ownerEmail, cluster.getName(), prop));
         }
         return ownerEmail;
     }

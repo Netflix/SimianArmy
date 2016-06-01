@@ -40,7 +40,7 @@ public abstract class AWSEmailNotifier implements MonkeyEmailNotifier {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(AWSEmailNotifier.class);
     private static final String EMAIL_PATTERN =
-            "^[_A-Za-z0-9-\\+\\.]+(.[_A-Za-z0-9-]+)*@"
+            "^[_A-Za-z0-9-\\+\\.#]+(.[_A-Za-z0-9-#]+)*@"
                     + "[A-Za-z0-9-]+(\\.[A-Za-z0-9]+)*(\\.[A-Za-z]{2,})$";
 
     private final Pattern emailPattern;

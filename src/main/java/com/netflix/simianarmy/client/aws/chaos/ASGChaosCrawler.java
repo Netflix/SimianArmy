@@ -108,9 +108,9 @@ public class ASGChaosCrawler implements ChaosCrawler {
 
       // if coefficient is 1 then the BasicInstanceGroup is fine, otherwise use Tunable
       if (aggressionCoefficient == 1.0) {
-          instanceGroup = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
+          instanceGroup = new BasicInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region(), asg.getTags());
       } else {
-        TunableInstanceGroup tunable = new TunableInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region());
+        TunableInstanceGroup tunable = new TunableInstanceGroup(asg.getAutoScalingGroupName(), Types.ASG, awsClient.region(), asg.getTags());
         tunable.setAggressionCoefficient(aggressionCoefficient);
         
         instanceGroup = tunable;
