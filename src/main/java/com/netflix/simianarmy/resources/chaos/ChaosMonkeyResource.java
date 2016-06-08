@@ -28,7 +28,9 @@ import java.util.Map;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
@@ -58,6 +60,7 @@ import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
  * The Class ChaosMonkeyResource for json REST apis.
  */
 @Path("/v1/chaos")
+@Produces(MediaType.APPLICATION_JSON)
 @Singleton
 public class ChaosMonkeyResource {
 
