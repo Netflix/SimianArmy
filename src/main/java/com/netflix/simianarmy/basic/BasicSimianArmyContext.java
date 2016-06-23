@@ -108,7 +108,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
     /** protected constructor as the Shell is meant to be subclassed. */
     protected BasicSimianArmyContext(String... configFiles) {
         eventReport = new LinkedList<Event>();
-        // Load the config files into props following the provided order.
+        // Load the config files into props following the provided order.ø
         for (String configFile : configFiles) {
             loadConfigurationFileIntoProperties(configFile);
         }
@@ -156,6 +156,7 @@ public class BasicSimianArmyContext implements Monkey.Context {
         assumeRoleArn = config.getStr("simianarmy.client.aws.assumeRoleArn");
         if (assumeRoleArn != null) {
             this.awsCredentialsProvider = new STSAssumeRoleSessionCredentialsProvider(assumeRoleArn, awsClientConfig);
+            LOGGER.info("Using STSAssumeRoleSessionCredentialsProvider with assume role " + assumeRoleArn);
         }
 
         // if credentials are set explicitly make them available to the AWS SDK

@@ -1,12 +1,12 @@
-package com.netflix.simianarmy.basic.janitor;
+package com.netflix.simianarmy.janitor;
 
 import com.netflix.simianarmy.aws.janitor.rule.generic.UntaggedRule;
 import com.netflix.simianarmy.basic.TestBasicCalendar;
+import com.netflix.simianarmy.basic.janitor.BasicJanitorRuleEngine;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
 import com.netflix.simianarmy.janitor.Rule;
 
 import org.apache.commons.lang.StringUtils;
-
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;

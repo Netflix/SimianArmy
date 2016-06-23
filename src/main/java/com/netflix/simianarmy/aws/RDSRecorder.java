@@ -17,6 +17,20 @@
  */
 package com.netflix.simianarmy.aws;
 
+import com.amazonaws.AmazonClientException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.simianarmy.EventType;
+import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.MonkeyType;
+import com.netflix.simianarmy.basic.BasicRecorderEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,20 +38,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
-import com.amazonaws.AmazonClientException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.simianarmy.EventType;
-import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.MonkeyType;
-import com.netflix.simianarmy.basic.BasicRecorderEvent;
 
 /**
  * The Class RDSRecorder. Records events to and fetched events from a RDS table (default SIMIAN_ARMY)
@@ -109,7 +109,7 @@ public class RDSRecorder implements MonkeyRecorder {
 			return;
 		}
         
-        LOGGER.debug(String.format("Saving event %s to RDB table %s", name, table));    	        
+        LOGGER.debug(String.format("Saving event %s to RDS table %s", name, table));    	        
 		StringBuilder sb = new StringBuilder();
 		sb.append("insert into ").append(table);
 		sb.append(" (");
@@ -188,8 +188,9 @@ public class RDSRecorder implements MonkeyRecorder {
     		String region = rs.getString(FIELD_REGION);
     		long time = rs.getLong(FIELD_EVENT_TIME);    		
     	    event = new BasicRecorderEvent(monkeyType, eventType, region, id, time);
-    	    
-    		Map<String, String> map = mapper.readValue(json, Map.class);
+
+            TypeReference<Map<String,String>> typeRef = new TypeReference<Map<String,String>>() {};
+    		Map<String, String> map = mapper.readValue(json, typeRef);
     	    for(String key : map.keySet()) {
     	    	event.addField(key, map.get(key));
     	    }

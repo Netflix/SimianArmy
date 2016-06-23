@@ -17,23 +17,6 @@
  */
 package com.netflix.simianarmy.aws.janitor;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-
 import com.amazonaws.AmazonClientException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -43,6 +26,18 @@ import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.*;
 
 /**
  * The JanitorResourceTracker implementation in AWS RDS.
@@ -222,11 +217,25 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		map.put(AWSResource.FIELD_DESCRIPTION, rs.getString(AWSResource.FIELD_DESCRIPTION));
     		map.put(AWSResource.FIELD_STATE, rs.getString(AWSResource.FIELD_STATE));
     		map.put(AWSResource.FIELD_TERMINATION_REASON, rs.getString(AWSResource.FIELD_TERMINATION_REASON));
-    		map.put(AWSResource.FIELD_EXPECTED_TERMINATION_TIME, rs.getString(AWSResource.FIELD_EXPECTED_TERMINATION_TIME));
-    		map.put(AWSResource.FIELD_ACTUAL_TERMINATION_TIME, rs.getString(AWSResource.FIELD_ACTUAL_TERMINATION_TIME));
-    		map.put(AWSResource.FIELD_LAUNCH_TIME, rs.getString(AWSResource.FIELD_LAUNCH_TIME));
-    		map.put(AWSResource.FIELD_MARK_TIME, rs.getString(AWSResource.FIELD_MARK_TIME));
-    	
+
+    		String expectedTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_EXPECTED_TERMINATION_TIME));
+    		String actualTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_ACTUAL_TERMINATION_TIME));
+    		String launchTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_LAUNCH_TIME));
+    		String markTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_MARK_TIME));
+
+    		if (expectedTerminationTime != null) {
+    			map.put(AWSResource.FIELD_EXPECTED_TERMINATION_TIME, expectedTerminationTime);
+    		}
+    		if (actualTerminationTime != null) {
+    			map.put(AWSResource.FIELD_ACTUAL_TERMINATION_TIME, actualTerminationTime);
+    		}
+    		if (launchTime != null) {
+    			map.put(AWSResource.FIELD_LAUNCH_TIME, launchTime);
+    		}
+    		if (markTime != null) {
+    			map.put(AWSResource.FIELD_MARK_TIME, markTime);
+    		}
+    		    	
     		resource = AWSResource.parseFieldtoValueMap(map);
     	}catch(IOException ie) {
     		String msg = "Error parsing resource from result set";
@@ -235,6 +244,16 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     	}    	
         return resource;
     }             
+    
+    private String millisToFormattedDate(String millisStr) {
+    	String datetime = null;
+    	try {
+    		long millis = Long.parseLong(millisStr);
+    		AWSResource.DATE_FORMATTER.print(millis);
+    	} catch(NumberFormatException nfe) {    		
+    	}
+    	return datetime;
+    }
 
     @Override
     public Resource getResource(String resourceId) {

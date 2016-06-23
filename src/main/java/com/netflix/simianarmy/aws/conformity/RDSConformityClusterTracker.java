@@ -17,15 +17,14 @@
  */
 package com.netflix.simianarmy.aws.conformity;
 
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.amazonaws.AmazonClientException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.netflix.simianarmy.aws.AWSResource;
+import com.netflix.simianarmy.conformity.Cluster;
+import com.netflix.simianarmy.conformity.Conformity;
+import com.netflix.simianarmy.conformity.ConformityClusterTracker;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
@@ -34,13 +33,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import com.amazonaws.AmazonClientException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.netflix.simianarmy.conformity.Cluster;
-import com.netflix.simianarmy.conformity.Conformity;
-import com.netflix.simianarmy.conformity.ConformityClusterTracker;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The RDSConformityClusterTracker implementation in RDS (relational database).
@@ -87,13 +87,19 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
     }
 
     public Object value(Date value) {
-    	return value == null ? Types.NULL : value.getTime() + "";
+    	return value == null ? Types.NULL : value.getTime();
     }    
 
     public Object value(boolean value) {
     	return Boolean.toString(value);
     }
-    
+
+	public Object emailValue(String email) {
+		if (StringUtils.isBlank(email)) return Types.NULL;
+		if (email.equals("0")) return Types.NULL;
+		return email;
+	}
+
     /** {@inheritDoc} */
     @Override
     public void addOrUpdate(Cluster cluster) {
@@ -128,7 +134,7 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
     		this.jdbcTemplate.update(sb.toString(),
     								 value(map.get(Cluster.CLUSTER)),
     								 value(map.get(Cluster.REGION)),
-    								 value(map.get(Cluster.OWNER_EMAIL)),
+									 emailValue(map.get(Cluster.OWNER_EMAIL)),
     								 value(map.get(Cluster.IS_CONFORMING)),
     								 value(map.get(Cluster.IS_OPTEDOUT)),
     								 value(cluster.getUpdateTime()),
@@ -148,9 +154,9 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
     		sb.append(Cluster.CLUSTER).append("=? and ");
     		sb.append(Cluster.REGION).append("=?");
 
-            LOGGER.debug(String.format("Insert statement is '%s'", sb));
+            LOGGER.debug(String.format("Update statement is '%s'", sb));
     		this.jdbcTemplate.update(sb.toString(),
-    								value(map.get(Cluster.OWNER_EMAIL)),
+    								emailValue(map.get(Cluster.OWNER_EMAIL)),
     								value(map.get(Cluster.IS_CONFORMING)),
     								value(map.get(Cluster.IS_OPTEDOUT)),
     								value(cluster.getUpdateTime()),
@@ -214,15 +220,36 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
     	Map<String, String> map = conformityMapFromJson(rs.getString("conformities"));
 		map.put(Cluster.CLUSTER, rs.getString(Cluster.CLUSTER));
 		map.put(Cluster.REGION, rs.getString(Cluster.REGION));
-		map.put(Cluster.OWNER_EMAIL, rs.getString(Cluster.OWNER_EMAIL));
 		map.put(Cluster.IS_CONFORMING, rs.getString(Cluster.IS_CONFORMING));
 		map.put(Cluster.IS_OPTEDOUT, rs.getString(Cluster.IS_OPTEDOUT));
-		map.put(Cluster.UPDATE_TIMESTAMP, rs.getString(Cluster.UPDATE_TIMESTAMP));
+
+		String email = rs.getString(Cluster.OWNER_EMAIL);
+		if (StringUtils.isBlank(email) || email.equals("0")) {
+			email = null;
+		}
+		map.put(Cluster.OWNER_EMAIL, email);
+
+		String updatedTimestamp = millisToFormattedDate(rs.getString(Cluster.UPDATE_TIMESTAMP));
+		if (updatedTimestamp != null) {
+			map.put(Cluster.UPDATE_TIMESTAMP, updatedTimestamp);
+		}
+		
 		map.put(Cluster.EXCLUDED_RULES, rs.getString(Cluster.EXCLUDED_RULES));
 		map.put(Cluster.CONFORMITY_RULES, rs.getString(Cluster.CONFORMITY_RULES));
 		return Cluster.parseFieldToValueMap(map);
     }                 
-
+    
+    private String millisToFormattedDate(String millisStr) {
+    	String datetime = null;
+    	try {
+    		long millis = Long.parseLong(millisStr);
+    		datetime = AWSResource.DATE_FORMATTER.print(millis);
+    	} catch(NumberFormatException nfe) {
+			LOGGER.error(String.format("Error parsing datetime %s when reading from RDS", millisStr));
+    	}
+    	return datetime;
+    }
+    
     private HashMap<String,String> conformityMapFromJson(String json) throws SQLException {
     	HashMap<String,String> map = new HashMap<>();
     	
