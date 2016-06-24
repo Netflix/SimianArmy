@@ -26,6 +26,7 @@ import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,9 +86,19 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
 
     public Object value(Date value) {
     	return value == null ? Types.NULL : value.getTime();
-    }    
-    
-    /** {@inheritDoc} */
+    }
+
+	public Object value(boolean value) {
+		return new Boolean(value).toString();
+	}
+
+	public Object emailValue(String email) {
+		if (StringUtils.isBlank(email)) return Types.NULL;
+		if (email.equals("0")) return Types.NULL;
+		return email;
+	}
+
+	/** {@inheritDoc} */
     @Override
     public void addOrUpdate(Resource resource) {
     	Resource orig = getResource(resource.getId());    	
@@ -115,14 +126,15 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		sb.append(AWSResource.FIELD_ACTUAL_TERMINATION_TIME).append(",");
     		sb.append(AWSResource.FIELD_LAUNCH_TIME).append(",");
     		sb.append(AWSResource.FIELD_MARK_TIME).append(",");
-    		sb.append("additionalFields").append(") values (?,?,?,?,?,?,?,?,?,?,?,?)");
+			sb.append(AWSResource.FIELD_OPT_OUT_OF_JANITOR).append(",");
+    		sb.append("additionalFields").append(") values (?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
             LOGGER.debug(String.format("Insert statement is '%s'", sb));
     		int updated = this.jdbcTemplate.update(sb.toString(),
     								 resource.getId(),
     								 value(resource.getResourceType().toString()),
     								 value(resource.getRegion()),
-    								 value(resource.getOwnerEmail()),
+    								 emailValue(resource.getOwnerEmail()),
     								 value(resource.getDescription()),
     								 value(resource.getState().toString()),
     								 value(resource.getTerminationReason()),
@@ -130,7 +142,8 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     								 value(resource.getActualTerminationTime()),
     								 value(resource.getLaunchTime()),
     								 value(resource.getMarkTime()),
-    								 json);    	
+				  					 value(resource.isOptOutOfJanitor()),
+    								 json);
             LOGGER.debug(String.format("%d rows inserted", updated));
     	} else {
     		StringBuilder sb = new StringBuilder();
@@ -145,6 +158,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		sb.append(AWSResource.FIELD_ACTUAL_TERMINATION_TIME).append("=?,");
     		sb.append(AWSResource.FIELD_LAUNCH_TIME).append("=?,");
     		sb.append(AWSResource.FIELD_MARK_TIME).append("=?,");
+			sb.append(AWSResource.FIELD_OPT_OUT_OF_JANITOR).append("=?,");
     		sb.append("additionalFields").append("=? where ");
     		sb.append(AWSResource.FIELD_RESOURCE_ID).append("=?");
 
@@ -152,7 +166,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		int updated = this.jdbcTemplate.update(sb.toString(),
     								 resource.getResourceType().toString(),
     								 value(resource.getRegion()),
-    								 value(resource.getOwnerEmail()),
+					                 emailValue(resource.getOwnerEmail()),
     								 value(resource.getDescription()),
     								 value(resource.getState().toString()),
     								 value(resource.getTerminationReason()),
@@ -160,6 +174,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     								 value(resource.getActualTerminationTime()),
     								 value(resource.getLaunchTime()),
     								 value(resource.getMarkTime()),
+					                 value(resource.isOptOutOfJanitor()),
     								 json,
     								 resource.getId());
             LOGGER.debug(String.format("%d rows updated", updated));
@@ -213,10 +228,16 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		map.put(AWSResource.FIELD_RESOURCE_ID, rs.getString(AWSResource.FIELD_RESOURCE_ID));
     		map.put(AWSResource.FIELD_RESOURCE_TYPE, rs.getString(AWSResource.FIELD_RESOURCE_TYPE));
     		map.put(AWSResource.FIELD_REGION, rs.getString(AWSResource.FIELD_REGION));
-    		map.put(AWSResource.FIELD_OWNER_EMAIL, rs.getString(AWSResource.FIELD_OWNER_EMAIL));
     		map.put(AWSResource.FIELD_DESCRIPTION, rs.getString(AWSResource.FIELD_DESCRIPTION));
     		map.put(AWSResource.FIELD_STATE, rs.getString(AWSResource.FIELD_STATE));
     		map.put(AWSResource.FIELD_TERMINATION_REASON, rs.getString(AWSResource.FIELD_TERMINATION_REASON));
+			map.put(AWSResource.FIELD_OPT_OUT_OF_JANITOR, rs.getString(AWSResource.FIELD_OPT_OUT_OF_JANITOR));
+
+			String email = rs.getString(AWSResource.FIELD_OWNER_EMAIL);
+			if (StringUtils.isBlank(email) || email.equals("0")) {
+				email = null;
+			}
+			map.put(AWSResource.FIELD_OWNER_EMAIL, email);
 
     		String expectedTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_EXPECTED_TERMINATION_TIME));
     		String actualTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_ACTUAL_TERMINATION_TIME));
@@ -295,7 +316,8 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
                                      + " %s BIGINT, " 
                                      + " %s BIGINT, " 
                                      + " %s BIGINT, " 
-                                     + " %s BIGINT, " 
+                                     + " %s BIGINT, "
+					                 + " %s varchar(8), "
                                      + " %s varchar(4096) )",
                                      table,
                                      AWSResource.FIELD_RESOURCE_ID,
@@ -309,6 +331,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
                                      AWSResource.FIELD_ACTUAL_TERMINATION_TIME,
                                      AWSResource.FIELD_LAUNCH_TIME,
                                      AWSResource.FIELD_MARK_TIME,
+					                 AWSResource.FIELD_OPT_OUT_OF_JANITOR,
                                      "additionalFields");
             LOGGER.debug("Create SQL is: '{}'", sql);
             jdbcTemplate.execute(sql);
