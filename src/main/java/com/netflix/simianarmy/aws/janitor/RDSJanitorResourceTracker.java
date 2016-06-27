@@ -264,17 +264,18 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		throw new SQLException(msg);
     	}    	
         return resource;
-    }             
-    
-    private String millisToFormattedDate(String millisStr) {
-    	String datetime = null;
-    	try {
-    		long millis = Long.parseLong(millisStr);
-    		AWSResource.DATE_FORMATTER.print(millis);
-    	} catch(NumberFormatException nfe) {    		
-    	}
-    	return datetime;
     }
+
+	private String millisToFormattedDate(String millisStr) {
+		String datetime = null;
+		try {
+			long millis = Long.parseLong(millisStr);
+			datetime = AWSResource.DATE_FORMATTER.print(millis);
+		} catch(NumberFormatException nfe) {
+			LOGGER.error(String.format("Error parsing datetime %s when reading from RDS", millisStr));
+		}
+		return datetime;
+	}
 
     @Override
     public Resource getResource(String resourceId) {
