@@ -83,7 +83,7 @@ public class BasicCalendar implements MonkeyCalendar {
         closeHour = close;
         tz = timezone;
     }
-    
+
     /**
      * Instantiates a new basic calendar.
      *
