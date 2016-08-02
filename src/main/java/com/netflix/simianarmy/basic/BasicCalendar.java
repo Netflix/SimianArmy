@@ -50,7 +50,7 @@ public class BasicCalendar implements MonkeyCalendar {
     private final TimeZone tz;
 
     /** The holidays. */
-    private final Set<Integer> holidays = new TreeSet<Integer>();
+    protected final Set<Integer> holidays = new TreeSet<Integer>();
 
     /** The cfg. */
     private MonkeyConfiguration cfg;
@@ -235,7 +235,7 @@ public class BasicCalendar implements MonkeyCalendar {
      *            the day
      * @return the day of the year
      */
-    private int dayOfYear(int year, int month, int day) {
+    protected int dayOfYear(int year, int month, int day) {
         Calendar holiday = now();
         holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
@@ -256,7 +256,7 @@ public class BasicCalendar implements MonkeyCalendar {
      *            the week in month
      * @return the day of the year
      */
-    private int dayOfYear(int year, int month, int dayOfWeek, int weekInMonth) {
+    protected int dayOfYear(int year, int month, int dayOfWeek, int weekInMonth) {
         Calendar holiday = now();
         holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
@@ -276,7 +276,7 @@ public class BasicCalendar implements MonkeyCalendar {
      *            the day
      * @return the day of the year adjusted to the closest workday
      */
-    private int workDayInYear(int year, int month, int day) {
+    protected int workDayInYear(int year, int month, int day) {
         Calendar holiday = now();
         holiday.set(Calendar.YEAR, year);
         holiday.set(Calendar.MONTH, month);
@@ -308,8 +308,7 @@ public class BasicCalendar implements MonkeyCalendar {
 
     private boolean isWeekend(Calendar calendar) {
         int dow = calendar.get(Calendar.DAY_OF_WEEK);
-        return dow == Calendar.SATURDAY
-                || dow == Calendar.SUNDAY;
+        return dow == Calendar.SATURDAY || dow == Calendar.SUNDAY;
     }
 
 }
