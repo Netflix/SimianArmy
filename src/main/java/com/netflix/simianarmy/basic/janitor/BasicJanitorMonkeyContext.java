@@ -17,6 +17,15 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.janitor;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
@@ -33,6 +42,7 @@ import com.netflix.simianarmy.aws.janitor.EBSVolumeJanitor;
 import com.netflix.simianarmy.aws.janitor.ImageJanitor;
 import com.netflix.simianarmy.aws.janitor.InstanceJanitor;
 import com.netflix.simianarmy.aws.janitor.LaunchConfigJanitor;
+import com.netflix.simianarmy.aws.janitor.RDSJanitorResourceTracker;
 import com.netflix.simianarmy.aws.janitor.SimpleDBJanitorResourceTracker;
 import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
 import com.netflix.simianarmy.aws.janitor.crawler.EBSSnapshotJanitorCrawler;
@@ -66,14 +76,6 @@ import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * The basic implementation of the context class for Janitor monkey.
@@ -122,7 +124,19 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
 
         Set<String> enabledResourceSet = getEnabledResourceSet();
 
-        janitorResourceTracker = new SimpleDBJanitorResourceTracker(awsClient(), resourceDomain);
+        String dbDriver = configuration().getStr("simianarmy.recorder.db.driver");
+        String dbUser = configuration().getStr("simianarmy.recorder.db.user");
+        String dbPass = configuration().getStr("simianarmy.recorder.db.pass");
+        String dbUrl = configuration().getStr("simianarmy.recorder.db.url");
+        String dbTable = configuration().getStr("simianarmy.janitor.resources.db.table");
+        
+        if (dbDriver == null) {       
+        	janitorResourceTracker = new SimpleDBJanitorResourceTracker(awsClient(), resourceDomain);
+        } else {
+        	RDSJanitorResourceTracker rdsTracker = new RDSJanitorResourceTracker(dbDriver, dbUser, dbPass, dbUrl, dbTable);
+        	rdsTracker.init();
+        	janitorResourceTracker = rdsTracker;
+        }
 
         janitorEmailBuilder = new BasicJanitorEmailBuilder();
         sesClient = new AmazonSimpleEmailServiceClient();

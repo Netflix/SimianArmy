@@ -37,15 +37,15 @@ import java.util.Set;
  * a group of ASGs that belong to the same application, for example, a cluster in the Asgard deployment system.
  */
 public class Cluster {
-    private static final String OWNER_EMAIL = "ownerEmail";
-    private static final String CLUSTER = "cluster";
-    private static final String REGION = "region";
-    private static final String IS_CONFORMING = "isConforming";
-    private static final String IS_OPTEDOUT = "isOptedOut";
-    private static final String UPDATE_TIMESTAMP = "updateTimestamp";
-    private static final String EXCLUDED_RULES = "excludedRules";
-    private static final String CONFORMITY_RULES = "conformityRules";
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
+    public static final String OWNER_EMAIL = "ownerEmail";
+    public static final String CLUSTER = "cluster";
+    public static final String REGION = "region";
+    public static final String IS_CONFORMING = "isConforming";
+    public static final String IS_OPTEDOUT = "isOptedOut";
+    public static final String UPDATE_TIMESTAMP = "updateTimestamp";
+    public static final String EXCLUDED_RULES = "excludedRules";
+    public static final String CONFORMITY_RULES = "conformityRules";
+    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ss");
 
     private final String name;
     private final Collection<AutoScalingGroup> autoScalingGroups = Lists.newArrayList();
