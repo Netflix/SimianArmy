@@ -17,15 +17,6 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.janitor;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.regions.Region;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.simpleemail.AmazonSimpleEmailServiceClient;
@@ -36,31 +27,12 @@ import com.netflix.discovery.guice.EurekaModule;
 import com.netflix.simianarmy.MonkeyCalendar;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.aws.janitor.ASGJanitor;
-import com.netflix.simianarmy.aws.janitor.EBSSnapshotJanitor;
-import com.netflix.simianarmy.aws.janitor.EBSVolumeJanitor;
-import com.netflix.simianarmy.aws.janitor.ImageJanitor;
-import com.netflix.simianarmy.aws.janitor.InstanceJanitor;
-import com.netflix.simianarmy.aws.janitor.LaunchConfigJanitor;
-import com.netflix.simianarmy.aws.janitor.RDSJanitorResourceTracker;
-import com.netflix.simianarmy.aws.janitor.SimpleDBJanitorResourceTracker;
-import com.netflix.simianarmy.aws.janitor.crawler.ASGJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.EBSSnapshotJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.EBSVolumeJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.InstanceJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.LaunchConfigJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaASGJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaEBSSnapshotJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaEBSVolumeJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaImageJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaInstanceJanitorCrawler;
-import com.netflix.simianarmy.aws.janitor.crawler.edda.EddaLaunchConfigJanitorCrawler;
+import com.netflix.simianarmy.aws.janitor.*;
+import com.netflix.simianarmy.aws.janitor.crawler.*;
+import com.netflix.simianarmy.aws.janitor.crawler.edda.*;
 import com.netflix.simianarmy.aws.janitor.rule.ami.UnusedImageRule;
-import com.netflix.simianarmy.aws.janitor.rule.asg.ASGInstanceValidator;
-import com.netflix.simianarmy.aws.janitor.rule.asg.DiscoveryASGInstanceValidator;
-import com.netflix.simianarmy.aws.janitor.rule.asg.DummyASGInstanceValidator;
-import com.netflix.simianarmy.aws.janitor.rule.asg.OldEmptyASGRule;
-import com.netflix.simianarmy.aws.janitor.rule.asg.SuspendedASGRule;
+import com.netflix.simianarmy.aws.janitor.rule.asg.*;
+import com.netflix.simianarmy.aws.janitor.rule.generic.TagValueExclusionRule;
 import com.netflix.simianarmy.aws.janitor.rule.generic.UntaggedRule;
 import com.netflix.simianarmy.aws.janitor.rule.instance.OrphanedInstanceRule;
 import com.netflix.simianarmy.aws.janitor.rule.launchconfig.OldUnusedLaunchConfigRule;
@@ -69,13 +41,12 @@ import com.netflix.simianarmy.aws.janitor.rule.volume.DeleteOnTerminationRule;
 import com.netflix.simianarmy.aws.janitor.rule.volume.OldDetachedVolumeRule;
 import com.netflix.simianarmy.basic.BasicSimianArmyContext;
 import com.netflix.simianarmy.client.edda.EddaClient;
-import com.netflix.simianarmy.janitor.AbstractJanitor;
-import com.netflix.simianarmy.janitor.JanitorCrawler;
-import com.netflix.simianarmy.janitor.JanitorEmailBuilder;
-import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
-import com.netflix.simianarmy.janitor.JanitorMonkey;
-import com.netflix.simianarmy.janitor.JanitorResourceTracker;
-import com.netflix.simianarmy.janitor.JanitorRuleEngine;
+import com.netflix.simianarmy.janitor.*;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
 
 /**
  * The basic implementation of the context class for Janitor monkey.
@@ -178,9 +149,21 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             janitors.add(getImageJanitor());
         }
     }
+    protected JanitorRuleEngine createJanitorRuleEngine() {
+        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.TagValueExclusionRule.enabled", false)) {
+            String tagsList = configuration().getStr("simianarmy.janitor.rule.TagValueExclusionRule.tags");
+            String valsList = configuration().getStr("simianarmy.janitor.rule.TagValueExclusionRule.vals");
+            if (tagsList != null && valsList != null) {
+                TagValueExclusionRule rule = new TagValueExclusionRule(tagsList.split(","), valsList.split(","));
+                ruleEngine.addExclusionRule(rule);
+            }
+        }
+        return ruleEngine;
+    }
 
     private ASGJanitor getASGJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         boolean discoveryEnabled = configuration().getBoolOrElse("simianarmy.janitor.Eureka.enabled", false);
         ASGInstanceValidator instanceValidator;
         if (discoveryEnabled) {
@@ -234,7 +217,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     }
 
     private InstanceJanitor getInstanceJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.orphanedInstanceRule.enabled", false)) {
             ruleEngine.addRule(new OrphanedInstanceRule(monkeyCalendar,
                     (int) configuration().getNumOrElse(
@@ -272,7 +255,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     }
 
     private EBSVolumeJanitor getEBSVolumeJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.oldDetachedVolumeRule.enabled", false)) {
             ruleEngine.addRule(new OldDetachedVolumeRule(monkeyCalendar,
                     (int) configuration().getNumOrElse(
@@ -310,7 +293,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     }
 
     private EBSSnapshotJanitor getEBSSnapshotJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.noGeneratedAMIRule.enabled", false)) {
             ruleEngine.addRule(new NoGeneratedAMIRule(monkeyCalendar,
                     (int) configuration().getNumOrElse("simianarmy.janitor.rule.noGeneratedAMIRule.ageThreshold", 30),
@@ -344,7 +327,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
     }
 
     private LaunchConfigJanitor getLaunchConfigJanitor() {
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.oldUnusedLaunchConfigRule.enabled", false)) {
             ruleEngine.addRule(new OldUnusedLaunchConfigRule(monkeyCalendar,
                     (int) configuration().getNumOrElse(
@@ -386,7 +369,7 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
             throw new RuntimeException("Image Janitor only works when Edda is enabled.");
         }
 
-        JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
         if (configuration().getBoolOrElse("simianarmy.janitor.rule.unusedImageRule.enabled", false)) {
             ruleEngine.addRule(new UnusedImageRule(monkeyCalendar,
                     (int) configuration().getNumOrElse(
