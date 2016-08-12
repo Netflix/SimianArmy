@@ -20,6 +20,20 @@ package com.netflix.simianarmy.resources.janitor;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -44,6 +58,7 @@ import java.util.Map;
  * The Class JanitorMonkeyResource for json REST apis.
  */
 @Path("/v1/janitor")
+@Produces(MediaType.APPLICATION_JSON)
 public class JanitorMonkeyResource {
 
     /** The Constant JSON_FACTORY. */
@@ -77,7 +92,7 @@ public class JanitorMonkeyResource {
     /**
      * GET /api/v1/janitor/addEvent will try to a add a new event with the information in the url query string.
      * This is the same as the regular POST addEvent except through a query string. This technically isn't
-     * very REST-ful as it is a GET call that creates an Opt-out/in event, but is a convenience method 
+     * very REST-ful as it is a GET call that creates an Opt-out/in event, but is a convenience method
      * for exposing opt-in/opt-out functionality more directly, for example in an email notification.
      *
      * @param eventType eventType from the query string
@@ -86,12 +101,12 @@ public class JanitorMonkeyResource {
      * @throws IOException
      */
     @GET @Path("addEvent")
-    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {    	
+    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write("<html><body style=\"text-align:center\"><img src=\"https://raw.githubusercontent.com/Netflix/SimianArmy/master/assets/janitor.png\" height=\"300\" width=\"300\"><br/>".getBytes());
         if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(resourceId)) {
-            responseStatus = Response.Status.BAD_REQUEST;            
+            responseStatus = Response.Status.BAD_REQUEST;
             baos.write("<p>NOPE!<br/><br/>Janitor didn't get that: eventType and resourceId parameters are both required</p>".getBytes());
         } else {
             ByteArrayOutputStream baos2 = new ByteArrayOutputStream();
@@ -99,7 +114,7 @@ public class JanitorMonkeyResource {
             gen.writeStartObject();
             gen.writeStringField("eventType", eventType);
             gen.writeStringField("resourceId", resourceId);
-            
+
         	if (eventType.equals("OPTIN")) {
                 responseStatus = optInResource(resourceId, true, gen);
             } else if (eventType.equals("OPTOUT")) {
@@ -110,21 +125,21 @@ public class JanitorMonkeyResource {
             }
             gen.writeEndObject();
             gen.close();
-        	
+
         	if(responseStatus == Response.Status.OK) {
         		baos.write(("<p>SUCCESS!<br/><br/>Resource <strong>" + resourceId + "</strong> has been " + eventType + " of Janitor Monkey!</p>").getBytes());
         	} else {
         		baos.write(("<p>NOPE!<br/><br/>Janitor is Confused! Error processing Resource <strong>" + resourceId + "</strong></p>").getBytes());
         	}
-        	
+
         	String jsonout = String.format("<p><em>Monkey JSON Response:</em><br/><br/><textarea cols=40 rows=20>%s</textarea></p>", baos2.toString());
    	    	baos.write(jsonout.getBytes());
-        	        	        	
+
         }
     	baos.write("</body></html>".getBytes());
         return Response.status(responseStatus).entity(baos.toString("UTF-8")).build();
     }
-    
+
     /**
      * POST /api/v1/janitor will try a add a new event with the information in the url context.
      *

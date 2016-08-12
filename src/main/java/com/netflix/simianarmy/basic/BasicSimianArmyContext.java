@@ -122,19 +122,18 @@ public class BasicSimianArmyContext implements Monkey.Context {
         }
 
         config = new BasicConfiguration(properties);
-        calendar = new BasicCalendar(config);
 
         account = config.getStr("simianarmy.client.aws.accountKey");
         secret = config.getStr("simianarmy.client.aws.secretKey");
         accountName = config.getStrOrElse("simianarmy.client.aws.accountName", "Default");
-        
+
         String defaultRegion = "us-east-1";
         Region currentRegion = Regions.getCurrentRegion();
-        
+
         if (currentRegion != null) {
             defaultRegion = currentRegion.getName();
         }
-        
+
         region = config.getStrOrElse("simianarmy.client.aws.region", defaultRegion);
         GLOBAL_OWNER_TAGKEY = config.getStrOrElse("simianarmy.tags.owner", "owner");
 
@@ -164,6 +163,8 @@ public class BasicSimianArmyContext implements Monkey.Context {
         }
 
         createClient();
+
+        createCalendar();
 
         createScheduler();
 
@@ -232,6 +233,17 @@ public class BasicSimianArmyContext implements Monkey.Context {
             }
         } else {
             setRecorder((MonkeyRecorder) factory(recorderClass));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void createCalendar() {
+        @SuppressWarnings("rawtypes")
+        Class calendarClass = loadClientClass("simianarmy.calendar.class");
+        if (calendarClass == null || calendarClass.equals(BasicCalendar.class)) {
+            setCalendar(new BasicCalendar(config));
+        } else {
+            setCalendar((MonkeyCalendar) factory(calendarClass));
         }
     }
 
