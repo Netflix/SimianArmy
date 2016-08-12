@@ -17,27 +17,22 @@
  */
 package com.netflix.simianarmy.basic.janitor;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.monitor.Monitors;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.MonkeyRecorder;
+import com.netflix.simianarmy.*;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.janitor.AbstractJanitor;
 import com.netflix.simianarmy.janitor.JanitorEmailNotifier;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /** The basic implementation of Janitor Monkey. */
 public class BasicJanitorMonkey extends JanitorMonkey {
@@ -140,7 +135,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             		janitor.cleanupResources();
                 } catch (Exception e) {
                 	monkeyErrors.incrementAndGet();
-                	LOGGER.error(String.format("Got an exception while %s janitor was cleaning for region %s", janitor.getResourceType()), janitor.getRegion(), e);
+                	LOGGER.error(String.format("Got an exception while %s janitor was cleaning for region %s", janitor.getResourceType(), janitor.getRegion()), e);
                 }
                 LOGGER.info(String.format("Cleaned %d resources of type %s in the last run.",
                         janitor.getCleanedResources().size(), janitor.getResourceType()));
