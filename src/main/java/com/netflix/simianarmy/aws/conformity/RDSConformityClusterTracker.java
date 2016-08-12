@@ -25,13 +25,13 @@ import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.conformity.Cluster;
 import com.netflix.simianarmy.conformity.Conformity;
 import com.netflix.simianarmy.conformity.ConformityClusterTracker;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -62,8 +62,11 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
      */
     public RDSConformityClusterTracker(String dbDriver, String dbUser,
 			String dbPass, String dbUrl, String dbTable) {
-    	DriverManagerDataSource dataSource = new DriverManagerDataSource(dbUrl, dbUser, dbPass);
-    	dataSource.setDriverClassName(dbDriver);    	
+		HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setDriverClassName(dbDriver);
+		dataSource.setJdbcUrl(dbUrl);
+		dataSource.setUsername(dbUser);
+		dataSource.setPassword(dbPass);
     	this.jdbcTemplate = new JdbcTemplate(dataSource);
     	this.table = dbTable;
 	}

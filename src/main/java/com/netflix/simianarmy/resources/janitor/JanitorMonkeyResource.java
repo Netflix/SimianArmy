@@ -17,18 +17,9 @@
  */
 package com.netflix.simianarmy.resources.janitor;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Map;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.MonkeyRunner;
+import com.netflix.simianarmy.janitor.JanitorMonkey;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -38,9 +29,16 @@ import org.codehaus.jackson.map.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.janitor.JanitorMonkey;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Map;
 
 /**
  * The Class JanitorMonkeyResource for json REST apis.
@@ -52,7 +50,7 @@ public class JanitorMonkeyResource {
     private static final MappingJsonFactory JSON_FACTORY = new MappingJsonFactory();
 
     /** The monkey. */
-    private final JanitorMonkey monkey;
+    private static JanitorMonkey monkey;
 
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(JanitorMonkeyResource.class);
@@ -64,16 +62,18 @@ public class JanitorMonkeyResource {
      *          the janitor monkey
      */
     public JanitorMonkeyResource(JanitorMonkey monkey) {
-        this.monkey = monkey;
+        JanitorMonkeyResource.monkey = monkey;
     }
 
     /**
      * Instantiates a janitor monkey resource using a registered janitor monkey from factory.
      */
     public JanitorMonkeyResource() {
-        this.monkey = MonkeyRunner.getInstance().factory(JanitorMonkey.class);
+        if (JanitorMonkeyResource.monkey == null ) {
+            JanitorMonkeyResource.monkey = MonkeyRunner.getInstance().factory(JanitorMonkey.class);
+        }
     }
-    
+
     /**
      * GET /api/v1/janitor/addEvent will try to a add a new event with the information in the url query string.
      * This is the same as the regular POST addEvent except through a query string. This technically isn't

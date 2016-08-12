@@ -26,13 +26,13 @@ import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -60,8 +60,11 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
      */
     public RDSJanitorResourceTracker(String dbDriver, String dbUser,
 			String dbPass, String dbUrl, String dbTable) {
-    	DriverManagerDataSource dataSource = new DriverManagerDataSource(dbUrl, dbUser, dbPass);
-    	dataSource.setDriverClassName(dbDriver);    	
+		HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setDriverClassName(dbDriver);
+		dataSource.setJdbcUrl(dbUrl);
+		dataSource.setUsername(dbUser);
+		dataSource.setPassword(dbPass);
     	this.jdbcTemplate = new JdbcTemplate(dataSource);
     	this.table = dbTable;
 	}
@@ -124,10 +127,11 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		sb.append(AWSResource.FIELD_TERMINATION_REASON).append(",");
     		sb.append(AWSResource.FIELD_EXPECTED_TERMINATION_TIME).append(",");
     		sb.append(AWSResource.FIELD_ACTUAL_TERMINATION_TIME).append(",");
+			sb.append(AWSResource.FIELD_NOTIFICATION_TIME).append(",");
     		sb.append(AWSResource.FIELD_LAUNCH_TIME).append(",");
     		sb.append(AWSResource.FIELD_MARK_TIME).append(",");
 			sb.append(AWSResource.FIELD_OPT_OUT_OF_JANITOR).append(",");
-    		sb.append("additionalFields").append(") values (?,?,?,?,?,?,?,?,?,?,?,?,?)");
+    		sb.append("additionalFields").append(") values (?,?,?,?,?,?,?,?,?,?,?,?,?,?)");
 
             LOGGER.debug(String.format("Insert statement is '%s'", sb));
     		int updated = this.jdbcTemplate.update(sb.toString(),
@@ -140,6 +144,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     								 value(resource.getTerminationReason()),
     								 value(resource.getExpectedTerminationTime()),
     								 value(resource.getActualTerminationTime()),
+					                 value(resource.getNotificationTime()),
     								 value(resource.getLaunchTime()),
     								 value(resource.getMarkTime()),
 				  					 value(resource.isOptOutOfJanitor()),
@@ -156,6 +161,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		sb.append(AWSResource.FIELD_TERMINATION_REASON).append("=?,");
     		sb.append(AWSResource.FIELD_EXPECTED_TERMINATION_TIME).append("=?,");
     		sb.append(AWSResource.FIELD_ACTUAL_TERMINATION_TIME).append("=?,");
+			sb.append(AWSResource.FIELD_NOTIFICATION_TIME).append("=?,");
     		sb.append(AWSResource.FIELD_LAUNCH_TIME).append("=?,");
     		sb.append(AWSResource.FIELD_MARK_TIME).append("=?,");
 			sb.append(AWSResource.FIELD_OPT_OUT_OF_JANITOR).append("=?,");
@@ -172,6 +178,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     								 value(resource.getTerminationReason()),
     								 value(resource.getExpectedTerminationTime()),
     								 value(resource.getActualTerminationTime()),
+					                 value(resource.getNotificationTime()),
     								 value(resource.getLaunchTime()),
     								 value(resource.getMarkTime()),
 					                 value(resource.isOptOutOfJanitor()),
@@ -241,6 +248,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
 
     		String expectedTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_EXPECTED_TERMINATION_TIME));
     		String actualTerminationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_ACTUAL_TERMINATION_TIME));
+			String notificationTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_NOTIFICATION_TIME));
     		String launchTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_LAUNCH_TIME));
     		String markTime = millisToFormattedDate(rs.getString(AWSResource.FIELD_MARK_TIME));
 
@@ -250,13 +258,16 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		if (actualTerminationTime != null) {
     			map.put(AWSResource.FIELD_ACTUAL_TERMINATION_TIME, actualTerminationTime);
     		}
+			if (notificationTime != null) {
+				map.put(AWSResource.FIELD_NOTIFICATION_TIME, notificationTime);
+			}
     		if (launchTime != null) {
     			map.put(AWSResource.FIELD_LAUNCH_TIME, launchTime);
     		}
     		if (markTime != null) {
     			map.put(AWSResource.FIELD_MARK_TIME, markTime);
     		}
-    		    	
+
     		resource = AWSResource.parseFieldtoValueMap(map);
     	}catch(IOException ie) {
     		String msg = "Error parsing resource from result set";
@@ -316,8 +327,9 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
                                      + " %s varchar(255), "
                                      + " %s BIGINT, " 
                                      + " %s BIGINT, " 
-                                     + " %s BIGINT, " 
                                      + " %s BIGINT, "
+							         + " %s BIGINT, "
+					                 + " %s BIGINT, "
 					                 + " %s varchar(8), "
                                      + " %s varchar(4096) )",
                                      table,
@@ -330,6 +342,7 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
                                      AWSResource.FIELD_TERMINATION_REASON,
                                      AWSResource.FIELD_EXPECTED_TERMINATION_TIME,
                                      AWSResource.FIELD_ACTUAL_TERMINATION_TIME,
+					                 AWSResource.FIELD_NOTIFICATION_TIME,
                                      AWSResource.FIELD_LAUNCH_TIME,
                                      AWSResource.FIELD_MARK_TIME,
 					                 AWSResource.FIELD_OPT_OUT_OF_JANITOR,

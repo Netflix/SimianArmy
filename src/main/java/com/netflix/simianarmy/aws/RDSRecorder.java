@@ -25,11 +25,11 @@ import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.basic.BasicRecorderEvent;
+import com.zaxxer.hikari.HikariDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -68,8 +68,11 @@ public class RDSRecorder implements MonkeyRecorder {
      */
     public RDSRecorder(String dbDriver, String dbUser,
 			String dbPass, String dbUrl, String dbTable, String region) {
-    	DriverManagerDataSource dataSource = new DriverManagerDataSource(dbUrl, dbUser, dbPass);
-    	dataSource.setDriverClassName(dbDriver);    	
+        HikariDataSource dataSource = new HikariDataSource();
+        dataSource.setDriverClassName(dbDriver);
+        dataSource.setJdbcUrl(dbUrl);
+        dataSource.setUsername(dbUser);
+        dataSource.setPassword(dbPass);
     	this.jdbcTemplate = new JdbcTemplate(dataSource);
     	this.table = dbTable;
     	this.region = region;
