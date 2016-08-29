@@ -18,16 +18,15 @@
 
 package com.netflix.simianarmy.basic.janitor;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.janitor.JanitorRuleEngine;
 import com.netflix.simianarmy.janitor.Rule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 /**
  * Basic implementation of janitor rule engine that runs all containing rules to decide if a resource should be
@@ -41,11 +40,15 @@ public class BasicJanitorRuleEngine implements JanitorRuleEngine {
     /** The rules to decide if a resource should be a candidate for cleanup. **/
     private final List<Rule> rules;
 
+    /** The rules to decide if a resource should be excluded for cleanup. **/
+    private final List<Rule> exclusionRules;
+
     /**
      * The constructor of JanitorRuleEngine.
      */
     public BasicJanitorRuleEngine() {
         rules = new ArrayList<Rule>();
+        exclusionRules = new ArrayList<Rule>();
     }
 
     /**
@@ -61,8 +64,16 @@ public class BasicJanitorRuleEngine implements JanitorRuleEngine {
      */
     @Override
     public boolean isValid(Resource resource) {
-        LOGGER.debug(String.format("Checking if resource %s of type %s is a cleanup candidate against %d rules.",
-                resource.getId(), resource.getResourceType(), rules.size()));
+        LOGGER.debug(String.format("Checking if resource %s of type %s is a cleanup candidate against %d rules and %d exclusion rules.",
+                resource.getId(), resource.getResourceType(), rules.size(), exclusionRules.size()));
+
+        for (Rule exclusionRule : exclusionRules) {
+            if (exclusionRule.isValid(resource)) {
+                LOGGER.info(String.format("Resource %s is not marked as a cleanup candidate because of an exclusion rule.", resource.getId()));
+                return true;
+            }
+        }
+
         // We create a clone of the resource each time when we try the rule. In the first iteration of the rules
         // we identify the rule with the nearest termination date if there is any rule considers the resource
         // as a cleanup candidate. Then the rule is applied to the original resource.
@@ -98,10 +109,25 @@ public class BasicJanitorRuleEngine implements JanitorRuleEngine {
         rules.add(rule);
         return this;
     }
-    
+
+    /** {@inheritDoc} */
+    @Override
+    public BasicJanitorRuleEngine addExclusionRule(Rule rule){
+        exclusionRules.add(rule);
+        return this;
+    }
+
    /** {@inheritDoc} */
     @Override
     public List<Rule> getRules() {
         return this.rules;
     }
+
+
+    /** {@inheritDoc} */
+    @Override
+    public List<Rule> getExclusionRules() {
+        return this.exclusionRules;
+    }
+
 }

@@ -74,7 +74,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     private final Set<String> usedByInstance = Sets.newHashSet();
     private final Set<String> usedByLaunchConfig = Sets.newHashSet();
     private final Set<String> usedNames = Sets.newHashSet();
-    private final Map<String, String> imageIdToName = Maps.newHashMap();
+    protected final Map<String, String> imageIdToName = Maps.newHashMap();
     private final Map<String, Long> imageIdToCreationTime = Maps.newHashMap();
     private final Set<String> ancestorImageIds = Sets.newHashSet();
 

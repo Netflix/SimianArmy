@@ -19,15 +19,14 @@
 // CHECKSTYLE IGNORE MagicNumberCheck
 package com.netflix.simianarmy.basic.janitor;
 
-import java.util.Date;
-
+import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.aws.AWSResource;
+import com.netflix.simianarmy.janitor.Rule;
 import org.joda.time.DateTime;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.aws.AWSResource;
-import com.netflix.simianarmy.janitor.Rule;
+import java.util.Date;
 
 public class TestBasicJanitorRuleEngine {
 
@@ -78,6 +77,41 @@ public class TestBasicJanitorRuleEngine {
         }
     }
 
+    @Test void testWithExclusionRuleMatch1() {
+        Resource resource = new AWSResource().withId("id");
+        DateTime now = DateTime.now();
+        BasicJanitorRuleEngine engine = new BasicJanitorRuleEngine()
+                .addExclusionRule(new AlwaysValidRule())
+                .addRule(new AlwaysInvalidRule(now, 1));
+        Assert.assertTrue(engine.isValid(resource));
+    }
+
+    @Test void testWithExclusionRuleMatch2() {
+        Resource resource = new AWSResource().withId("id");
+        DateTime now = DateTime.now();
+        BasicJanitorRuleEngine engine = new BasicJanitorRuleEngine()
+                .addExclusionRule(new AlwaysValidRule())
+                .addRule(new AlwaysValidRule());
+        Assert.assertTrue(engine.isValid(resource));
+    }
+
+    @Test void testWithExclusionRuleNotMatch1() {
+        Resource resource = new AWSResource().withId("id");
+        DateTime now = DateTime.now();
+        BasicJanitorRuleEngine engine = new BasicJanitorRuleEngine()
+                .addExclusionRule(new AlwaysInvalidRule(now, 1))
+                .addRule(new AlwaysInvalidRule(now, 1));
+        Assert.assertFalse(engine.isValid(resource));
+    }
+
+    @Test void testWithExclusionRuleNotMatch2() {
+        Resource resource = new AWSResource().withId("id");
+        DateTime now = DateTime.now();
+        BasicJanitorRuleEngine engine = new BasicJanitorRuleEngine()
+                .addExclusionRule(new AlwaysInvalidRule(now, 1))
+                .addRule(new AlwaysValidRule());
+        Assert.assertTrue(engine.isValid(resource));
+    }
 }
 
 class AlwaysValidRule implements Rule {

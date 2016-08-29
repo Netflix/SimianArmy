@@ -45,11 +45,29 @@ public interface JanitorRuleEngine {
      * @return The JanitorRuleEngine object.
      */
     JanitorRuleEngine addRule(Rule rule);
-    
+
+    /**
+     * Add a rule to decide if a resource should be excluded for cleanup.
+     * Exclusion rules are evaluated before regular rules.  If a resource
+     * matches an exclusion rule, it is excluded from all other cleanup rules.
+     *
+     * @param rule
+     *            The rule to decide if a resource should be excluded for cleanup.
+     * @return The JanitorRuleEngine object.
+     */
+    JanitorRuleEngine addExclusionRule(Rule rule);
+
     /**
      * Get rules to find out what's planned for enforcement.
      *
      * @return An ArrayList of Rules.
      */
     List<Rule> getRules();
+
+    /**
+     * Get rules to find out what's excluded for enforcement.
+     *
+     * @return An ArrayList of Rules.
+     */
+    List<Rule> getExclusionRules();
 }
