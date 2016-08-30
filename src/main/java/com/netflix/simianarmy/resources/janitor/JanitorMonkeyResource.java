@@ -20,20 +20,6 @@ package com.netflix.simianarmy.resources.janitor;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Map;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -58,7 +44,6 @@ import java.util.Map;
  * The Class JanitorMonkeyResource for json REST apis.
  */
 @Path("/v1/janitor")
-@Produces(MediaType.APPLICATION_JSON)
 public class JanitorMonkeyResource {
 
     /** The Constant JSON_FACTORY. */
