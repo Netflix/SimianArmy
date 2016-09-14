@@ -151,23 +151,38 @@ public class BasicJanitorMonkey extends JanitorMonkey {
 
     @Override
     public Event optInResource(String resourceId) {
-        return optInOrOutResource(resourceId, true);
+        return optInOrOutResource(resourceId, true, region);
     }
 
     @Override
     public Event optOutResource(String resourceId) {
-        return optInOrOutResource(resourceId, false);
+        return optInOrOutResource(resourceId, false, region);
     }
 
-    private Event optInOrOutResource(String resourceId, boolean optIn) {
-        Resource resource = resourceTracker.getResource(resourceId);
+    @Override
+    public Event optInResource(String resourceId, String resourceRegion) {
+        return optInOrOutResource(resourceId, true, resourceRegion);
+    }
+
+    @Override
+    public Event optOutResource(String resourceId, String resourceRegion) {
+        return optInOrOutResource(resourceId, false, resourceRegion);
+    }
+
+    private Event optInOrOutResource(String resourceId, boolean optIn, String resourceRegion) {
+        if (resourceRegion == null) {
+            resourceRegion = region;
+        }
+
+        Resource resource = resourceTracker.getResource(resourceId, resourceRegion);
         if (resource == null) {
             return null;
         }
+
         EventTypes eventType = optIn ? EventTypes.OPT_IN_RESOURCE : EventTypes.OPT_OUT_RESOURCE;
         long timestamp = calendar.now().getTimeInMillis();
         // The same resource can have multiple events, so we add the timestamp to the id.
-        Event evt = recorder.newEvent(Type.JANITOR, eventType, region, resourceId + "@" + timestamp);
+        Event evt = recorder.newEvent(Type.JANITOR, eventType, resourceRegion, resourceId + "@" + timestamp);
         recorder.recordEvent(evt);
         resource.setOptOutOfJanitor(!optIn);
         resourceTracker.addOrUpdate(resource);

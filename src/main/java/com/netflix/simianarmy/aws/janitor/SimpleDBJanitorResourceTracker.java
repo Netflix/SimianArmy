@@ -17,28 +17,22 @@
  */
 package com.netflix.simianarmy.aws.janitor;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
-import com.amazonaws.services.simpledb.model.Attribute;
-import com.amazonaws.services.simpledb.model.Item;
-import com.amazonaws.services.simpledb.model.PutAttributesRequest;
-import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
-import com.amazonaws.services.simpledb.model.SelectRequest;
-import com.amazonaws.services.simpledb.model.SelectResult;
+import com.amazonaws.services.simpledb.model.*;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.janitor.JanitorResourceTracker;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The JanitorResourceTracker implementation in SimpleDB.
@@ -138,6 +132,32 @@ public class SimpleDBJanitorResourceTracker implements JanitorResourceTracker {
         Validate.isTrue(items.size() <= 1);
         if (items.size() == 0) {
             LOGGER.info(String.format("Not found resource with id %s", resourceId));
+            return null;
+        } else {
+            Resource resource = null;
+            try {
+                resource = parseResource(items.get(0));
+            } catch (Exception e) {
+                // Ignore the item that cannot be parsed.
+                LOGGER.error(String.format("SimpleDB item %s cannot be parsed into a resource.", items.get(0)));
+            }
+            return resource;
+        }
+    }
+
+    @Override
+    public Resource getResource(String resourceId, String region) {
+        Validate.notEmpty(resourceId);
+        Validate.notEmpty(region);
+        StringBuilder query = new StringBuilder();
+        query.append(String.format("select * from `%s` where resourceId = '%s' and region = '%s'", domain, resourceId, region));
+
+        LOGGER.debug(String.format("Query is '%s'", query));
+
+        List<Item> items = querySimpleDBItems(query.toString());
+        Validate.isTrue(items.size() <= 1);
+        if (items.size() == 0) {
+            LOGGER.info(String.format("Not found resource with id %s and region %s", resourceId, region));
             return null;
         } else {
             Resource resource = null;

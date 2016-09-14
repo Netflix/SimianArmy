@@ -175,12 +175,13 @@ public class TestRDSJanitorResourceTracker extends RDSJanitorResourceTracker {
         		                              objCap.capture(),  
         		                              objCap.capture(),
                                               objCap.capture(),
+                                              objCap.capture(),
                                               objCap.capture())).thenReturn(1);
         tracker.addOrUpdate(newResource);
 
         List<Object> args = objCap.getAllValues();        
-        Assert.assertEquals(sqlCap.getValue(), "update janitortable set resourceType=?,region=?,ownerEmail=?,description=?,state=?,terminationReason=?,expectedTerminationTime=?,actualTerminationTime=?,notificationTime=?,launchTime=?,markTime=?,optOutOfJanitor=?,additionalFields=? where resourceId=?");
-        Assert.assertEquals(args.size(), 14);
+        Assert.assertEquals(sqlCap.getValue(), "update janitortable set resourceType=?,region=?,ownerEmail=?,description=?,state=?,terminationReason=?,expectedTerminationTime=?,actualTerminationTime=?,notificationTime=?,launchTime=?,markTime=?,optOutOfJanitor=?,additionalFields=? where resourceId=? and region=?");
+        Assert.assertEquals(args.size(), 15);
         Assert.assertEquals(args.get(0).toString(), AWSResourceType.INSTANCE.toString());
         Assert.assertEquals(args.get(1).toString(), region);
         Assert.assertEquals(args.get(2).toString(), ownerEmail);
@@ -195,6 +196,7 @@ public class TestRDSJanitorResourceTracker extends RDSJanitorResourceTracker {
         Assert.assertEquals(args.get(11).toString(), "false");
         Assert.assertEquals(args.get(12).toString(), "{\"fieldName123\":\"fieldValue456\"}");
         Assert.assertEquals(args.get(13).toString(), id);
+        Assert.assertEquals(args.get(14).toString(), region);
     }
 
     

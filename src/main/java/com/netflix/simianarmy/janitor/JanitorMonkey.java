@@ -17,13 +17,13 @@
  */
 package com.netflix.simianarmy.janitor;
 
-import java.util.List;
-
 import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.Monkey;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyType;
+
+import java.util.List;
 
 /**
  * The abstract class for a Janitor Monkey.
@@ -149,5 +149,21 @@ public abstract class JanitorMonkey extends Monkey {
      * @return the opt-out event
      */
     public abstract Event optOutResource(String resourceId);
+
+    /**
+     * Opt in a resource for Janitor Monkey.
+     * @param resourceId the resource id
+     * @param region the region of the resource
+     * @return the opt-in event
+     */
+    public abstract Event optInResource(String resourceId, String region);
+
+    /**
+     * Opt out a resource for Janitor Monkey.
+     * @param resourceId the resource id
+     * @param region the region of the resource
+     * @return the opt-out event
+     */
+    public abstract Event optOutResource(String resourceId, String region);
 
 }
