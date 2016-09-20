@@ -21,54 +21,16 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
-import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
-import com.amazonaws.services.autoscaling.model.AutoScalingInstanceDetails;
-import com.amazonaws.services.autoscaling.model.DeleteAutoScalingGroupRequest;
-import com.amazonaws.services.autoscaling.model.DeleteLaunchConfigurationRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingGroupsResult;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesRequest;
-import com.amazonaws.services.autoscaling.model.DescribeAutoScalingInstancesResult;
-import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsRequest;
-import com.amazonaws.services.autoscaling.model.DescribeLaunchConfigurationsResult;
-import com.amazonaws.services.autoscaling.model.LaunchConfiguration;
+import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.CreateSecurityGroupRequest;
-import com.amazonaws.services.ec2.model.CreateSecurityGroupResult;
-import com.amazonaws.services.ec2.model.CreateTagsRequest;
-import com.amazonaws.services.ec2.model.DeleteSnapshotRequest;
-import com.amazonaws.services.ec2.model.DeleteVolumeRequest;
-import com.amazonaws.services.ec2.model.DeregisterImageRequest;
-import com.amazonaws.services.ec2.model.DescribeImagesRequest;
-import com.amazonaws.services.ec2.model.DescribeImagesResult;
-import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
-import com.amazonaws.services.ec2.model.DescribeInstancesResult;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsRequest;
-import com.amazonaws.services.ec2.model.DescribeSecurityGroupsResult;
-import com.amazonaws.services.ec2.model.DescribeSnapshotsRequest;
-import com.amazonaws.services.ec2.model.DescribeSnapshotsResult;
-import com.amazonaws.services.ec2.model.DescribeVolumesRequest;
-import com.amazonaws.services.ec2.model.DescribeVolumesResult;
-import com.amazonaws.services.ec2.model.DetachVolumeRequest;
-import com.amazonaws.services.ec2.model.EbsInstanceBlockDevice;
-import com.amazonaws.services.ec2.model.Image;
+import com.amazonaws.services.ec2.model.*;
 import com.amazonaws.services.ec2.model.Instance;
-import com.amazonaws.services.ec2.model.InstanceBlockDeviceMapping;
-import com.amazonaws.services.ec2.model.ModifyInstanceAttributeRequest;
-import com.amazonaws.services.ec2.model.Reservation;
-import com.amazonaws.services.ec2.model.SecurityGroup;
-import com.amazonaws.services.ec2.model.Snapshot;
 import com.amazonaws.services.ec2.model.Tag;
-import com.amazonaws.services.ec2.model.TerminateInstancesRequest;
-import com.amazonaws.services.ec2.model.Volume;
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancerAttributesRequest;
-import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancerAttributesResult;
+import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
-import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerAttributes;
-import com.amazonaws.services.elasticloadbalancing.model.LoadBalancerDescription;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.google.common.base.Objects;
@@ -79,7 +41,6 @@ import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
-
 import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
 import org.jclouds.compute.ComputeService;
@@ -89,20 +50,13 @@ import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadataBuilder;
 import org.jclouds.domain.LoginCredentials;
-import org.jclouds.ec2.EC2ApiMetadata;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.ssh.SshClient;
 import org.jclouds.ssh.jsch.config.JschSshClientModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 
 /**
@@ -515,8 +469,13 @@ public class AWSClient implements CloudClient {
         LOGGER.info(String.format("Deleting auto-scaling group with name %s in region %s.", asgName, region));
         AmazonAutoScalingClient asgClient = asgClient();
         DeleteAutoScalingGroupRequest request = new DeleteAutoScalingGroupRequest()
-        .withAutoScalingGroupName(asgName);
-        asgClient.deleteAutoScalingGroup(request);
+        .withAutoScalingGroupName(asgName).withForceDelete(true);
+        try {
+            asgClient.deleteAutoScalingGroup(request);
+            LOGGER.info(String.format("Deleted auto-scaling group with name %s in region %s.", asgName, region));
+        }catch(Exception e) {
+            LOGGER.error("Got an exception deleting ASG " + asgName, e);
+        }
     }
 
     /** {@inheritDoc} */

@@ -17,10 +17,10 @@
  */
 package com.netflix.simianarmy.janitor;
 
-import java.util.List;
-
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.ResourceType;
+
+import java.util.List;
 
 /**
  * The interface to track the resources marked/cleaned by the Janitor Monkey.
@@ -51,5 +51,13 @@ public interface JanitorResourceTracker {
      * @return the resource that matches the resource id
      */
     Resource getResource(String resourceId);
+
+    /** Gets the resource of a specific id.
+     *
+     * @param resourceId the resource id
+     * @param regionId the region id
+     * @return the resource that matches the resource id and region
+     */
+    Resource getResource(String resourceId, String regionId);
 
 }

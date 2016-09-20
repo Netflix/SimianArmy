@@ -20,32 +20,17 @@
 
 package com.netflix.simianarmy.janitor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.joda.time.DateTime;
-import org.testng.Assert;
-import org.testng.annotations.Test;
-
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.Resource;
+import com.netflix.simianarmy.*;
 import com.netflix.simianarmy.Resource.CleanupState;
-import com.netflix.simianarmy.ResourceType;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.janitor.rule.TestMonkeyCalendar;
 import com.netflix.simianarmy.basic.BasicConfiguration;
 import com.netflix.simianarmy.basic.janitor.BasicJanitorRuleEngine;
+import org.joda.time.DateTime;
+import org.testng.Assert;
+import org.testng.annotations.Test;
+
+import java.util.*;
 
 
 public class TestAbstractJanitor extends AbstractJanitor {
@@ -563,6 +548,12 @@ class TestJanitorResourceTracker implements JanitorResourceTracker {
     public Resource getResource(String resourceId) {
         return resources.get(resourceId);
     }
+
+    @Override
+    public Resource getResource(String resourceId, String region) {
+        return resources.get(resourceId);
+    }
+
 }
 
 /**

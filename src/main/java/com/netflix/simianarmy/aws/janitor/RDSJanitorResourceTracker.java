@@ -104,13 +104,13 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
 	/** {@inheritDoc} */
     @Override
     public void addOrUpdate(Resource resource) {
-    	Resource orig = getResource(resource.getId());    	
-        LOGGER.debug(String.format("Saving resource %s to RDB table %s", resource.getId(), table));    	
+    	Resource orig = getResource(resource.getId(), resource.getRegion());
+        LOGGER.debug(String.format("Saving resource %s to RDB table %s in region %s", resource.getId(), table, resource.getRegion()));
     	String json;
 		try {
 			json = new ObjectMapper().writeValueAsString(additionalFieldsAsMap(resource));
 		} catch (JsonProcessingException e) {
-			LOGGER.error("ERROR generating additonal field JSON when saving resource " + resource.getId(), e);
+			LOGGER.error("ERROR generating additional field JSON when saving resource " + resource.getId(), e);
 			return;
 		}
 
@@ -166,7 +166,8 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     		sb.append(AWSResource.FIELD_MARK_TIME).append("=?,");
 			sb.append(AWSResource.FIELD_OPT_OUT_OF_JANITOR).append("=?,");
     		sb.append("additionalFields").append("=? where ");
-    		sb.append(AWSResource.FIELD_RESOURCE_ID).append("=?");
+    		sb.append(AWSResource.FIELD_RESOURCE_ID).append("=? and ");
+			sb.append(AWSResource.FIELD_REGION).append("=?");
 
             LOGGER.debug(String.format("Update statement is '%s'", sb));
     		int updated = this.jdbcTemplate.update(sb.toString(),
@@ -183,7 +184,8 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
     								 value(resource.getMarkTime()),
 					                 value(resource.isOptOutOfJanitor()),
     								 json,
-    								 resource.getId());
+    								 resource.getId(),
+						  			 resource.getRegion());
             LOGGER.debug(String.format("%d rows updated", updated));
     	}
     	LOGGER.debug("Successfully saved.");
@@ -309,9 +311,33 @@ public class RDSJanitorResourceTracker implements JanitorResourceTracker {
         	resource = resources.get(0);
         }
         return resource;
-    }            
-    
-    /**
+    }
+
+	@Override
+	public Resource getResource(String resourceId, String region) {
+		Validate.notEmpty(resourceId);
+		Validate.notEmpty(region);
+		StringBuilder query = new StringBuilder();
+		query.append(String.format("select * from %s where resourceId=? and region=?", table));
+
+		LOGGER.debug(String.format("Query is '%s'", query));
+		List<Resource> resources = jdbcTemplate.query(query.toString(), new String[]{resourceId,region}, new RowMapper<Resource>() {
+			public Resource mapRow(ResultSet rs, int rowNum) throws SQLException {
+				return mapResource(rs);
+			}
+		});
+
+		Resource resource = null;
+		Validate.isTrue(resources.size() <= 1);
+		if (resources.size() == 0) {
+			LOGGER.info(String.format("Not found resource with id %s", resourceId));
+		} else {
+			resource = resources.get(0);
+		}
+		return resource;
+	}
+
+	/**
      * Creates the RDS table, if it does not already exist.
      */
     public void init() {

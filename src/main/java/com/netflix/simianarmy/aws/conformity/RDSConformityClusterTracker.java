@@ -107,7 +107,7 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
     @Override
     public void addOrUpdate(Cluster cluster) {
     	Cluster orig = getCluster(cluster.getName(), cluster.getRegion());    	
-        LOGGER.debug(String.format("Saving cluster %s to RDB table %s", cluster.getName(), table));    	
+        LOGGER.debug(String.format("Saving cluster %s to RDB table %s in region %s", cluster.getName(), cluster.getRegion(), table));
 		Map<String, String> map = cluster.getFieldToValueMap();
 
     	String conformityJson;

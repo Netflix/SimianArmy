@@ -20,20 +20,6 @@ package com.netflix.simianarmy.resources.janitor;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
 import com.netflix.simianarmy.MonkeyRunner;
 import com.netflix.simianarmy.janitor.JanitorMonkey;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Map;
-
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonEncoding;
 import org.codehaus.jackson.JsonGenerator;
@@ -58,7 +44,6 @@ import java.util.Map;
  * The Class JanitorMonkeyResource for json REST apis.
  */
 @Path("/v1/janitor")
-@Produces(MediaType.APPLICATION_JSON)
 public class JanitorMonkeyResource {
 
     /** The Constant JSON_FACTORY. */
@@ -101,7 +86,7 @@ public class JanitorMonkeyResource {
      * @throws IOException
      */
     @GET @Path("addEvent")
-    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId) throws IOException {
+    public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId,  @QueryParam("region") String region) throws IOException {
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         baos.write("<html><body style=\"text-align:center\"><img src=\"https://raw.githubusercontent.com/Netflix/SimianArmy/master/assets/janitor.png\" height=\"300\" width=\"300\"><br/>".getBytes());
@@ -116,9 +101,9 @@ public class JanitorMonkeyResource {
             gen.writeStringField("resourceId", resourceId);
 
         	if (eventType.equals("OPTIN")) {
-                responseStatus = optInResource(resourceId, true, gen);
+                responseStatus = optInResource(resourceId, true, region, gen);
             } else if (eventType.equals("OPTOUT")) {
-                responseStatus = optInResource(resourceId, false, gen);
+                responseStatus = optInResource(resourceId, false, region, gen);
             } else {
                 responseStatus = Response.Status.BAD_REQUEST;
                 gen.writeStringField("message", String.format("Unrecognized event type: %s", eventType));
@@ -156,6 +141,7 @@ public class JanitorMonkeyResource {
 
         String eventType = getStringField(input, "eventType");
         String resourceId = getStringField(input, "resourceId");
+        String region = getStringField(input, "region");
 
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -169,9 +155,9 @@ public class JanitorMonkeyResource {
             gen.writeStringField("message", "eventType and resourceId parameters are all required");
         } else {
             if (eventType.equals("OPTIN")) {
-                responseStatus = optInResource(resourceId, true, gen);
+                responseStatus = optInResource(resourceId, true, region, gen);
             } else if (eventType.equals("OPTOUT")) {
-                responseStatus = optInResource(resourceId, false, gen);
+                responseStatus = optInResource(resourceId, false, region, gen);
             } else {
                 responseStatus = Response.Status.BAD_REQUEST;
                 gen.writeStringField("message", String.format("Unrecognized event type: %s", eventType));
@@ -206,16 +192,16 @@ public class JanitorMonkeyResource {
         return Response.status(Response.Status.OK).entity(baos.toString("UTF-8")).build();
     }
 
-    private Response.Status optInResource(String resourceId, boolean optIn, JsonGenerator gen)
+    private Response.Status optInResource(String resourceId, boolean optIn, String region, JsonGenerator gen)
             throws IOException {
         String op = optIn ? "in" : "out";
         LOGGER.info(String.format("Opt %s resource %s for Janitor Monkey.", op, resourceId));
         Response.Status responseStatus;
         Event evt;
         if (optIn) {
-            evt = monkey.optInResource(resourceId);
+            evt = monkey.optInResource(resourceId, region);
         } else {
-            evt = monkey.optOutResource(resourceId);
+            evt = monkey.optOutResource(resourceId, region);
         }
         if (evt != null) {
             responseStatus = Response.Status.OK;
