@@ -38,6 +38,8 @@ public enum AWSResourceType implements ResourceType {
     S3_BUCKET,
     /** AWS security group. */
     SECURITY_GROUP,
-    /** AWS Amazon Amazon Machine Image. **/
-    IMAGE
+    /** AWS Amazon Machine Image. **/
+    IMAGE,
+    /** AWS Elastic Load Balancer. **/
+    ELB
 }

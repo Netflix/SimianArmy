@@ -35,22 +35,16 @@
  */
 package com.netflix.simianarmy;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.TimeUnit;
-
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.basic.BasicRecorderEvent;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ssh.SshClient;
 import org.testng.Assert;
 
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.basic.BasicConfiguration;
-import com.netflix.simianarmy.basic.BasicRecorderEvent;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class TestMonkeyContext implements Monkey.Context {
     private final MonkeyType monkeyType;
@@ -147,6 +141,10 @@ public class TestMonkeyContext implements Monkey.Context {
 
             @Override
             public void deleteImage(String imageId) {
+            }
+
+            @Override
+            public void deleteElasticLoadBalancer(String elbId) {
             }
 
             @Override

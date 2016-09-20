@@ -32,6 +32,7 @@ import com.netflix.simianarmy.aws.janitor.crawler.*;
 import com.netflix.simianarmy.aws.janitor.crawler.edda.*;
 import com.netflix.simianarmy.aws.janitor.rule.ami.UnusedImageRule;
 import com.netflix.simianarmy.aws.janitor.rule.asg.*;
+import com.netflix.simianarmy.aws.janitor.rule.elb.OrphanedELBRule;
 import com.netflix.simianarmy.aws.janitor.rule.generic.TagValueExclusionRule;
 import com.netflix.simianarmy.aws.janitor.rule.generic.UntaggedRule;
 import com.netflix.simianarmy.aws.janitor.rule.instance.OrphanedInstanceRule;
@@ -46,7 +47,10 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * The basic implementation of the context class for Janitor monkey.
@@ -148,6 +152,11 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         if (enabledResourceSet.contains("IMAGE")) {
             janitors.add(getImageJanitor());
         }
+
+        if (enabledResourceSet.contains("ELB")) {
+            janitors.add(getELBJanitor());
+        }
+
     }
     protected JanitorRuleEngine createJanitorRuleEngine() {
         JanitorRuleEngine ruleEngine = new BasicJanitorRuleEngine();
@@ -391,6 +400,29 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
                 monkeyRegion, ruleEngine, crawler, janitorResourceTracker,
                 monkeyCalendar, configuration(), recorder());
         return new ImageJanitor(awsClient(), janitorCtx);
+    }
+
+
+    private ELBJanitor getELBJanitor() {
+        JanitorRuleEngine ruleEngine = createJanitorRuleEngine();
+        if (configuration().getBoolOrElse("simianarmy.janitor.rule.orphanedELBRule.enabled", false)) {
+            ruleEngine.addRule(new OrphanedELBRule(monkeyCalendar,
+                (int) configuration().getNumOrElse(
+                        "simianarmy.janitor.rule.orphanedELBRule.retentionDays", 7)));
+        }
+
+        JanitorCrawler elbCrawler;
+        if (configuration().getBoolOrElse("simianarmy.janitor.edda.enabled", false)) {
+            boolean useEddaApplicationOwner = configuration().getBoolOrElse("simianarmy.janitor.rule.orphanedELBRule.edda.useApplicationOwner", false);
+            String eddaFallbackOwnerEmail = configuration().getStr("simianarmy.janitor.rule.orphanedELBRule.edda.fallbackOwnerEmail");
+            elbCrawler = new EddaELBJanitorCrawler(createEddaClient(), eddaFallbackOwnerEmail, useEddaApplicationOwner, awsClient().region());
+        } else {
+            elbCrawler = new ELBJanitorCrawler(awsClient());
+        }
+        BasicJanitorContext elbJanitorCtx = new BasicJanitorContext(
+                monkeyRegion, ruleEngine, elbCrawler, janitorResourceTracker,
+                monkeyCalendar, configuration(), recorder());
+        return new ELBJanitor(awsClient(), elbJanitorCtx);
     }
 
     private EddaClient createEddaClient() {
