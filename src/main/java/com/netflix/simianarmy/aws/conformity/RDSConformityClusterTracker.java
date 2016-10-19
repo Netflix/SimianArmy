@@ -67,6 +67,7 @@ public class RDSConformityClusterTracker implements ConformityClusterTracker {
 		dataSource.setJdbcUrl(dbUrl);
 		dataSource.setUsername(dbUser);
 		dataSource.setPassword(dbPass);
+		dataSource.setMaximumPoolSize(2);
     	this.jdbcTemplate = new JdbcTemplate(dataSource);
     	this.table = dbTable;
 	}

@@ -148,6 +148,10 @@ public class TestMonkeyContext implements Monkey.Context {
             }
 
             @Override
+            public void deleteDNSRecord(String dnsname, String dnstype, String hostedzoneid) {
+            }
+
+            @Override
             public void deleteLaunchConfiguration(String launchConfigName) {
             }
 

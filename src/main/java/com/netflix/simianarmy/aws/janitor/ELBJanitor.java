@@ -22,6 +22,7 @@ import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.aws.AWSResourceType;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.janitor.AbstractJanitor;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +56,33 @@ public class ELBJanitor extends AbstractJanitor {
     protected void cleanup(Resource resource) {
         LOGGER.info(String.format("Deleting ELB %s", resource.getId()));
         awsClient.deleteElasticLoadBalancer(resource.getId());
+
+        // delete any DNS records attached to this ELB
+        String dnsNames = resource.getAdditionalField("referencedDNS");
+        String dnsTypes = resource.getAdditionalField("referencedDNSTypes");
+        String dnsZones = resource.getAdditionalField("referencedDNSZones");
+        if (StringUtils.isNotBlank(dnsNames) && StringUtils.isNotBlank(dnsTypes) && StringUtils.isNotBlank(dnsZones)) {
+            String[] dnsNamesSplit = StringUtils.split(dnsNames,',');
+            String[] dnsTypesSplit = StringUtils.split(dnsTypes,',');
+            String[] dnsZonesSplit = StringUtils.split(dnsZones,',');
+
+            if (dnsNamesSplit.length != dnsTypesSplit.length) {
+                LOGGER.error(String.format("DNS Name count does not match DNS Type count, aborting DNS delete for ELB %s"), resource.getId());
+                LOGGER.error(String.format("DNS Names found but not deleted: %s for ELB %s"), dnsNames, resource.getId());
+                return;
+            }
+
+            if (dnsNamesSplit.length != dnsZonesSplit.length) {
+                LOGGER.error(String.format("DNS Name count does not match DNS Zone count, aborting DNS delete for ELB %s"), resource.getId());
+                LOGGER.error(String.format("DNS Names found but not deleted: %s for ELB %s"), dnsNames, resource.getId());
+                return;
+            }
+
+            for(int i=0; i<dnsNamesSplit.length; i++) {
+                LOGGER.info(String.format("Deleting DNS Record %s for ELB %s of type %s in zone %s", dnsNamesSplit[i], resource.getId(), dnsTypesSplit[i], dnsZonesSplit[i]));
+                awsClient.deleteDNSRecord(dnsNamesSplit[i], dnsTypesSplit[i], dnsZonesSplit[i]);
+            }
+        }
     }
 
     @Override

@@ -247,6 +247,10 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             }
 
             @Override
+            public void deleteDNSRecord(String dnsname, String dnstype, String hostedzoneid) {
+            }
+
+            @Override
             public List<String> listAttachedVolumes(String instanceId, boolean includeRoot) {
                 List<String> volumes = Lists.newArrayList();
                 if (includeRoot) {

@@ -65,13 +65,14 @@ public class JanitorMonkeyResource {
         JanitorMonkeyResource.monkey = monkey;
     }
 
-    /**
-     * Instantiates a janitor monkey resource using a registered janitor monkey from factory.
-     */
     public JanitorMonkeyResource() {
+    }
+
+    public JanitorMonkey getJanitorMonkey() {
         if (JanitorMonkeyResource.monkey == null ) {
             JanitorMonkeyResource.monkey = MonkeyRunner.getInstance().factory(JanitorMonkey.class);
         }
+        return monkey;
     }
 
     /**
@@ -199,9 +200,9 @@ public class JanitorMonkeyResource {
         Response.Status responseStatus;
         Event evt;
         if (optIn) {
-            evt = monkey.optInResource(resourceId, region);
+            evt = getJanitorMonkey().optInResource(resourceId, region);
         } else {
-            evt = monkey.optOutResource(resourceId, region);
+            evt = getJanitorMonkey().optOutResource(resourceId, region);
         }
         if (evt != null) {
             responseStatus = Response.Status.OK;

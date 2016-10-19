@@ -89,6 +89,18 @@ public interface CloudClient {
      */
     void deleteElasticLoadBalancer(String elbId);
 
+    /**
+     * Deletes a DNS record.
+     *
+     * @param dnsName
+     *          the DNS record to delete
+     * @param dnsType
+     *          the DNS type (CNAME, A, or AAAA)
+     * @param hostedZoneID
+     *          the ID of the hosted zone (required for AWS Route53 records)
+     */
+    public void deleteDNSRecord(String dnsName, String dnsType, String hostedZoneID);
+
      /**
      * Adds or overwrites tags for the specified resources.
      *

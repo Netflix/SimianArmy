@@ -41,6 +41,12 @@ import java.util.*;
  */
 public class EddaELBJanitorCrawler implements JanitorCrawler {
 
+    class DNSEntry {
+        String dnsName;
+        String dnsType;
+        String hostedZoneId;
+    };
+
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(EddaELBJanitorCrawler.class);
 
@@ -132,7 +138,7 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
             LOGGER.info(String.format("Getting all ELBs in region %s", region));
         }
 
-        url += ";_expand:(loadBalancerName,createdTime,instances,tags:(key,value))";
+        url += ";_expand:(loadBalancerName,createdTime,DNSName,instances,tags:(key,value))";
 
         JsonNode jsonNode = null;
         try {
@@ -167,6 +173,32 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
             }
         }
 
+        Map<String, List<DNSEntry>> elBtoDNSMap = buildELBtoDNSMap(region);
+        for(Resource resource : resources) {
+            List<DNSEntry> dnsEntryList = elBtoDNSMap.get(resource.getAdditionalField("DNSName"));
+            if (dnsEntryList != null && dnsEntryList.size() > 0) {
+                ArrayList<String> dnsNames = new ArrayList<>();
+                ArrayList<String> dnsTypes = new ArrayList<>();
+                ArrayList<String> hostedZoneIds = new ArrayList<>();
+                for (DNSEntry dnsEntry : dnsEntryList) {
+                    dnsNames.add(dnsEntry.dnsName);
+                    dnsTypes.add(dnsEntry.dnsType);
+                    hostedZoneIds.add(dnsEntry.hostedZoneId);
+                }
+
+                resource.setAdditionalField("referencedDNS", StringUtils.join(dnsNames,","));
+                resource.setAdditionalField("referencedDNSTypes", StringUtils.join(dnsTypes,","));
+                resource.setAdditionalField("referencedDNSZones", StringUtils.join(hostedZoneIds,","));
+
+                resource.setDescription(resource.getDescription() + ", DNS=" + resource.getAdditionalField("referencedDNS"));
+                LOGGER.debug(String.format("Resource ELB %s is referenced by DNS %s", resource.getId(), resource.getAdditionalField("referencedDNS")));
+            } else {
+                resource.setAdditionalField("referencedDNS", "");
+                resource.setDescription(resource.getDescription() + ", DNS=none");
+                LOGGER.debug(String.format("No DNS found for ELB %s", resource.getId()));
+            }
+        }
+
         return resources;
     }
 
@@ -179,7 +211,7 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
             jsonNode = eddaClient.getJsonNodeFromUrl(url);
         } catch (Exception e) {
             LOGGER.error(String.format(
-                    "Failed to get Jason node from edda for ELBs in region %s.", region), e);
+                    "Failed to get JSON node from edda for ASG ELBs in region %s.", region), e);
         }
 
         if (jsonNode == null || !jsonNode.isArray()) {
@@ -221,6 +253,9 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
                 .withResourceType(AWSResourceType.ELB)
                 .withLaunchTime(new Date(launchTime));
 
+        String dnsName = jsonNode.get("DNSName").getTextValue();
+        resource.setAdditionalField("DNSName", dnsName);
+
         JsonNode tags = jsonNode.get("tags");
         if (tags == null || !tags.isArray() || tags.size() == 0) {
             LOGGER.debug(String.format("No tags is found for %s", resource.getId()));
@@ -237,7 +272,7 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
         if (owner != null) {
             resource.setOwnerEmail(owner);
         }
-        LOGGER.debug(String.format("Owner of ELB Resource %s is %s", resource.getId(), resource.getOwnerEmail()));
+        LOGGER.debug(String.format("Owner of ELB Resource %s (ELB DNS: %s) is %s", resource.getId(), resource.getAdditionalField("DNSName"), resource.getOwnerEmail()));
 
         JsonNode instances = jsonNode.get("instances");
         if (instances == null || !instances.isArray() || instances.size() == 0) {
@@ -259,6 +294,87 @@ public class EddaELBJanitorCrawler implements JanitorCrawler {
         }
 
         return resource;
+    }
+
+    private Map<String, List<DNSEntry>> buildELBtoDNSMap(String region) {
+        String url = eddaClient.getBaseUrl(region) + "/aws/hostedRecords;_expand:(name,type,aliasTarget,resourceRecords:(value),zone:(id))";
+        LOGGER.info(String.format("Getting all ELBs associated with DNSs in region %s", region));
+
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = eddaClient.getJsonNodeFromUrl(url);
+        } catch (Exception e) {
+            LOGGER.error(String.format(
+                    "Failed to get JSON node from edda for DNS ELBs in region %s.", region), e);
+        }
+
+        if (jsonNode == null || !jsonNode.isArray()) {
+            throw new RuntimeException(String.format("Failed to get valid document from %s, got: %s", url, jsonNode));
+        }
+
+        HashMap<String, List<DNSEntry>> dnsMap = new HashMap<>();
+        for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
+            JsonNode dnsNode = it.next();
+            String dnsName = dnsNode.get("name").getTextValue();
+            String dnsType = dnsNode.get("type").getTextValue();
+            String hostedZoneId = null;
+            JsonNode hostedZoneNode = dnsNode.get("zone");
+            if (hostedZoneNode  != null) {
+                JsonNode hostedZoneIdNode = hostedZoneNode.get("id");
+                if (hostedZoneIdNode != null) {
+                    hostedZoneId = hostedZoneIdNode.getTextValue();
+                }
+            }
+
+            JsonNode aliasTarget = dnsNode.get("aliasTarget");
+            if (aliasTarget != null) {
+                JsonNode aliasTargetDnsNameNode = aliasTarget.get("DNSName");
+                if (aliasTargetDnsNameNode != null) {
+                    String aliasTargetDnsName = aliasTargetDnsNameNode.getTextValue();
+                    if (aliasTargetDnsName != null && aliasTargetDnsName.contains(".elb.")) {
+                        DNSEntry dnsEntry = new DNSEntry();
+                        dnsEntry.dnsName = dnsName;
+                        dnsEntry.dnsType = dnsType;
+                        dnsEntry.hostedZoneId = hostedZoneId;
+
+                        if (aliasTargetDnsName.endsWith(".")) {
+                            aliasTargetDnsName = aliasTargetDnsName.substring(0, aliasTargetDnsName.length()-1);
+                        }
+                        List<DNSEntry> dnsEntryList = dnsMap.get(aliasTargetDnsName);
+                        if (dnsEntryList == null) {
+                            dnsEntryList = new ArrayList<>();
+                            dnsMap.put(aliasTargetDnsName, dnsEntryList);
+                        }
+                        dnsEntryList.add(dnsEntry);
+                        LOGGER.debug(String.format("Found DNS %s (alias) associated with ELB DNS %s, type %s, zone %s", dnsName, aliasTargetDnsName, dnsType, hostedZoneId));
+                    }
+                }
+            }
+            JsonNode records = dnsNode.get("resourceRecords");
+            if (records == null || !records.isArray() || records.size() == 0) {
+                continue;
+            } else {
+                for (Iterator<JsonNode> recordNode = records.getElements(); recordNode.hasNext();) {
+                    JsonNode record = recordNode.next();
+                    String elbDNS = record.get("value").getTextValue();
+                    if (elbDNS.contains(".elb.")) {
+                        DNSEntry dnsEntry = new DNSEntry();
+                        dnsEntry.dnsName = dnsName;
+                        dnsEntry.dnsType = dnsType;
+                        dnsEntry.hostedZoneId = hostedZoneId;
+
+                        List<DNSEntry> dnsEntryList = dnsMap.get(elbDNS);
+                        if (dnsEntryList == null) {
+                            dnsEntryList = new ArrayList<>();
+                            dnsMap.put(elbDNS, dnsEntryList);
+                        }
+                        dnsEntryList.add(dnsEntry);
+                        LOGGER.debug(String.format("Found DNS %s associated with ELB DNS %s, type %s, zone %s", dnsName, elbDNS, dnsType, hostedZoneId));
+                    }
+                }
+            }
+        }
+        return dnsMap;
     }
 
 }
