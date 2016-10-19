@@ -3,6 +3,8 @@
 The Simian Army is a suite of tools for keeping your cloud operating in top form.  Chaos Monkey, the first member, is a resiliency tool that
 helps ensure that your applications can tolerate random instance failures
 
+A [newer version of Chaos Monkey](https://github.com/netflix/chaosmonkey) is available as a standalone service.
+
 ## Build status
 
 [![Build Status](https://travis-ci.org/Netflix/SimianArmy.svg?branch=master)](https://travis-ci.org/Netflix/SimianArmy)
