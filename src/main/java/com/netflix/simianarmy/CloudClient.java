@@ -17,12 +17,12 @@
  */
 package com.netflix.simianarmy;
 
-import java.util.List;
-import java.util.Map;
-
 import org.jclouds.compute.ComputeService;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.ssh.SshClient;
+
+import java.util.List;
+import java.util.Map;
 
 /**
  * The CloudClient interface. This abstractions provides the interface that the monkeys need to interact with
@@ -80,6 +80,26 @@ public interface CloudClient {
      *          the image id.
      */
      void deleteImage(String imageId);
+
+    /**
+     * Deletes an elastic load balancer.
+     *
+     * @param elbId
+     *          the elastic load balancer id
+     */
+    void deleteElasticLoadBalancer(String elbId);
+
+    /**
+     * Deletes a DNS record.
+     *
+     * @param dnsName
+     *          the DNS record to delete
+     * @param dnsType
+     *          the DNS type (CNAME, A, or AAAA)
+     * @param hostedZoneID
+     *          the ID of the hosted zone (required for AWS Route53 records)
+     */
+    public void deleteDNSRecord(String dnsName, String dnsType, String hostedZoneID);
 
      /**
      * Adds or overwrites tags for the specified resources.

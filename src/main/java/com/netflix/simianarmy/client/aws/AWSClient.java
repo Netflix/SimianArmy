@@ -31,6 +31,11 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingCli
 import com.amazonaws.services.elasticloadbalancing.model.*;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersRequest;
 import com.amazonaws.services.elasticloadbalancing.model.DescribeLoadBalancersResult;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeTagsRequest;
+import com.amazonaws.services.elasticloadbalancing.model.DescribeTagsResult;
+import com.amazonaws.services.elasticloadbalancing.model.TagDescription;
+import com.amazonaws.services.route53.AmazonRoute53Client;
+import com.amazonaws.services.route53.model.*;
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.google.common.base.Objects;
@@ -57,6 +62,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+
 
 
 /**
@@ -259,6 +265,30 @@ public class AWSClient implements CloudClient {
     }
 
     /**
+     * Amazon Route53 client. Abstracted to aid testing.
+     *
+     * @return the Amazon Route53 client
+     */
+    protected AmazonRoute53Client route53Client() {
+        AmazonRoute53Client client;
+        if (awsClientConfig == null) {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonRoute53Client();
+            } else {
+                client = new AmazonRoute53Client(awsCredentialsProvider);
+            }
+        } else {
+            if (awsCredentialsProvider == null) {
+                client = new AmazonRoute53Client(awsClientConfig);
+            } else {
+                client = new AmazonRoute53Client(awsCredentialsProvider, awsClientConfig);
+            }
+        }
+        client.setEndpoint("route53.amazonaws.com");
+        return client;
+    }
+
+    /**
      * Amazon SimpleDB client.
      *
      * @return the Amazon SimpleDB client
@@ -366,7 +396,22 @@ public class AWSClient implements CloudClient {
         LOGGER.info(String.format("Got attributes for ELB with name '%s' in region %s.", name, region));
         return attrs;
     }
-    
+
+    /**
+     * Retreive the tags for a specific ELB.
+     *
+     * @param name the ELB names
+     * @return the ELBs
+     */
+    public List<TagDescription> describeElasticLoadBalancerTags(String name) {
+        LOGGER.info(String.format("Getting tags for ELB with name '%s' in region %s.", name, region));
+        AmazonElasticLoadBalancingClient elbClient = elbClient();
+        DescribeTagsRequest request = new DescribeTagsRequest().withLoadBalancerNames(name);
+        DescribeTagsResult result = elbClient.describeTags(request);
+        LOGGER.info(String.format("Got tags for ELB with name '%s' in region %s.", name, region));
+        return result.getTagDescriptions();
+    }
+
     /**
      * Describe a set of specific auto-scaling instances.
      *
@@ -519,6 +564,49 @@ public class AWSClient implements CloudClient {
         AmazonEC2 ec2Client = ec2Client();
         DeleteSnapshotRequest request = new DeleteSnapshotRequest().withSnapshotId(snapshotId);
         ec2Client.deleteSnapshot(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void deleteElasticLoadBalancer(String elbId) {
+        Validate.notEmpty(elbId);
+        LOGGER.info(String.format("Deleting ELB %s in region %s.", elbId, region));
+        AmazonElasticLoadBalancingClient elbClient = elbClient();
+        DeleteLoadBalancerRequest request = new DeleteLoadBalancerRequest(elbId);
+        elbClient.deleteLoadBalancer(request);
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public void deleteDNSRecord(String dnsName, String dnsType, String hostedZoneID) {
+        Validate.notEmpty(dnsName);
+        Validate.notEmpty(dnsType);
+
+        if(dnsType.equals("A") || dnsType.equals("AAAA") || dnsType.equals("CNAME")) {
+            LOGGER.info(String.format("Deleting DNS Route 53 record %s", dnsName));
+            AmazonRoute53Client route53Client = route53Client();
+
+            // AWS API requires us to query for the record first
+            ListResourceRecordSetsRequest listRequest = new ListResourceRecordSetsRequest(hostedZoneID);
+            listRequest.setMaxItems("1");
+            listRequest.setStartRecordType(dnsType);
+            listRequest.setStartRecordName(dnsName);
+            ListResourceRecordSetsResult listResult = route53Client.listResourceRecordSets(listRequest);
+            if (listResult.getResourceRecordSets().size() < 1) {
+                throw new NotFoundException("Could not find Route53 record for " + dnsName + " (" + dnsType + ") in zone " + hostedZoneID);
+            } else {
+                ResourceRecordSet resourceRecord = listResult.getResourceRecordSets().get(0);
+                ArrayList<Change> changeList = new ArrayList<>();
+                Change recordChange = new Change(ChangeAction.DELETE, resourceRecord);
+                changeList.add(recordChange);
+                ChangeBatch recordChangeBatch = new ChangeBatch(changeList);
+
+                ChangeResourceRecordSetsRequest request = new ChangeResourceRecordSetsRequest(hostedZoneID, recordChangeBatch);
+                ChangeResourceRecordSetsResult result = route53Client.changeResourceRecordSets(request);
+            }
+        } else {
+            LOGGER.error("dnsType must be one of 'A', 'AAAA', or 'CNAME'");
+        }
     }
 
     /** {@inheritDoc} */
