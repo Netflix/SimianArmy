@@ -246,6 +246,7 @@ public class JanitorEmailNotifier extends AWSEmailNotifier {
         Date windowEnd = calendar.getBusinessDay(calendar.now().getTime(), daysBeforeTermination + 1);
         Date terminationDate = resource.getExpectedTerminationTime();
         if (notificationTime == null
+                || notificationTime.getTime() == 0
                 || resource.getMarkTime().after(notificationTime)) { // remarked after a notification
             if (!terminationDate.before(windowStart) && !terminationDate.after(windowEnd)) {
                 // The expected termination time is close enough for sending notification
