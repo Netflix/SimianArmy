@@ -8,7 +8,7 @@ A [newer version of Chaos Monkey](https://github.com/netflix/chaosmonkey) is ava
 ## Build status
 
 [![Build Status](https://travis-ci.org/Netflix/SimianArmy.svg?branch=master)](https://travis-ci.org/Netflix/SimianArmy)
-[![Apache 2.0](https://img.shields.io/github/license/Netflix/SimianArmy.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 ## DETAILS
 
