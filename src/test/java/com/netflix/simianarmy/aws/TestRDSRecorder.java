@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatcher;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -43,8 +44,10 @@ import com.netflix.simianarmy.basic.BasicRecorderEvent;
 // CHECKSTYLE IGNORE MagicNumberCheck
 public class TestRDSRecorder extends RDSRecorder {
 
+    private static final String REGION = "us-west-1";
+	
     public TestRDSRecorder() {
-    	super(mock(JdbcTemplate.class), "recordertable", "us-west-1");
+    	super(mock(JdbcTemplate.class), "recordertable", REGION);
     }
 
     public enum Type implements MonkeyType {
@@ -120,8 +123,17 @@ public class TestRDSRecorder extends RDSRecorder {
         events.add(evt1);
         events.add(evt2);
 		when(recorder.getJdbcTemplate().query(Matchers.anyString(), 
-         		                            Matchers.any(Object[].class), 
-         		                            Matchers.any(RowMapper.class))).thenReturn(events);
+				Matchers.argThat(new ArgumentMatcher<Object []>(){
+					@Override
+					public boolean matches(Object argument) {
+						Object [] args = (Object [])argument;
+						Assert.assertTrue(args[0] instanceof String);
+						Assert.assertEquals((String)args[0],REGION);
+						return true;
+					}
+					
+				}), 
+         		Matchers.any(RowMapper.class))).thenReturn(events);
         
         Map<String, String> query = new LinkedHashMap<String, String>();
         query.put("instanceId", "testId1");
@@ -155,8 +167,17 @@ public class TestRDSRecorder extends RDSRecorder {
         ArrayList<Event> events = new ArrayList<>();
         TestRDSRecorder recorder = new TestRDSRecorder();
 		when(recorder.getJdbcTemplate().query(Matchers.anyString(), 
-         		                            Matchers.any(Object[].class), 
-         		                            Matchers.any(RowMapper.class))).thenReturn(events);
+				Matchers.argThat(new ArgumentMatcher<Object []>(){
+					@Override
+					public boolean matches(Object argument) {
+						Object [] args = (Object [])argument;
+						Assert.assertTrue(args[0] instanceof String);
+						Assert.assertEquals((String)args[0],REGION);
+						return true;
+					}
+					
+				}), 
+         		Matchers.any(RowMapper.class))).thenReturn(events);
 		
 		List<Event> results = recorder.findEvents(new HashMap<String, String>(), new Date());
 		Assert.assertEquals(results.size(), 0);
