@@ -152,8 +152,8 @@ public class RDSRecorder implements MonkeyRecorder {
     public List<Event> findEvents(MonkeyType monkeyType, EventType eventType, Map<String, String> query, Date after) {
         ArrayList<Object> args = new ArrayList<>();
         StringBuilder sqlquery = new StringBuilder(
-                String.format("select * from %s where region = ?", table, region));
-        args.add(table);
+                String.format("select * from %s where region = ?", table));
+        args.add(region);
         
         if (monkeyType != null) {
         	sqlquery.append(String.format(" and %s = ?", FIELD_MONKEY_TYPE));
