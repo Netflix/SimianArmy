@@ -87,6 +87,11 @@ public class ELBJanitor extends AbstractJanitor {
 
     @Override
     protected void postCleanup(Resource resource) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            LOGGER.warn("Post-cleanup sleep was interrupted", e);
+        }
     }
 
 }
