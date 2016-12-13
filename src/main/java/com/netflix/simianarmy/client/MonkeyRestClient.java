@@ -51,7 +51,7 @@ public abstract class MonkeyRestClient {
         Validate.isTrue(timeout >= 0);
         Validate.isTrue(maxRetries >= 0);
         Validate.isTrue(retryInterval > 0);
-        
+
         RequestConfig config = RequestConfig.custom()
             .setConnectTimeout(timeout)
             .build();
@@ -87,7 +87,7 @@ public abstract class MonkeyRestClient {
         if (code == 404) {
             return null;
         } else if (code >= 300 || code < 200) {
-            throw new RuntimeException(String.format("Response code %d from url %s: %s", code, url, jsonContent));
+            throw new DataReadException(code, url, jsonContent);
         }
 
         JsonNode result;
@@ -107,4 +107,10 @@ public abstract class MonkeyRestClient {
      * @return the base url in the region
      */
     public abstract String getBaseUrl(String region);
+
+    public static class DataReadException extends RuntimeException {
+        public DataReadException(int code, String url, String jsonContent) {
+            super(String.format("Response code %d from url %s: %s", code, url, jsonContent));
+        }
+    }
 }
