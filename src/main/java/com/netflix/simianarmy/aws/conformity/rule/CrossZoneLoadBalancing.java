@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.netflix.simianarmy.client.MonkeyRestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,12 +71,17 @@ public class CrossZoneLoadBalancing implements ConformityRule {
     public Conformity check(Cluster cluster) {
         Collection<String> failedComponents = Lists.newArrayList();
         for (AutoScalingGroup asg : cluster.getAutoScalingGroups()) {
-            for (String lbName : getLoadBalancerNamesForAsg(cluster.getRegion(), asg.getName())) {
-                if (!isCrossZoneLoadBalancingEnabled(cluster.getRegion(), lbName)) {
-                    LOGGER.info(String.format("ELB %s in %s does not have cross-zone load balancing enabled",
-                            lbName, cluster.getRegion()));
-                    failedComponents.add(lbName);
+            try {
+                for (String lbName : getLoadBalancerNamesForAsg(cluster.getRegion(), asg.getName())) {
+                    if (!isCrossZoneLoadBalancingEnabled(cluster.getRegion(), lbName)) {
+                        LOGGER.info(String.format("ELB %s in %s does not have cross-zone load balancing enabled",
+                                    lbName, cluster.getRegion()));
+                        failedComponents.add(lbName);
+                    }
                 }
+            } catch (MonkeyRestClient.DataReadException e) {
+                LOGGER.error(String.format("Transient error reading ELB for %s in %s - skipping this check",
+                             asg.getName(), cluster.getRegion()), e);
             }
         }
         return new Conformity(getName(), failedComponents);
