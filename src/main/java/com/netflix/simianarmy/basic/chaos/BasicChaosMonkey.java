@@ -152,8 +152,8 @@ public class BasicChaosMonkey extends ChaosMonkey {
     }
 
     @Override
-    public Event terminateNow(String type, String name, ChaosType chaosType)
-            throws FeatureNotEnabledException, InstanceGroupNotFoundException {
+    public Event terminateNow(String type, String name, ChaosType chaosType, List<Tag> ec2TagsSent)
+            throws FeatureNotEnabledException, InstanceGroupNotFoundException, NoInstanceWithTagsFoundException {
         Validate.notNull(type);
         Validate.notNull(name);
         cfg.reload(name);
@@ -169,7 +169,12 @@ public class BasicChaosMonkey extends ChaosMonkey {
             if (group == null) {
                 throw new InstanceGroupNotFoundException(type, name);
             }
-            Collection<String> instances = context().chaosInstanceSelector().select(group, 1.0);
+            Collection<String> instances = null;
+            if (ec2TagsSent == null)
+                instances = context().chaosInstanceSelector().select(group, 1.0);
+            else {
+                instances = context().chaosInstanceSelector().selectOneByTags(group, ec2TagsSent);
+            }
             Validate.isTrue(instances.size() <= 1);
             if (instances.size() == 1) {
                 return terminateInstance(group, instances.iterator().next(), chaosType);

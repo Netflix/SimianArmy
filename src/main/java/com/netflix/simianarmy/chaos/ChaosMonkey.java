@@ -20,13 +20,8 @@ package com.netflix.simianarmy.chaos;
 import java.util.Date;
 import java.util.List;
 
-import com.netflix.simianarmy.EventType;
-import com.netflix.simianarmy.FeatureNotEnabledException;
-import com.netflix.simianarmy.InstanceGroupNotFoundException;
-import com.netflix.simianarmy.Monkey;
-import com.netflix.simianarmy.MonkeyConfiguration;
+import com.netflix.simianarmy.*;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.MonkeyType;
 
 /**
  * The Class ChaosMonkey.
@@ -147,8 +142,8 @@ public abstract class ChaosMonkey extends Monkey {
      * @throws FeatureNotEnabledException
      * @throws InstanceGroupNotFoundException
      */
-    public abstract Event terminateNow(String type, String name, ChaosType chaosType)
-            throws FeatureNotEnabledException, InstanceGroupNotFoundException;
+    public abstract Event terminateNow(String type, String name, ChaosType chaosType, List<Tag> ec2TagsSent)
+            throws FeatureNotEnabledException, InstanceGroupNotFoundException, NoInstanceWithTagsFoundException;
 
     /**
      * Sends notification for the termination to the instance owners.

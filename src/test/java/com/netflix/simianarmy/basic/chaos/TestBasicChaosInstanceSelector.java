@@ -24,6 +24,8 @@ import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
+import com.netflix.simianarmy.Instance;
+import com.netflix.simianarmy.basic.BasicInstance;
 
 import org.testng.annotations.Test;
 import org.testng.annotations.DataProvider;
@@ -46,6 +48,40 @@ public class TestBasicChaosInstanceSelector {
     }
 
     private InstanceGroup group = new InstanceGroup() {
+
+        List<Instance> instancesList = new ArrayList<Instance>();
+        {
+            Instance i1 = new BasicInstance("i-123456789012345670");
+            instancesList.add(i1);
+
+            Instance i2 = new BasicInstance("i-123456789012345671");
+            instancesList.add(i2);
+
+            Instance i3 = new BasicInstance("i-123456789012345672");
+            instancesList.add(i3);
+
+            Instance i4 = new BasicInstance("i-123456789012345673");
+            instancesList.add(i4);
+
+            Instance i5 = new BasicInstance("i-123456789012345674");
+            instancesList.add(i5);
+
+            Instance i6 = new BasicInstance("i-123456789012345675");
+            instancesList.add(i6);
+
+            Instance i7 = new BasicInstance("i-123456789012345676");
+            instancesList.add(i7);
+
+            Instance i8 = new BasicInstance("i-123456789012345677");
+            instancesList.add(i8);
+
+            Instance i9 = new BasicInstance("i-123456789012345678");
+            instancesList.add(i9);
+
+            Instance i10 = new BasicInstance("i-123456789012345679");
+            instancesList.add(i10);
+        }
+
         public GroupType type() {
             return Types.TEST;
         }
@@ -62,9 +98,20 @@ public class TestBasicChaosInstanceSelector {
             return Collections.<TagDescription>emptyList();
         }
 
-        public List<String> instances() {
-            return Arrays.asList("i-123456789012345670", "i-123456789012345671", "i-123456789012345672", "i-123456789012345673", "i-123456789012345674",
-                    "i-123456789012345675", "i-123456789012345676", "i-123456789012345677", "i-123456789012345678", "i-123456789012345679");
+        public List<String> instanceIds() {
+            List<String> instanceIdsList = new ArrayList<String>();
+            for (Instance inst : instancesList) {
+                instanceIdsList.add(inst.getInstanceId());
+            }
+            return instanceIdsList;
+        }
+
+        @Override
+        public void addInstance(Instance instance) {
+        }
+
+        public List<Instance> instances() {
+            return instancesList;
         }
 
         public void addInstance(String ignored) {
@@ -74,6 +121,12 @@ public class TestBasicChaosInstanceSelector {
         public InstanceGroup copyAs(String name) {
             return this;
         }
+
+        @Override
+        public void addInstanceList(List<Instance> instance) {
+            instancesList.addAll(instance);
+        }
+
     };
 
     @Test

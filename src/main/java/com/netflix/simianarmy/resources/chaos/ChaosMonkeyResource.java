@@ -35,7 +35,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.google.common.base.Strings;
-import com.netflix.simianarmy.Monkey;
+import com.netflix.simianarmy.*;
 import com.sun.jersey.spi.resource.Singleton;
 
 import org.apache.commons.lang.StringUtils;
@@ -44,14 +44,12 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.MappingJsonFactory;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.netflix.simianarmy.FeatureNotEnabledException;
-import com.netflix.simianarmy.InstanceGroupNotFoundException;
 import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.MonkeyRunner;
-import com.netflix.simianarmy.NotFoundException;
 import com.netflix.simianarmy.chaos.ChaosMonkey;
 import com.netflix.simianarmy.chaos.ChaosType;
 import com.netflix.simianarmy.chaos.ShutdownInstanceChaosType;
@@ -174,6 +172,21 @@ public class ChaosMonkeyResource {
         String groupName = getStringField(input, "groupName");
         String chaosTypeName = getStringField(input, "chaosType");
 
+        //all tags must match for termination
+        JsonNode tagsNode = input.get("tags");
+        List<Tag> ec2TagsSent = null;
+        try {
+            ec2TagsSent = mapper.readValue(tagsNode, new TypeReference<List<Tag>>() {});
+        }
+        catch (NullPointerException e)
+        {
+            ec2TagsSent = null;
+        }
+        //if there are no key=value pairs then set to null and act like there was no ec2TagsSent JSON object
+        if (ec2TagsSent != null) {
+             if (ec2TagsSent.size() == 0)
+                 ec2TagsSent = null;
+        }
         ChaosType chaosType;
         if (!Strings.isNullOrEmpty(chaosTypeName)) {
             chaosType = ChaosType.parse(this.monkey.getChaosTypes(), chaosTypeName);
@@ -189,13 +202,14 @@ public class ChaosMonkeyResource {
         gen.writeStringField("groupType", groupType);
         gen.writeStringField("groupName", groupName);
         gen.writeStringField("chaosType", chaosType.getKey());
+        gen.writeObjectField("tags", ec2TagsSent);
 
         if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(groupType) || StringUtils.isEmpty(groupName)) {
             responseStatus = Response.Status.BAD_REQUEST;
             gen.writeStringField("message", "eventType, groupType, and groupName parameters are all required");
         } else {
             if (eventType.equals("CHAOS_TERMINATION")) {
-                responseStatus = addTerminationEvent(groupType, groupName, chaosType, gen);
+                responseStatus = addTerminationEvent(groupType, groupName, chaosType, ec2TagsSent, gen);
             } else {
                 responseStatus = Response.Status.BAD_REQUEST;
                 gen.writeStringField("message", String.format("Unrecognized event type: %s", eventType));
@@ -208,13 +222,13 @@ public class ChaosMonkeyResource {
     }
 
     private Response.Status addTerminationEvent(String groupType,
-            String groupName, ChaosType chaosType, JsonGenerator gen)
+            String groupName, ChaosType chaosType, List<Tag> ec2TagsSent, JsonGenerator gen)
             throws IOException {
         LOGGER.info("Running on-demand termination for instance group type '{}' and name '{}'",
                 groupType, groupName);
         Response.Status responseStatus;
         try {
-            Event evt = monkey.terminateNow(groupType, groupName, chaosType);
+            Event evt = monkey.terminateNow(groupType, groupName, chaosType, ec2TagsSent);
             if (evt != null) {
                 responseStatus = Response.Status.OK;
                 gen.writeStringField("monkeyType", evt.monkeyType().name());
@@ -238,6 +252,9 @@ public class ChaosMonkeyResource {
             gen.writeStringField("message", e.getMessage());
         } catch (NotFoundException e) {
             // Available instance cannot be found to terminate, maybe the instance is already gone
+            responseStatus = Response.Status.GONE;
+            gen.writeStringField("message", e.getMessage());
+        } catch (NoInstanceWithTagsFoundException e) {
             responseStatus = Response.Status.GONE;
             gen.writeStringField("message", e.getMessage());
         }

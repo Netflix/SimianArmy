@@ -17,12 +17,14 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
+import com.netflix.simianarmy.Instance;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 /**
@@ -82,17 +84,26 @@ public class BasicInstanceGroup implements InstanceGroup {
     }
 
     /** The list. */
-    private List<String> list = new LinkedList<String>();
+    private List<Instance> list = new LinkedList<Instance>();
 
     /** {@inheritDoc} */
     @Override
-    public List<String> instances() {
+    public List<Instance> instances() {
         return Collections.unmodifiableList(list);
+    }
+
+    @Override
+    public List<String> instanceIds() {
+        List<String> instanceIds = new ArrayList<String>();
+        for (Instance instance : list) {
+            instanceIds.add(instance.getInstanceId());
+        }
+        return Collections.unmodifiableList(instanceIds);
     }
 
     /** {@inheritDoc} */
     @Override
-    public void addInstance(String instance) {
+    public void addInstance(Instance instance) {
         list.add(instance);
     }
 
@@ -100,9 +111,15 @@ public class BasicInstanceGroup implements InstanceGroup {
     @Override
     public BasicInstanceGroup copyAs(String newName) {
         BasicInstanceGroup newGroup = new BasicInstanceGroup(newName, this.type(), this.region(), this.tags());
-        for (String instance: this.instances()) {
+        for (Instance instance: this.instances()) {
             newGroup.addInstance(instance);
         }
         return newGroup;
     }
+
+    @Override
+    public void addInstanceList(List<Instance> instances) {
+        //need to add
+        list.addAll(instances);
+    };
 }

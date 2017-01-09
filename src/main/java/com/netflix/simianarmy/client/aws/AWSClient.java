@@ -46,6 +46,7 @@ import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
+import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
 import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
 import org.jclouds.compute.ComputeService;
@@ -953,7 +954,6 @@ public class AWSClient implements CloudClient {
         if (Strings.isNullOrEmpty(vpcId)) {
             return null;
         }
-
         return vpcId;
     }
 
@@ -961,5 +961,31 @@ public class AWSClient implements CloudClient {
     @Override
     public boolean canChangeInstanceSecurityGroups(String instanceId) {
         return null != getVpcId(instanceId);
+    }
+
+    public List<com.netflix.simianarmy.Instance> convertToSimianArmyInstance(List<Instance> ec2InstList) {
+        if (ec2InstList != null) {
+            List<com.netflix.simianarmy.Instance> instList = new ArrayList<>();
+
+            for (Instance ec2Inst : ec2InstList) {
+                List<com.netflix.simianarmy.Tag> ec2Tags = new ArrayList<>();
+                if (ec2Inst.getTags() != null) {
+                    for (Tag ec2Tag : ec2Inst.getTags()) {
+                        com.netflix.simianarmy.Tag SimianArmyTag = new com.netflix.simianarmy.Tag(ec2Tag.getKey(), ec2Tag.getValue());
+                        ec2Tags.add(SimianArmyTag);
+                    }
+                }
+
+                com.netflix.simianarmy.Instance SimianArmyInst = new com.netflix.simianarmy.basic.BasicInstance(
+                        ec2Inst.getInstanceId(),
+                        ec2Inst.getKeyName(),
+                        ec2Inst.getPublicDnsName(),
+                        ec2Tags);
+                instList.add(SimianArmyInst);
+            }
+
+            return instList;
+        }
+        return null;
     }
 }

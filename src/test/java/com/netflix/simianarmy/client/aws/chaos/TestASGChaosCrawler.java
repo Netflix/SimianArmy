@@ -23,12 +23,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.testng.Assert;
 import org.testng.annotations.Test;
@@ -70,26 +65,55 @@ public class TestASGChaosCrawler {
     @Test
     public void testGroups() {
         List<AutoScalingGroup> asgList = new LinkedList<AutoScalingGroup>();
+
+        List<com.amazonaws.services.ec2.model.Instance> ec2ModelInstances1 = new ArrayList<com.amazonaws.services.ec2.model.Instance>();
+        com.amazonaws.services.ec2.model.Instance inst1 = new com.amazonaws.services.ec2.model.Instance();
+        inst1.setInstanceId("i-123456789012345670");
+        ec2ModelInstances1.add(inst1);
+
+        List<com.netflix.simianarmy.Instance> instList1 = new ArrayList<com.netflix.simianarmy.Instance>();
+        com.netflix.simianarmy.Instance simianArmyinst1 = new com.netflix.simianarmy.basic.BasicInstance("i-123456789012345670");
+        instList1.add(simianArmyinst1);
+
+        List<com.amazonaws.services.ec2.model.Instance> ec2ModelInstances2 = new ArrayList<com.amazonaws.services.ec2.model.Instance>();
+        com.amazonaws.services.ec2.model.Instance inst2 = new com.amazonaws.services.ec2.model.Instance();
+        inst2.setInstanceId("i-123456789012345671");
+        ec2ModelInstances2.add(inst2);
+
+        List<com.netflix.simianarmy.Instance> instList2 = new ArrayList<com.netflix.simianarmy.Instance>();
+        com.netflix.simianarmy.Instance simianArmyinst2 = new com.netflix.simianarmy.basic.BasicInstance("i-123456789012345671");
+        instList2.add(simianArmyinst2);
+
+
         asgList.add(mkAsg("asg1", "i-123456789012345670"));
         asgList.add(mkAsg("asg2", "i-123456789012345671"));
 
+        String[] instanceIdsArr = {"i-123456789012345670"};
+        String[] instanceIdsArr2 = {"i-123456789012345671"};
+
         when(awsMock.describeAutoScalingGroups((String[]) null)).thenReturn(asgList);
+        when(awsMock.describeInstances(instanceIdsArr)).thenReturn(ec2ModelInstances1);
+        when(awsMock.describeInstances(instanceIdsArr2)).thenReturn(ec2ModelInstances2);
+        when(awsMock.convertToSimianArmyInstance(ec2ModelInstances1)).thenReturn(instList1);
+        when(awsMock.convertToSimianArmyInstance(ec2ModelInstances2)).thenReturn(instList2);
 
         List<InstanceGroup> groups = crawler.groups();
 
         verify(awsMock, times(1)).describeAutoScalingGroups((String[]) null);
+        verify(awsMock, times(1)).describeInstances(instanceIdsArr);
+        verify(awsMock, times(1)).describeInstances(instanceIdsArr2);
 
         Assert.assertEquals(groups.size(), 2);
 
         Assert.assertEquals(groups.get(0).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(0).name(), "asg1");
         Assert.assertEquals(groups.get(0).instances().size(), 1);
-        Assert.assertEquals(groups.get(0).instances().get(0), "i-123456789012345670");
+        Assert.assertEquals(groups.get(0).instances().get(0).getInstanceId(), "i-123456789012345670");
 
         Assert.assertEquals(groups.get(1).type(), ASGChaosCrawler.Types.ASG);
         Assert.assertEquals(groups.get(1).name(), "asg2");
         Assert.assertEquals(groups.get(1).instances().size(), 1);
-        Assert.assertEquals(groups.get(1).instances().get(0), "i-123456789012345671");
+        Assert.assertEquals(groups.get(1).instances().get(0).getInstanceId(), "i-123456789012345671");
     }
     
     @Test
