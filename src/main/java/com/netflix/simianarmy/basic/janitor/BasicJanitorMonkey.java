@@ -30,6 +30,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
@@ -202,23 +203,90 @@ public class BasicJanitorMonkey extends JanitorMonkey {
             }
             StringBuilder message = new StringBuilder();
             for (AbstractJanitor janitor : janitors) {
-                ResourceType resourceType = janitor.getResourceType();
-                appendSummary(message, "markings", resourceType, janitor.getMarkedResources(), janitor.getRegion());
-                appendSummary(message, "unmarkings", resourceType, janitor.getUnmarkedResources(), janitor.getRegion());
-                appendSummary(message, "cleanups", resourceType, janitor.getCleanedResources(), janitor.getRegion());
-                appendSummary(message, "cleanup failures", resourceType, janitor.getFailedToCleanResources(),
-                        janitor.getRegion());
+
+                appendSummary(message, "markings", janitor);
+                appendSummary(message, "unmarkings", janitor);
+                appendSummary(message, "cleanups", janitor);
+                appendSummary(message, "cleanup failures", janitor);
             }
             String subject = getSummaryEmailSubject();
             emailNotifier.sendEmail(summaryEmailTarget, subject, message.toString());
         }
     }
 
-    private void appendSummary(StringBuilder message, String summaryName,
-            ResourceType resourceType, Collection<Resource> resources, String janitorRegion) {
-        message.append(String.format("Total %s for %s = %d in region %s<br/>",
-                summaryName, resourceType.name(), resources.size(), janitorRegion));
-        message.append(String.format("List: %s<br/>", printResources(resources)));
+    private void appendSummary(StringBuilder message, String summaryName, AbstractJanitor janitor) {
+        ResourceType resourceType = janitor.getResourceType();
+        String janitorRegion = janitor.getRegion();
+
+        int count = 0;
+        Collection<Resource> resources = new ArrayList<>();
+        switch(summaryName) {
+            case "markings":
+                count = janitor.getMarkedResourcesCount();
+                resources = janitor.getMarkedResources();
+                break;
+            case "unmarkings":
+                count = janitor.getUnmarkedResourcesCount();
+                resources = janitor.getUnmarkedResources();
+                break;
+            case "cleanups":
+                count = janitor.getResourcesCleanedCount();
+                resources = janitor.getCleanedResources();
+                break;
+            case "cleanup failures":
+                count = janitor.getFailedToCleanResourcesCount();
+                resources = janitor.getFailedToCleanResources();
+                break;
+            default:
+                break;
+        }
+
+        message.append(String.format("<h3>Total %s for %s = %d in region %s</h3><br/>",
+                summaryName, resourceType.name(), count, janitorRegion));
+        message.append("<table>");
+        if (resources.size() > 0) {
+            message.append("<table border=\"1\">\n" +
+                    "  <tr>\n" +
+                    "    <th>Resource</th>\n" +
+                    "    <th>Reason</th>\n" +
+                    "  </tr>");
+            for (Resource resource: resources) {
+                if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.INSTANCE)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#Instances:search=%s;sort=tag:Name\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.EBS_VOLUME)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#Volumes:search=%s;sort=desc:createTime\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.EBS_SNAPSHOT)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#Snapshots:visibility=owned-by-me;search=%s;sort=desc:startTime\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.ASG)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/autoscaling/home?region=%s#AutoScalingGroups:id=%s;view=details;filter=%s\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.LAUNCH_CONFIG)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/autoscaling/home?region=%s#LaunchConfigurations:id=%s;filter=%s\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.S3_BUCKET)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/s3/home?region=%s#&bucket=%s&prefix=\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.SECURITY_GROUP)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#SecurityGroups:search=%s;sort=groupId\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.IMAGE)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#Images:visibility=owned-by-me;search=%s;sort=desc:creationDate\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else if (resourceType.equals(com.netflix.simianarmy.aws.AWSResourceType.ELB)) {
+                    message.append(String.format("<tr><td><a href=\"https://console.aws.amazon.com/ec2/v2/home?region=%s#LoadBalancers:search=%s\">%s</a></td><td>%s</td></tr>", janitorRegion, resource.getId(), resource.getId(), resource.getTerminationReason()));
+
+                } else {
+                    message.append(String.format("<tr><td>%s</td><td>%s</td></tr>", resource.getId(), resource.getTerminationReason()));
+
+                }
+            }
+        } else {
+            message.append(String.format("<td>%s</td><td></td>", printResources(resources)));
+        }
+        message.append("</table>");
     }
 
     private String printResources(Collection<Resource> resources) {
