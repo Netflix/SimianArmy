@@ -98,7 +98,7 @@ public class SuspendedASGRule implements Rule {
                 Date terminationTime = calendar.getBusinessDay(new Date(now.getMillis()), retentionDays);
                 resource.setExpectedTerminationTime(terminationTime);
                 resource.setTerminationReason(String.format(
-                        "User suspended age more than %d days and all instances are out of service in Discovery",
+                        "ASG has been disabled for more than %d days and all instances are out of service in Discovery",
                         suspensionAgeThreshold + retentionDays));
             }
             return false;
