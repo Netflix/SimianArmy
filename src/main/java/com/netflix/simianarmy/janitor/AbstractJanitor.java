@@ -18,37 +18,22 @@
 
 package com.netflix.simianarmy.janitor;
 
+import java.util.*;
 import com.google.common.collect.Maps;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.annotations.MonitorTags;
-import com.netflix.simianarmy.MonkeyCalendar;
-import com.netflix.simianarmy.MonkeyConfiguration;
-import com.netflix.simianarmy.MonkeyRecorder;
-import com.netflix.simianarmy.MonkeyRecorder.Event;
-import com.netflix.simianarmy.Resource;
-import com.netflix.simianarmy.Resource.CleanupState;
-import com.netflix.simianarmy.ResourceType;
-import com.netflix.simianarmy.janitor.JanitorMonkey.EventTypes;
-import com.netflix.simianarmy.janitor.JanitorMonkey.Type;
-
-import org.apache.commons.lang.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
-
 import com.netflix.servo.monitor.Monitors;
 import com.netflix.servo.tag.BasicTagList;
 import com.netflix.servo.tag.TagList;
+import com.netflix.simianarmy.*;
+import com.netflix.simianarmy.MonkeyRecorder.Event;
+import com.netflix.simianarmy.Resource.CleanupState;
+import com.netflix.simianarmy.janitor.JanitorMonkey.EventTypes;
+import com.netflix.simianarmy.janitor.JanitorMonkey.Type;
+import org.apache.commons.lang.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract implementation of Janitor. It marks resources that the rule engine considers
@@ -265,8 +250,7 @@ public abstract class AbstractJanitor implements Janitor {
                 if (!leashed) {
                     resourceTracker.addOrUpdate(resource);
                     if (recorder != null) {
-                        Event evt = recorder.newEvent(Type.JANITOR, EventTypes.MARK_RESOURCE, region, resource.getId());
-                        addFieldsAndTagsToEvent(resource, evt);
+                        Event evt = recorder.newEvent(Type.JANITOR, EventTypes.MARK_RESOURCE, resource, resource.getId());
                         recorder.recordEvent(evt);
                     }
                     postMark(resource);
@@ -285,8 +269,7 @@ public abstract class AbstractJanitor implements Janitor {
                     resourceTracker.addOrUpdate(resource);
                     if (recorder != null) {
                         Event evt = recorder.newEvent(
-                                Type.JANITOR, EventTypes.UNMARK_RESOURCE, region, resource.getId());
-                        addFieldsAndTagsToEvent(resource, evt);
+                                Type.JANITOR, EventTypes.UNMARK_RESOURCE, resource, resource.getId());
                         recorder.recordEvent(evt);
                     }
                 } else {
@@ -338,9 +321,8 @@ public abstract class AbstractJanitor implements Janitor {
                         markedResource.setState(Resource.CleanupState.JANITOR_TERMINATED);
                         resourceTracker.addOrUpdate(markedResource);
                         if (recorder != null) {
-                            Event evt = recorder.newEvent(Type.JANITOR, EventTypes.CLEANUP_RESOURCE, region,
+                            Event evt = recorder.newEvent(Type.JANITOR, EventTypes.CLEANUP_RESOURCE, markedResource,
                                     markedResource.getId());
-                            addFieldsAndTagsToEvent(markedResource, evt);
                             recorder.recordEvent(evt);
                         }
                     } catch (Exception e) {
@@ -360,23 +342,7 @@ public abstract class AbstractJanitor implements Janitor {
         }
     }
 
-	/**
-	 * Adds selected resource fields and all the tags from the given resource as additional fields on the event.
-	 * @param resource the resource with the the source data
-	 * @param event    the event that will hold the source data as additional fields
-     */
-    private void addFieldsAndTagsToEvent(Resource resource, Event event) {
-    	if (resource == null) return;
-    	if (resource.getAllTagKeys() != null) {
-	    	for(String key : resource.getAllTagKeys()) {
-	    		event.addField(key, resource.getTag(key));
-	    	}
-    	}
-    	event.addField("ResourceDescription", resource.getDescription());
-    	event.addField("ResourceType", resource.getResourceType().toString());
-	}
-
-	/** Determines if the input resource can be cleaned. The Janitor calls this method
+    /** Determines if the input resource can be cleaned. The Janitor calls this method
      * before cleaning up a resource and only cleans the resource when the method returns
      * true. A resource is considered to be OK to clean if
      * 1) it is marked as cleanup candidates

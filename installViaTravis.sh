@@ -3,7 +3,7 @@
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo -e "Assemble Pull Request #$TRAVIS_PULL_REQUEST => Branch [$TRAVIS_BRANCH]"
-  ./gradlew assemble --stacktrace
+  ./gradlew clean assemble --stacktrace
 elif [ "$TRAVIS_PULL_REQUEST" == "false" ] && [ "$TRAVIS_TAG" == "" ]; then
   echo -e 'Assemble Branch with Snapshot => Branch ['$TRAVIS_BRANCH']'
   ./gradlew -Prelease.travisci=true assemble 

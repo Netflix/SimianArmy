@@ -17,6 +17,9 @@
  */
 package com.netflix.simianarmy.basic.janitor;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import com.netflix.servo.annotations.DataSourceType;
 import com.netflix.servo.annotations.Monitor;
 import com.netflix.servo.monitor.Monitors;
@@ -29,10 +32,6 @@ import com.netflix.simianarmy.janitor.JanitorResourceTracker;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 /** The basic implementation of Janitor Monkey. */
 public class BasicJanitorMonkey extends JanitorMonkey {
@@ -182,7 +181,7 @@ public class BasicJanitorMonkey extends JanitorMonkey {
         EventTypes eventType = optIn ? EventTypes.OPT_IN_RESOURCE : EventTypes.OPT_OUT_RESOURCE;
         long timestamp = calendar.now().getTimeInMillis();
         // The same resource can have multiple events, so we add the timestamp to the id.
-        Event evt = recorder.newEvent(Type.JANITOR, eventType, resourceRegion, resourceId + "@" + timestamp);
+        Event evt = recorder.newEvent(Type.JANITOR, eventType, resource, resourceId + "@" + timestamp);
         recorder.recordEvent(evt);
         resource.setOptOutOfJanitor(!optIn);
         resourceTracker.addOrUpdate(resource);

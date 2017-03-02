@@ -110,6 +110,19 @@ public interface MonkeyRecorder {
      */
     Event newEvent(MonkeyType monkeyType, EventType eventType, String region, String id);
 
+    default Event newEvent(MonkeyType monkeyType, EventType eventType, Resource resource, String id) {
+        if (resource == null) throw new IllegalArgumentException("resource must not be null");
+        Event event = newEvent(monkeyType, eventType, resource.getRegion(), id);
+        if (resource.getAllTagKeys() != null) {
+            for(String key : resource.getAllTagKeys()) {
+                event.addField(key, resource.getTag(key));
+            }
+        }
+        event.addField("ResourceDescription", resource.getDescription());
+        event.addField("ResourceType", resource.getResourceType().toString());
+        return event;
+    }
+
     /**
      * Record event.
      *
