@@ -120,6 +120,7 @@ public interface MonkeyRecorder {
         }
         event.addField("ResourceDescription", resource.getDescription());
         event.addField("ResourceType", resource.getResourceType().toString());
+        event.addField("ResourceId", resource.getId());
         return event;
     }
 
