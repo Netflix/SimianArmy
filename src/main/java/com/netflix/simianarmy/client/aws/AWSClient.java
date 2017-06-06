@@ -856,15 +856,19 @@ public class AWSClient implements CloudClient {
 
     /** {@inheritDoc} */
     @Override
-    public synchronized ComputeService getJcloudsComputeService() {
+    public ComputeService getJcloudsComputeService() {
         if (jcloudsComputeService == null) {
-            String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
-            String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
-            ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("aws-ec2").credentials(username, password)
-                    .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
-                    .buildView(ComputeServiceContext.class);
+            synchronized(this) {
+                if (jcloudsComputeService == null) {
+                    String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
+                    String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
+                    ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("aws-ec2").credentials(username, password)
+                            .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
+                            .buildView(ComputeServiceContext.class);
 
-            this.jcloudsComputeService = jcloudsContext.getComputeService();
+                    this.jcloudsComputeService = jcloudsContext.getComputeService();
+                }
+            }
         }
 
         return jcloudsComputeService;
