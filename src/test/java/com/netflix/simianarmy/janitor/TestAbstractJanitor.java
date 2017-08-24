@@ -69,6 +69,22 @@ public class TestAbstractJanitor extends AbstractJanitor {
     }
 
     @Override
+    public void cleanupDryRun(Resource resource) throws DryRunnableJanitorException {
+        // simulates a dryRun
+        try {
+            if (!idToResource.containsKey(resource.getId())) {
+                throw new RuntimeException();
+            }
+
+            if (resource.getId().equals("11")) {
+                throw new RuntimeException("Magic number of id.");
+            }
+        } catch (Exception e) {
+            throw new DryRunnableJanitorException("Exception during dry run", e);
+        }
+    }
+
+    @Override
     protected void postCleanup(Resource resource) {
         cleanedResourceIds.add(resource.getId());
     }
@@ -122,7 +138,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         Assert.assertEquals(janitor.cleanedResourceIds.size(), n / 2);
         for (int i = 1; i <= n; i += 2) {
             Assert.assertTrue(janitor.cleanedResourceIds.contains(String.valueOf(i)));
-        }        
+        }
         Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
@@ -184,8 +200,8 @@ public class TestAbstractJanitor extends AbstractJanitor {
         Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
         Assert.assertEquals(resourceTracker.getResources(
                 TestResourceType.TEST_RESOURCE_TYPE, CleanupState.JANITOR_TERMINATED, TEST_REGION).size(),
-                2);        
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
+                2);
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
         Assert.assertEquals(janitor.getUnmarkedResourcesCount(), 3);
@@ -214,10 +230,36 @@ public class TestAbstractJanitor extends AbstractJanitor {
 
         janitor.cleanupResources();
         Assert.assertEquals(janitor.getCleanedResources().size(), n / 2 - 1);
-        Assert.assertEquals(janitor.getFailedToCleanResources().size(), 1);        
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());                
+        Assert.assertEquals(janitor.getFailedToCleanResources().size(), 1);
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
-        Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 1);        
+        Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 1);
+    }
+
+    private static TestAbstractJanitor getJanitor(int numberOfCrawledResources, boolean leashed) {
+        TestJanitorCrawler crawler = new TestJanitorCrawler(generateTestingResources(numberOfCrawledResources));
+        JanitorRuleEngine rulesEngine = new BasicJanitorRuleEngine().addRule(new IsEvenRule());
+        JanitorResourceTracker resourceTracker = new TestJanitorResourceTracker(new HashMap<>());
+        TestJanitorContext janitorContext = new TestJanitorContext(TEST_REGION, rulesEngine, crawler, resourceTracker, new TestMonkeyCalendar());
+        TestAbstractJanitor janitor = new TestAbstractJanitor(janitorContext, TestResourceType.TEST_RESOURCE_TYPE);
+        janitor.setLeashed(leashed);
+        return janitor;
+    }
+
+    @Test
+    public static void testCleanupDryRunOnWithJanitorOnLeashWithAFailure() {
+        int n = 20;
+        TestAbstractJanitor janitor = getJanitor(n, true);
+        janitor.markResources();
+        Assert.assertEquals(janitor.getMarkedResources().size(), n / 2);
+
+        janitor.cleanupResources();
+
+        Assert.assertEquals(janitor.getCleanedResources().size(), 0);
+        Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), 0);
+        Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
+        Assert.assertEquals(janitor.getCleanupDryRunFailureCount().getValue().intValue(), 1);
     }
 
     @Test
@@ -266,7 +308,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         janitor.cleanupResources();
         Assert.assertEquals(janitor.getCleanedResources().size(), n / 2);
         Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
         Assert.assertEquals(janitor.getUnmarkedResourcesCount(), n/6);
@@ -309,7 +351,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         janitor.cleanupResources();
         Assert.assertEquals(janitor.getCleanedResources().size(), 0);
         Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
     }
@@ -348,7 +390,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         janitor.cleanupResources();
         Assert.assertEquals(janitor.getCleanedResources().size(), 0);
         Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
     }
@@ -375,13 +417,8 @@ public class TestAbstractJanitor extends AbstractJanitor {
                 n);
         janitor.markResources();
         Assert.assertEquals(janitor.getMarkedResources().size(), n / 2);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());        
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), n / 2);
-
-        // No resource is really changed in tracker
-        Assert.assertEquals(resourceTracker.getResources(
-                TestResourceType.TEST_RESOURCE_TYPE, CleanupState.MARKED, TEST_REGION).size(),
-                0);
     }
 
 
@@ -422,8 +459,8 @@ public class TestAbstractJanitor extends AbstractJanitor {
                 TestResourceType.TEST_RESOURCE_TYPE, CleanupState.JANITOR_TERMINATED, TEST_REGION).size(),
                 n);
         Assert.assertEquals(janitor.cleanedResourceIds.size(), n);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());                
-        Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());        
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
+        Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
     }
 
@@ -471,7 +508,7 @@ public class TestAbstractJanitor extends AbstractJanitor {
         janitor.cleanupResources();
         Assert.assertEquals(janitor.getCleanedResources().size(), n / 2 - n / 3 + n / 6);
         Assert.assertEquals(janitor.getFailedToCleanResources().size(), 0);
-        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());                
+        Assert.assertEquals(janitor.getResourcesCleanedCount(), janitor.cleanedResourceIds.size());
         Assert.assertEquals(janitor.getMarkedResourcesCount(), janitor.markedResourceIds.size());
         Assert.assertEquals(janitor.getFailedToCleanResourcesCount(), 0);
         Assert.assertEquals(janitor.getUnmarkedResourcesCount(), n / 3);
