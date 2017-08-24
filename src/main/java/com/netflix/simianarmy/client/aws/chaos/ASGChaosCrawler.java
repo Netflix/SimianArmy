@@ -17,16 +17,17 @@
  */
 package com.netflix.simianarmy.client.aws.chaos;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 
 import com.amazonaws.services.autoscaling.model.AutoScalingGroup;
-import com.amazonaws.services.autoscaling.model.Instance;
 import com.amazonaws.services.autoscaling.model.TagDescription;
+
 import com.netflix.simianarmy.GroupType;
-import com.netflix.simianarmy.basic.chaos.BasicChaosMonkey;
 import com.netflix.simianarmy.basic.chaos.BasicInstanceGroup;
+import com.netflix.simianarmy.Instance;
 import com.netflix.simianarmy.chaos.ChaosCrawler;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.tunable.TunableInstanceGroup;
@@ -85,13 +86,18 @@ public class ASGChaosCrawler implements ChaosCrawler {
         List<InstanceGroup> list = new LinkedList<InstanceGroup>();
         
         for (AutoScalingGroup asg : awsClient.describeAutoScalingGroups(names)) {
-          
             InstanceGroup ig = getInstanceGroup(asg, findAggressionCoefficient(asg));
-           
-            for (Instance inst : asg.getInstances()) {
-                ig.addInstance(inst.getInstanceId());
+
+            List<String> instanceIds = new ArrayList<String>();
+            for (com.amazonaws.services.autoscaling.model.Instance inst : asg.getInstances()) {
+                instanceIds.add(inst.getInstanceId());
             }
-            
+            String[] instanceIdsArr = new String[instanceIds.size()];
+            instanceIdsArr = instanceIds.toArray(instanceIdsArr);
+            List<com.amazonaws.services.ec2.model.Instance> ec2InstList = awsClient.describeInstances(instanceIdsArr);
+            List<Instance> instList = awsClient.convertToSimianArmyInstance(ec2InstList);
+            ig.addInstanceList(instList);
+
             list.add(ig);
         }
         return list;

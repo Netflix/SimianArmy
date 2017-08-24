@@ -22,6 +22,7 @@ import java.util.List;
 
 import com.amazonaws.services.autoscaling.model.TagDescription;
 import com.netflix.simianarmy.GroupType;
+import com.netflix.simianarmy.Instance;
 
 /**
  * The Interface ChaosCrawler.
@@ -66,15 +67,22 @@ public interface ChaosCrawler {
          *
          * @return the list of instances
          */
-        List<String> instances();
+        List<Instance> instances();
+
+        /**
+         * Instances Ids as Strings.
+         *
+         * @return the list list of instances as strings
+         */
+        List<String> instanceIds();
 
         /**
          * Adds the instance.
          *
          * @param instance
-         *            the instance
+         *
          */
-        void addInstance(String instance);
+        void addInstance(Instance instance);
 
         /**
          * Copies the Instance group replacing its name with
@@ -85,6 +93,15 @@ public interface ChaosCrawler {
          * @return the new instance group
          */
         InstanceGroup copyAs(String name);
+
+        /**
+         * Adds the list of instances
+         * the supplied name.
+         *
+         * @param instanceIds
+         *
+         */
+        void addInstanceList(List<Instance> instanceIds);
     }
 
     /**

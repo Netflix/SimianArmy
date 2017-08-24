@@ -19,6 +19,7 @@
 package com.netflix.simianarmy.chaos;
 
 import com.amazonaws.services.autoscaling.model.TagDescription;
+import com.netflix.simianarmy.Instance;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -27,6 +28,7 @@ import com.netflix.simianarmy.GroupType;
 import com.netflix.simianarmy.MonkeyConfiguration;
 import com.netflix.simianarmy.TestMonkeyContext;
 import com.netflix.simianarmy.basic.BasicConfiguration;
+import com.netflix.simianarmy.basic.BasicInstance;
 import com.netflix.simianarmy.basic.chaos.BasicChaosInstanceSelector;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import org.jclouds.compute.ComputeService;
@@ -79,7 +81,7 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         private final GroupType type;
         private final String name;
         private final String region;
-        private final List<String> instances = new ArrayList<String>();
+        private final List<Instance> instances = new ArrayList<Instance>();
         private final List<TagDescription> tags = new ArrayList<TagDescription>();
 
         public TestInstanceGroup(GroupType type, String name, String region, String... instances) {
@@ -87,7 +89,8 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
             this.name = name;
             this.region = region;
             for (String i : instances) {
-                this.instances.add(i);
+                Instance inst = new BasicInstance(i);
+                this.instances.add(inst);
             }
         }
 
@@ -112,21 +115,43 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         }
 
         @Override
-        public List<String> instances() {
+        public List<String> instanceIds() {
+            List<String> instanceIds = new ArrayList<String>();
+            for (Instance instance : instances) {
+                instanceIds.add(instance.getInstanceId());
+            }
+            return Collections.unmodifiableList(instanceIds);
+        }
+
+        @Override
+        public List<Instance> instances() {
             return Collections.unmodifiableList(instances);
         }
 
         @Override
-        public void addInstance(String ignored) {
+        public void addInstance(Instance ignored) {
         }
 
-        public void deleteInstance(String id) {
-            instances.remove(id);
+        public void deleteInstance(String instanceId) {
+            //this.instances.remove(id);
+            Iterator<Instance> itr = this.instances.iterator();
+            while(itr.hasNext()) {
+                Instance i = itr.next();
+                if (instanceId == i.getInstanceId())
+                    itr.remove();
+            }
         }
 
         @Override
         public InstanceGroup copyAs(String newName) {
-            return new TestInstanceGroup(this.type, newName, this.region, instances().toString());
+            String[] instanceIdsArr = new String[this.instanceIds().size()];
+            instanceIdsArr = this.instanceIds().toArray(instanceIdsArr);
+            return new TestInstanceGroup(this.type, newName, this.region, instanceIdsArr);
+        }
+
+        @Override
+        public void addInstanceList(List<Instance> instList) {
+            instances.addAll(instList);
         }
     }
 
@@ -382,6 +407,11 @@ public class TestChaosMonkeyContext extends TestMonkeyContext implements ChaosMo
         @Override
         public ExecChannel execChannel(String command) {
             throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean isConnected() {
+            return true;
         }
 
         @Override

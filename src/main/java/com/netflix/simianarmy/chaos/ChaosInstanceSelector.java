@@ -17,9 +17,12 @@
  */
 package com.netflix.simianarmy.chaos;
 
+import com.netflix.simianarmy.NoInstanceWithTagsFoundException;
+import com.netflix.simianarmy.Tag;
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * The Interface ChaosInstanceSelector.
@@ -52,4 +55,6 @@ public interface ChaosInstanceSelector {
      * @return the instance
      */
     Collection<String> select(InstanceGroup group, double probability);
+
+    Collection<String> selectOneByTags(InstanceGroup group, List<Tag> ec2TagsSent) throws NoInstanceWithTagsFoundException;
 }

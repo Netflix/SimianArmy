@@ -26,6 +26,15 @@ apply plugin: 'jetty'
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+configurations.all {
+    resolutionStrategy.eachDependency() {
+        DependencyResolveDetails details ->
+            if (details.requested.group == 'com.google.inject.extensions') {
+                details.useVersion '4.0'
+            }
+    }
+}
+
 dependencies {
     // for the VMWareClient
     compile 'com.cloudbees.thirdparty:vijava:5.0.0'
@@ -43,10 +52,10 @@ dependencies {
     compile 'com.google.guava:guava:11.0.2'
     compile 'org.apache.httpcomponents:httpclient:4.3'
     compile 'com.google.auto.service:auto-service:1.0-rc2'
-    compile 'org.apache.jclouds.driver:jclouds-jsch:1.9.0'
-    compile 'org.apache.jclouds.driver:jclouds-slf4j:1.9.0'
-    compile 'org.apache.jclouds.api:ec2:1.9.0'
-    compile 'org.apache.jclouds.provider:aws-ec2:1.9.0'
+    compile 'org.apache.jclouds.driver:jclouds-jsch:2.0.0'
+    compile 'org.apache.jclouds.driver:jclouds-slf4j:2.0.0'
+    compile 'org.apache.jclouds.api:ec2:2.0.0'
+    compile 'org.apache.jclouds.provider:aws-ec2:2.0.0'
     compile 'com.netflix.servo:servo-core:0.12.11'
     compile 'org.springframework:spring-jdbc:4.2.5.RELEASE'
     compile 'com.zaxxer:HikariCP:2.4.7'

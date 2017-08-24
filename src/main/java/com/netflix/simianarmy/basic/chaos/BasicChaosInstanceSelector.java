@@ -17,19 +17,18 @@
  */
 package com.netflix.simianarmy.basic.chaos;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import com.google.common.collect.Lists;
+import com.netflix.simianarmy.Instance;
 import org.apache.commons.lang.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.netflix.simianarmy.chaos.ChaosCrawler.InstanceGroup;
 import com.netflix.simianarmy.chaos.ChaosInstanceSelector;
-
+import com.netflix.simianarmy.Tag;
+import com.netflix.simianarmy.NoInstanceWithTagsFoundException;
 /**
  * The Class BasicChaosInstanceSelector.
  */
@@ -54,9 +53,31 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
     public Collection<String> select(InstanceGroup group, double probability) {
         int n = ((int) probability);
         String selected = selectOneInstance(group, probability - n);
-        Collection<String> result = selectNInstances(group.instances(), n, selected);
+        Collection<String> result = selectNInstances(group.instanceIds(), n, selected);
         if (selected != null) {
             result.add(selected);
+        }
+        return result;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public Collection<String> selectOneByTags(InstanceGroup group, List<Tag> ec2TagsSent)  throws NoInstanceWithTagsFoundException {
+        List<String> matchInstances = new ArrayList<String>();
+        Set<Tag> ec2TagsSentSet = new HashSet<Tag>(ec2TagsSent);
+
+        for (Instance inst : group.instances()) {
+            Set<Tag> ec2TagsInstSet = new HashSet<Tag>(inst.getTags());
+            if (ec2TagsInstSet.containsAll(ec2TagsSentSet))
+                matchInstances.add(inst.getInstanceId());
+        }
+        Collection<String> result = null;
+        if (matchInstances.size() > 0){
+             result = selectNInstances(matchInstances, 1, null);
+        }
+        if (result == null) {
+            logger().info("No instances with those sent Tags were found");
+            throw new NoInstanceWithTagsFoundException(ec2TagsSent);
         }
         return result;
     }
@@ -90,6 +111,6 @@ public class BasicChaosInstanceSelector implements ChaosInstanceSelector {
                     new Object[] {group.name(), group.type(), rand, probability});
             return null;
         }
-        return group.instances().get(RANDOM.nextInt(group.instances().size()));
+        return group.instanceIds().get(RANDOM.nextInt(group.instanceIds().size()));
     }
 }
