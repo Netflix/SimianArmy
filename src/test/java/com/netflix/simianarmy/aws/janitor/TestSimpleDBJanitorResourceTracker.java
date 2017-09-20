@@ -45,6 +45,8 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.regions.Region;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.aws.AWSResource;
 import com.netflix.simianarmy.aws.AWSResourceType;
@@ -56,11 +58,12 @@ public class TestSimpleDBJanitorResourceTracker extends SimpleDBJanitorResourceT
         AmazonSimpleDB sdbMock = mock(AmazonSimpleDB.class);
         AWSClient awsClient = mock(AWSClient.class);
         when(awsClient.sdbClient()).thenReturn(sdbMock);
+        when(awsClient.region()).thenReturn("us-east-1");
         return awsClient;
     }
 
     public TestSimpleDBJanitorResourceTracker() {
-        super(makeMockAWSClient(), "DOMAIN");
+        super(makeMockAWSClient(), Region.getRegion(Regions.fromName("us-east-1")), "DOMAIN");
         sdbMock = super.getSimpleDBClient();
     }
 

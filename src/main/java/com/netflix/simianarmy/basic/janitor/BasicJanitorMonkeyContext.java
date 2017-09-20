@@ -95,6 +95,10 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         monkeyRegion = region();
         monkeyCalendar = calendar();
 
+        String resourceRegion = configuration().getStr("simianarmy.janitor.resources.sdb.region");
+        if (resourceRegion == null) {
+            resourceRegion = awsClient().region();
+        }
         String resourceDomain = configuration().getStrOrElse("simianarmy.janitor.resources.sdb.domain", "SIMIAN_ARMY");
 
         Set<String> enabledResourceSet = getEnabledResourceSet();
@@ -105,8 +109,9 @@ public class BasicJanitorMonkeyContext extends BasicSimianArmyContext implements
         String dbUrl = configuration().getStr("simianarmy.recorder.db.url");
         String dbTable = configuration().getStr("simianarmy.janitor.resources.db.table");
         
-        if (dbDriver == null) {       
-        	janitorResourceTracker = new SimpleDBJanitorResourceTracker(awsClient(), resourceDomain);
+        if (dbDriver == null) {
+            Region awsRegion = Region.getRegion(Regions.fromName(resourceRegion));
+        	janitorResourceTracker = new SimpleDBJanitorResourceTracker(awsClient(), awsRegion, resourceDomain);
         } else {
         	RDSJanitorResourceTracker rdsTracker = new RDSJanitorResourceTracker(dbDriver, dbUser, dbPass, dbUrl, dbTable);
         	rdsTracker.init();

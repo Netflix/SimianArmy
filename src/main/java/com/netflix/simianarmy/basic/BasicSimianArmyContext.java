@@ -226,8 +226,18 @@ public class BasicSimianArmyContext implements Monkey.Context {
             setRecorder(rdsRecorder);        	
         } else if (recorderClass == null || recorderClass.equals(SimpleDBRecorder.class)) {
             String domain = config.getStrOrElse("simianarmy.recorder.sdb.domain", "SIMIAN_ARMY");
+            String region = config.getStr("simianarmy.recorder.sdb.region");
+            if (region == null) {
+                region = "us-east-1";
+                Region currentRegion = Regions.getCurrentRegion();
+
+                if (currentRegion != null) {
+                    region = currentRegion.getName();
+                }
+            }
+            Region awsRegion = Region.getRegion(Regions.fromName(region));
             if (client != null) {
-                SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, domain);
+                SimpleDBRecorder simpleDbRecorder = new SimpleDBRecorder(client, awsRegion, domain);
                 simpleDbRecorder.init();
                 setRecorder(simpleDbRecorder);
             }

@@ -101,6 +101,10 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
 
         LOGGER.info(String.format("Conformity Monkey is running in: %s", regions));
 
+        String sdbRegion = configuration().getStr("simianarmy.conformity.sdb.region");
+        if (sdbRegion == null) {
+            sdbRegion = awsClient().region();
+        }
         String sdbDomain = configuration().getStrOrElse("simianarmy.conformity.sdb.domain", "SIMIAN_ARMY");
 
         String dbDriver = configuration().getStr("simianarmy.recorder.db.driver");
@@ -109,8 +113,9 @@ public class BasicConformityMonkeyContext extends BasicSimianArmyContext impleme
         String dbUrl = configuration().getStr("simianarmy.recorder.db.url");
         String dbTable = configuration().getStr("simianarmy.conformity.resources.db.table");
         
-        if (dbDriver == null) {       
-        	clusterTracker = new SimpleDBConformityClusterTracker(awsClient(), sdbDomain);
+        if (dbDriver == null) {
+            Region awsRegion = Region.getRegion(Regions.fromName(sdbRegion));
+        	clusterTracker = new SimpleDBConformityClusterTracker(awsClient(), awsRegion, sdbDomain);
         } else {
         	RDSConformityClusterTracker rdsClusterTracker = new RDSConformityClusterTracker(dbDriver, dbUser, dbPass, dbUrl, dbTable);
         	rdsClusterTracker.init();
