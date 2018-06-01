@@ -519,4 +519,25 @@ public class AWSResource implements Resource {
         return tags.keySet();
     }
 
+    @Override
+    public String toString() {
+        return "AWSResource{" +
+                "id='" + id + '\'' +
+                ", resourceType=" + resourceType +
+                ", region='" + region + '\'' +
+                ", ownerEmail='" + ownerEmail + '\'' +
+                ", description='" + description + '\'' +
+                ", terminationReason='" + terminationReason + '\'' +
+                ", state=" + state +
+                ", expectedTerminationTime=" + expectedTerminationTime +
+                ", actualTerminationTime=" + actualTerminationTime +
+                ", notificationTime=" + notificationTime +
+                ", launchTime=" + launchTime +
+                ", markTime=" + markTime +
+                ", optOutOfJanitor=" + optOutOfJanitor +
+                ", awsResourceState='" + awsResourceState + '\'' +
+                ", additionalFields=" + additionalFields +
+                ", tags=" + tags +
+                '}';
+    }
 }

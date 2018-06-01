@@ -86,6 +86,8 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
 
     private final Collection<Resource> failedToCleanResources = new ArrayList<Resource>();
 
+    private final Collection<Resource> skippedVanishedOrValidResources = new ArrayList<>();
+
     private final MonkeyCalendar calendar;
 
     private final MonkeyConfiguration config;
@@ -300,12 +302,34 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
     public void cleanupResources() {
         cleanedResources.clear();
         failedToCleanResources.clear();
+        skippedVanishedOrValidResources.clear();
         Map<String, Resource> trackedMarkedResources = getTrackedMarkedResources();
+        List<Resource> crawledResources = crawler.resources(resourceType);
+
         LOGGER.info("Checking {} marked resources for cleanup. LeashMode={}", trackedMarkedResources.size(), leashed);
 
         Date now = calendar.now().getTime();
         for (Resource markedResource : trackedMarkedResources.values()) {
-            if (canClean(markedResource, now)) {
+            // find matching crawled resource. This ensures we always have the freshest resource.
+            Optional<Resource> crawledResource = crawledResources.stream()
+                    .filter(r -> r.getId().equals(markedResource.getId()) && r.getRegion().equals(markedResource.getRegion()))
+                    .findFirst();
+            if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
+                LOGGER.info("Un-marking Resource. Either no longer exists or is no longer invalid {}", crawledResource);
+                markedResource.setState(CleanupState.UNMARKED);
+                markedResource.setTerminationReason(null);
+                markedResource.setExpectedTerminationTime(null);
+                try {
+                    resourceTracker.addOrUpdate(markedResource);
+                    Optional.ofNullable(recorder).ifPresent(rec -> rec.recordEvent(
+                        rec.newEvent(Type.JANITOR, EventTypes.UNMARK_RESOURCE, markedResource, markedResource.getId())
+                    ));
+
+                    skippedVanishedOrValidResources.add(markedResource);
+                } catch (Exception e) {
+                    LOGGER.error("Error while attempting to unmark resource {}", markedResource, e);
+                }
+            } else if (canClean(markedResource, now)) {
                 LOGGER.info("Cleaning up resource {} of type {}. LeashMode={}",
                         markedResource.getId(), markedResource.getResourceType().name(), leashed);
                 try {
@@ -444,6 +468,11 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
     @Monitor(name="checkedResourcesCount", type=DataSourceType.GAUGE)
     public int getCheckedResourcesCount() {
       return checkedResourcesCount;
+    }
+
+    @Monitor(name="skippedVanishedOrValidResources", type = DataSourceType.GAUGE)
+    public int skippedVanishedOrValidResources() {
+        return skippedVanishedOrValidResources.size();
     }
 
     public Counter getCleanupDryRunFailureCount() {
