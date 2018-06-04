@@ -18,10 +18,7 @@
 
 package com.netflix.simianarmy.aws;
 
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.Validate;
 import org.joda.time.format.DateTimeFormat;
@@ -539,5 +536,22 @@ public class AWSResource implements Resource {
                 ", additionalFields=" + additionalFields +
                 ", tags=" + tags +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        // consider two resources to be equivalent if id, resourceType and region match
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        AWSResource that = (AWSResource) o;
+        return Objects.equals(id, that.id) &&
+                Objects.equals(resourceType, that.resourceType) &&
+                Objects.equals(region, that.region);
+    }
+
+    @Override
+    public int hashCode() {
+        // consider two resources to be equivalent if id, resourceType and region match
+        return Objects.hash(id, resourceType, region);
     }
 }
