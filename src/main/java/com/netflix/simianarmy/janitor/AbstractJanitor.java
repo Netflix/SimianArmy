@@ -312,13 +312,14 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
             List<Resource> matchingCrawledResources = Optional.ofNullable(crawler.resources(markedResource.getId()))
                     .orElse(Collections.emptyList());
 
+            LOGGER.info("Rechecking resource ({}) before deletion {} - matching candidates {}",
+                    markedResource.getResourceType(), markedResource, matchingCrawledResources);
             Optional<Resource> crawledResource = matchingCrawledResources.stream()
                     .filter(r -> r.equals(markedResource))
                     .findFirst();
 
             if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
-                LOGGER.info("Un-marking Resource. Either no longer exists or is no longer invalid {} for {}",
-                        crawledResource, crawledResource);
+                LOGGER.info("Un-marking Resource. Either no longer exists or is no longer invalid {}", markedResource);
                 if (!leashed) {
                     markedResource.setState(CleanupState.UNMARKED);
                     markedResource.setTerminationReason(null);
