@@ -319,9 +319,14 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
                     .findFirst();
 
             if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
-                LOGGER.info("Skipping resource {} that either no longer exists or is now valid", markedResource);
                 skippedVanishedOrValidResources.add(markedResource);
-            } else if (canClean(markedResource, now)) {
+                if (config.getBoolOrElse("simianarmy.janitor.skipVanishedOrValidResources", false)) {
+                    LOGGER.warn("Skipping resource {} that either no longer exists or is now valid", markedResource);
+                    continue;
+                }
+            }
+
+            if (canClean(markedResource, now)) {
                 LOGGER.info("Cleaning up resource {} of type {}. LeashMode={}",
                         markedResource.getId(), markedResource.getResourceType().name(), leashed);
                 try {
