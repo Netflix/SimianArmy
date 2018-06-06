@@ -319,31 +319,9 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
                     .findFirst();
 
             if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
-                LOGGER.info("Un-marking Resource. Either no longer exists or is no longer invalid {}", markedResource);
-                if (!leashed) {
-                    markedResource.setState(CleanupState.UNMARKED);
-                    markedResource.setTerminationReason(null);
-                    markedResource.setExpectedTerminationTime(null);
-                    try {
-                        resourceTracker.addOrUpdate(markedResource);
-                        Optional.ofNullable(recorder).ifPresent(rec -> rec.recordEvent(
-                            rec.newEvent(
-                                Type.JANITOR,
-                                EventTypes.UNMARK_RESOURCE,
-                                markedResource,
-                                markedResource.getId()
-                            )
-                        ));
-
-                        skippedVanishedOrValidResources.add(markedResource);
-                    } catch (Exception e) {
-                        LOGGER.error("Error while attempting to unmark resource {}", markedResource, e);
-                    }
-                }
-                continue;
-            }
-
-           if (canClean(markedResource, now)) {
+                LOGGER.info("Skipping resource {} that either no longer exists or is now valid", markedResource);
+                skippedVanishedOrValidResources.add(markedResource);
+            } else if (canClean(markedResource, now)) {
                 LOGGER.info("Cleaning up resource {} of type {}. LeashMode={}",
                         markedResource.getId(), markedResource.getResourceType().name(), leashed);
                 try {
