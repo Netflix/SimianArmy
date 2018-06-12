@@ -162,7 +162,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     private JsonNode getImagesInJson(String region, String... imageIds) {
         String url = eddaClient.getBaseUrl(region) + "/aws/images";
         if (imageIds != null && imageIds.length != 0) {
-            url += StringUtils.join(imageIds, ',');
+            url += "/" + StringUtils.join(imageIds, ',');
             LOGGER.info(String.format("Getting unreferenced AMIs in region %s for %d ids", region, imageIds.length));
         } else {
             LOGGER.info(String.format("Getting all unreferenced AMIs in region %s", region));
