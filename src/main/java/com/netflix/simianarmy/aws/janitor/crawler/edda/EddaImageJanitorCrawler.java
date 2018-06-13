@@ -246,40 +246,6 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     private List<Resource> getAMIResourcesInRegion(String region,
                                                    Collection<String> excludedImageIds,
                                                    String... imageIds) {
-        LOGGER.info("Searching images with id(s) {} in {}", imageIds, region);
-        if (imageIds == null || imageIds.length == 0) {
-            return doGetAmisByRegion(
-                region,
-                excludedImageIds,
-                imageIds
-            );
-        }
-
-        List<String> ids = Arrays.asList(imageIds);
-        List<Resource> result = new ArrayList<>();
-        // partitions of 25 to avoid exceeding URI max length on edda endpoints
-        for (List<String> partition : Lists.partition(ids, 25)) {
-            try {
-                List<Resource> resources = doGetAmisByRegion(
-                    region,
-                    excludedImageIds,
-                    Iterables.toArray(
-                        partition,
-                        String.class
-                    )
-                );
-
-                LOGGER.info("Fetched {} images with ids {}", resources.size(), partition);
-                result.addAll(resources);
-            } catch (Exception e) {
-                LOGGER.error("Failure while looking up image ids {} in {}", partition, region, e);
-            }
-        }
-
-        return result;
-    }
-
-    private List<Resource> doGetAmisByRegion(String region, Collection<String> excludedImageIds, String... imageIds) {
         JsonNode jsonNode = getImagesInJson(region, imageIds);
         List<Resource> resources = Lists.newArrayList();
         for (Iterator<JsonNode> it = jsonNode.getElements(); it.hasNext();) {
@@ -317,7 +283,6 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
 
         return resources;
     }
-
 
     private Resource parseJsonElementToresource(String region, JsonNode jsonNode) {
         Validate.notNull(jsonNode);
