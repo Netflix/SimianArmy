@@ -429,15 +429,17 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
             crawledResourceIds.add(crawledResource.getId());
         }
 
-        for (Resource markedResource : trackedMarkedResources.values()) {
-            if (!crawledResourceIds.contains(markedResource.getId())) {
-                // The resource does not exist anymore.
-                LOGGER.info("Resource {} is not returned by the crawler. It should already be terminated. LeashMode={}",
-                        markedResource.getId(), leashed);
+        if (config.getBoolOrElse("simianarmy.janitor.unmarkResourceNotReturnedByCrawler", false)) {
+            for (Resource markedResource : trackedMarkedResources.values()) {
+                if (!crawledResourceIds.contains(markedResource.getId())) {
+                    // The resource does not exist anymore.
+                    LOGGER.info("Resource {} is not returned by the crawler. It should already be terminated. LeashMode={}",
+                            markedResource.getId(), leashed);
 
-                markedResource.setState(Resource.CleanupState.USER_TERMINATED);
-                resourceTracker.addOrUpdate(markedResource);
-                unmarkedResources.add(markedResource);
+                    markedResource.setState(Resource.CleanupState.USER_TERMINATED);
+                    resourceTracker.addOrUpdate(markedResource);
+                    unmarkedResources.add(markedResource);
+                }
             }
         }
     }
