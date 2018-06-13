@@ -60,7 +60,7 @@ public class EddaImageJanitorCrawler implements JanitorCrawler {
     /** The name representing the additional field name for whether the image is a base image. **/
     public static final String AMI_FIELD_BASE_IMAGE = "Base_Image";
 
-    private static final int BATCH_SIZE = 500;
+    private static final int BATCH_SIZE = 100;
 
     private final EddaClient eddaClient;
     private final List<String> regions = Lists.newArrayList();
