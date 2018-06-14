@@ -232,6 +232,11 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
      */
     @Override
     public void markResources() {
+        if (config.getBoolOrElse("simianarmy.janitor.skipMark", false)) {
+            LOGGER.info("*****SKIPPING MARKING {}****", resourceType);
+            return ;
+        }
+
         markedResources.clear();
         unmarkedResources.clear();
         checkedResourcesCount = 0;
@@ -308,23 +313,24 @@ public abstract class AbstractJanitor implements Janitor, DryRunnableJanitor {
         LOGGER.info("Checking {} marked resources for cleanup. LeashMode={}", trackedMarkedResources.size(), leashed);
         Date now = calendar.now().getTime();
         for (Resource markedResource : trackedMarkedResources.values()) {
-            // find matching crawled resource. This ensures we always have the freshest resource.
-            List<Resource> matchingCrawledResources = Optional.ofNullable(crawler.resources(markedResource.getId()))
-                    .orElse(Collections.emptyList());
+            if (config.getBoolOrElse("simianarmy.janitor.skipVanishedOrValidResources", false)) {
+                // find matching crawled resource. This ensures we always have the freshest resource.
+                List<Resource> matchingCrawledResources = Optional.ofNullable(crawler.resources(markedResource.getId()))
+                        .orElse(Collections.emptyList());
 
-            LOGGER.info("Rechecking resource ({}) before deletion {} - matching candidates {}",
-                    markedResource.getResourceType(), markedResource, matchingCrawledResources);
-            Optional<Resource> crawledResource = matchingCrawledResources.stream()
-                    .filter(r -> r.equals(markedResource))
-                    .findFirst();
+                LOGGER.info("Rechecking resource {} before deletion {} - matching candidates {}",
+                        markedResource, markedResource.getResourceType(), matchingCrawledResources);
+                Optional<Resource> crawledResource = matchingCrawledResources.stream()
+                        .filter(r -> r.equals(markedResource))
+                        .findFirst();
 
-            if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
-                skippedVanishedOrValidResources.add(markedResource);
-                if (config.getBoolOrElse("simianarmy.janitor.skipVanishedOrValidResources", false)) {
+                if (!crawledResource.isPresent() || ruleEngine.isValid(crawledResource.get())) {
+                    skippedVanishedOrValidResources.add(markedResource);
                     LOGGER.warn("Skipping resource {} that either no longer exists or is now valid", markedResource);
                     continue;
                 }
             }
+
 
             if (canClean(markedResource, now)) {
                 LOGGER.info("Cleaning up resource {} of type {}. LeashMode={}",
