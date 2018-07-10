@@ -90,7 +90,7 @@ public class JanitorMonkeyResource {
     public Response addEventThroughHttpGet( @QueryParam("eventType") String eventType,  @QueryParam("resourceId") String resourceId,  @QueryParam("region") String region) throws IOException {
         Response.Status responseStatus;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        baos.write("<html><body style=\"text-align:center\"><img src=\"https://raw.githubusercontent.com/Netflix/SimianArmy/master/assets/janitor.png\" height=\"300\" width=\"300\"><br/>".getBytes());
+        baos.write("<html><body style=\"text-align:center\">".getBytes());
         if (StringUtils.isEmpty(eventType) || StringUtils.isEmpty(resourceId)) {
             responseStatus = Response.Status.BAD_REQUEST;
             baos.write("<p>NOPE!<br/><br/>Janitor didn't get that: eventType and resourceId parameters are both required</p>".getBytes());
