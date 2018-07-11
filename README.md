@@ -29,9 +29,9 @@ Please see the [wiki](https://github.com/Netflix/SimianArmy/wiki).
 
 ## SUPPORT
 
-Because the project is no longer actively maintained
+[Simian Army Google group](http://groups.google.com/group/simianarmy-users)
 
-[Simian Army Google group](http://groups.google.com/group/simianarmy-users).
+Because the project is no longer maintained, there is a good chance that nobody will be able to answer a support question.
 
 ## LICENSE
 
