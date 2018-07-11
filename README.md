@@ -4,7 +4,7 @@
 
 ## PROJECT STATUS: RETIRED
 
-The Simian Army project is no longer actively maintained. Some of the Simian
+**The Simian Army project is no longer actively maintained**. Some of the Simian
 Army functionality has been moved to other Netflix projects:
 
 * A [newer version of Chaos Monkey](https://github.com/netflix/chaosmonkey) is available as a standalone service.
