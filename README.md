@@ -1,14 +1,18 @@
-## DESCRIPTION
-
-The Simian Army is a suite of tools for keeping your cloud operating in top form.  Chaos Monkey, the first member, is a resiliency tool that
-helps ensure that your applications can tolerate random instance failures
-
-A [newer version of Chaos Monkey](https://github.com/netflix/chaosmonkey) is available as a standalone service.
-
-## Build status
-
+[![NetflixOSS Lifecycle](https://img.shields.io/osslifecycle/Netflix/chaosmonkey.svg)](OSSMETADATA)
 [![Build Status](https://travis-ci.org/Netflix/SimianArmy.svg?branch=master)](https://travis-ci.org/Netflix/SimianArmy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+The Simian Army is a suite of tools for keeping your cloud operating in top
+form.  Chaos Monkey, the first member, is a resiliency tool that helps ensure
+that your applications can tolerate random instance failures
+
+NOTE: This project is no longer actively maintained.
+
+* A [newer version of Chaos Monkey](https://github.com/netflix/chaosmonkey) is available as a standalone service.
+* [Swabbie] is a new standalone service that will replace the functionality provided by Janitor Monkey.
+* Conformity Monkey functionality will be rolled into other Spinnaker backend services.
+
+[Swabbie]: https://github.com/spinnaker/swabbie
 
 ## DETAILS
 
