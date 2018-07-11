@@ -15,25 +15,24 @@ Army functionality has been moved to other Netflix projects:
 [Swabbie]: https://github.com/spinnaker/swabbie
 [Spinnaker]: https://www.spinnaker.io/
 
-## DESCRIPTION
+### DESCRIPTION
 
 The Simian Army is a suite of tools for keeping your cloud operating in top
 form.  Chaos Monkey, the first member, is a resiliency tool that helps ensure
 that your applications can tolerate random instance failures
 
 
-
-## DETAILS
+### DETAILS
 
 Please see the [wiki](https://github.com/Netflix/SimianArmy/wiki).
 
-## SUPPORT
+### SUPPORT
 
 [Simian Army Google group](http://groups.google.com/group/simianarmy-users)
 
 Because the project is no longer maintained, there is a good chance that nobody will be able to answer a support question.
 
-## LICENSE
+### LICENSE
 
 Copyright 2012-2016 Netflix, Inc.
 
