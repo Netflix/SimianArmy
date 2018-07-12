@@ -19,9 +19,7 @@ package com.netflix.simianarmy.client.aws;
 
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
-import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.services.autoscaling.AmazonAutoScalingClient;
 import com.amazonaws.services.autoscaling.model.*;
 import com.amazonaws.services.ec2.AmazonEC2;
@@ -42,24 +40,20 @@ import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.AmazonSimpleDBClient;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.google.inject.Module;
 import com.netflix.simianarmy.CloudClient;
 import com.netflix.simianarmy.NotFoundException;
-
 import org.apache.commons.lang.Validate;
 import org.jclouds.ContextBuilder;
-import org.jclouds.aws.domain.SessionCredentials;
 import org.jclouds.compute.ComputeService;
 import org.jclouds.compute.ComputeServiceContext;
 import org.jclouds.compute.Utils;
 import org.jclouds.compute.domain.ComputeMetadata;
 import org.jclouds.compute.domain.NodeMetadata;
 import org.jclouds.compute.domain.NodeMetadataBuilder;
-import org.jclouds.domain.Credentials;
 import org.jclouds.domain.LoginCredentials;
 import org.jclouds.logging.slf4j.config.SLF4JLoggingModule;
 import org.jclouds.ssh.SshClient;
@@ -93,8 +87,8 @@ public class AWSClient implements CloudClient {
     private final ClientConfiguration awsClientConfig;
 
     private ComputeService jcloudsComputeService;
-    
-    
+
+
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -302,28 +296,31 @@ public class AWSClient implements CloudClient {
     public AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client;
         ClientConfiguration cc = awsClientConfig;
-        
-        if (cc == null) { 
+
+        if (cc == null) {
           cc = new ClientConfiguration();
           cc.setMaxErrorRetry(SIMPLE_DB_MAX_RETRY);
         }
-        
+
         if (awsCredentialsProvider == null) {
             client = new AmazonSimpleDBClient(cc);
         } else {
             client = new AmazonSimpleDBClient(awsCredentialsProvider, cc);
         }
-        
+
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
         if (region == null || region.equals("us-east-1")) {
             client.setEndpoint("sdb.amazonaws.com");
-        } else {
+        } else if (region.contains("eu-west")) {
+            client.setEndpoint("sdb.eu-west-1.amazonaws.com");
+        } else
+          {
             client.setEndpoint("sdb." + region + ".amazonaws.com");
         }
         return client;
     }
-    
+
     /**
      * Describe auto scaling groups.
      *
@@ -866,23 +863,11 @@ public class AWSClient implements CloudClient {
         if (jcloudsComputeService == null) {
             synchronized(this) {
                 if (jcloudsComputeService == null) {
-		    AWSCredentials awsCredentials = awsCredentialsProvider.getCredentials();
-		    String username = awsCredentials.getAWSAccessKeyId();
-		    String password = awsCredentials.getAWSSecretKey();
-
-		    Credentials credentials;
-		    if (awsCredentials instanceof AWSSessionCredentials) {
-			AWSSessionCredentials awsSessionCredentials = (AWSSessionCredentials) awsCredentials;
-			credentials = SessionCredentials.builder().accessKeyId(username).secretAccessKey(password)
-				.sessionToken(awsSessionCredentials.getSessionToken()).build();
-		    } else {
-			credentials = new Credentials(username, password);
-		    }
-
-		    ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("aws-ec2")
-			    .credentialsSupplier(Suppliers.ofInstance(credentials))
-			    .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
-			    .buildView(ComputeServiceContext.class);
+                    String username = awsCredentialsProvider.getCredentials().getAWSAccessKeyId();
+                    String password = awsCredentialsProvider.getCredentials().getAWSSecretKey();
+                    ComputeServiceContext jcloudsContext = ContextBuilder.newBuilder("aws-ec2").credentials(username, password)
+                            .modules(ImmutableSet.<Module>of(new SLF4JLoggingModule(), new JschSshClientModule()))
+                            .buildView(ComputeServiceContext.class);
 
                     this.jcloudsComputeService = jcloudsContext.getComputeService();
                 }
