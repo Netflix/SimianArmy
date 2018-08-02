@@ -133,8 +133,8 @@ public enum MonkeyRunner {
      *            the context class that is passed to the monkey class constructor.
      */
     public void replaceMonkey(Class<? extends Monkey> monkeyClass, Class<? extends Monkey.Context> ctxClass) {
-        monkeyMap.put(monkeyClass, ctxClass);
         ListIterator<Monkey> li = monkeys.listIterator();
+        monkeyMap.put(monkeyClass, ctxClass);
         while (li.hasNext()) {
             Monkey monkey = li.next();
             if (monkey.getClass() == monkeyClass) {
