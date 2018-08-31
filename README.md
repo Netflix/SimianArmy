@@ -1,4 +1,4 @@
-[![NetflixOSS Lifecycle](https://img.shields.io/osslifecycle/Netflix/chaosmonkey.svg)](OSSMETADATA)
+[![NetflixOSS Lifecycle](https://img.shields.io/osslifecycle/Netflix/SimianArmy.svg)](OSSMETADATA)
 [![Build Status](https://travis-ci.org/Netflix/SimianArmy.svg?branch=master)](https://travis-ci.org/Netflix/SimianArmy)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
