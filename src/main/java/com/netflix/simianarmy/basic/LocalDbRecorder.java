@@ -135,23 +135,51 @@ public class LocalDbRecorder implements MonkeyRecorder {
         init();
         List<Event> foundEvents = new ArrayList<Event>();
         for (Event evt : eventMap.tailMap(toKey(after)).values()) {
-            boolean matched = true;
-            for (Map.Entry<String, String> pair : query.entrySet()) {
-                if (pair.getKey().equals("id") && !evt.id().equals(pair.getValue())) {
-                    matched = false;
-                }
-                if (pair.getKey().equals("monkeyType") && !evt.monkeyType().toString().equals(pair.getValue())) {
-                    matched = false;
-                }
-                if (pair.getKey().equals("eventType") && !evt.eventType().toString().equals(pair.getValue())) {
-                    matched = false;
-                }
-            }
-            if (matched) {
+            if (doesEventMatch(evt, query)) {
                 foundEvents.add(evt);
             }
         }
         return foundEvents;
+    }
+
+    private boolean doesEventMatch(Event evt, Map<String, String> query) {
+        for (Map.Entry<String, String> pair : query.entrySet()) {
+            switch (pair.getKey()) {
+                case "id":
+                    if (!evt.id().equals(pair.getValue())) {
+                        return false;
+                    }
+                    break;
+                case "eventTime":
+                    if (!evt.eventTime().equals(new Date(Long.parseLong(pair.getValue())))) {
+                        return false;
+                    }
+                    break;
+                case "monkeyType":
+                    if (!evt.monkeyType().toString().equals(pair.getValue())) {
+                        return false;
+                    }
+                    break;
+                case "eventType":
+                    if (!evt.eventType().toString().equals(pair.getValue())) {
+                        return false;
+                    }
+                    break;
+                case "region":
+                    if (!evt.region().equals(pair.getValue())) {
+                        return false;
+                    }
+                    break;
+                default:
+                    if (!evt.fields().containsKey(pair.getKey())) {
+                        return false;
+                    }
+                    if (!evt.field(pair.getKey()).equals(pair.getValue())) {
+                        return false;
+                    }
+            }
+        }
+        return true;
     }
 
     /* (non-Javadoc)
