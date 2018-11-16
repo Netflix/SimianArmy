@@ -93,8 +93,8 @@ public class AWSClient implements CloudClient {
     private final ClientConfiguration awsClientConfig;
 
     private ComputeService jcloudsComputeService;
-    
-    
+
+
 
     /**
      * This constructor will let the AWS SDK obtain the credentials, which will
@@ -302,28 +302,30 @@ public class AWSClient implements CloudClient {
     public AmazonSimpleDB sdbClient() {
         AmazonSimpleDB client;
         ClientConfiguration cc = awsClientConfig;
-        
-        if (cc == null) { 
+
+        if (cc == null) {
           cc = new ClientConfiguration();
           cc.setMaxErrorRetry(SIMPLE_DB_MAX_RETRY);
         }
-        
+
         if (awsCredentialsProvider == null) {
             client = new AmazonSimpleDBClient(cc);
         } else {
             client = new AmazonSimpleDBClient(awsCredentialsProvider, cc);
         }
-        
+
         // us-east-1 has special naming
         // http://docs.amazonwebservices.com/general/latest/gr/rande.html#sdb_region
         if (region == null || region.equals("us-east-1")) {
             client.setEndpoint("sdb.amazonaws.com");
+        } else if (region.contains("eu-west")) {
+            client.setEndpoint("sdb.eu-west-1.amazonaws.com");
         } else {
             client.setEndpoint("sdb." + region + ".amazonaws.com");
         }
         return client;
     }
-    
+
     /**
      * Describe auto scaling groups.
      *
