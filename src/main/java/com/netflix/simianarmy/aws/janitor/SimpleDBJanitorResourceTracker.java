@@ -19,6 +19,7 @@ package com.netflix.simianarmy.aws.janitor;
 
 import com.amazonaws.services.simpledb.AmazonSimpleDB;
 import com.amazonaws.services.simpledb.model.*;
+import com.amazonaws.regions.Region;
 import com.netflix.simianarmy.Resource;
 import com.netflix.simianarmy.Resource.CleanupState;
 import com.netflix.simianarmy.ResourceType;
@@ -42,6 +43,9 @@ public class SimpleDBJanitorResourceTracker implements JanitorResourceTracker {
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDBJanitorResourceTracker.class);
 
+    /** The region. */
+    private final Region region;
+
     /** The domain. */
     private final String domain;
 
@@ -53,12 +57,16 @@ public class SimpleDBJanitorResourceTracker implements JanitorResourceTracker {
      *
      * @param awsClient
      *            the AWS Client
+     * @param region
+     *            the AWS region
      * @param domain
      *            the domain
      */
-    public SimpleDBJanitorResourceTracker(AWSClient awsClient, String domain) {
+    public SimpleDBJanitorResourceTracker(AWSClient awsClient, Region region, String domain) {
+        this.region = region;
         this.domain = domain;
         this.simpleDBClient = awsClient.sdbClient();
+        this.simpleDBClient.setRegion(region);
     }
 
     /**

@@ -41,6 +41,7 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.amazonaws.regions.Region;
 import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyRecorder;
 import com.netflix.simianarmy.MonkeyType;
@@ -58,7 +59,8 @@ public class SimpleDBRecorder implements MonkeyRecorder {
 
     private final AmazonSimpleDB simpleDBClient;
 
-    private final String region;
+    /** The region. */
+    private final Region region;
 
     /** The domain. */
     private final String domain;
@@ -96,14 +98,18 @@ public class SimpleDBRecorder implements MonkeyRecorder {
      *
      * @param awsClient
      *            the AWS client
+     * @param region
+     *            the AWS region
      * @param domain
      *            the domain
      */
-    public SimpleDBRecorder(AWSClient awsClient, String domain) {
+    public SimpleDBRecorder(AWSClient awsClient, Region region, String domain) {
         Validate.notNull(awsClient);
+        Validate.notNull(region);
         Validate.notNull(domain);
         this.simpleDBClient = awsClient.sdbClient();
-        this.region = awsClient.region();
+        this.simpleDBClient.setRegion(region);
+        this.region = region;
         this.domain = domain;
     }
 

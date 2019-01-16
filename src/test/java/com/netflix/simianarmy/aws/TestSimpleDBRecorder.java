@@ -43,6 +43,8 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.amazonaws.regions.Regions;
+import com.amazonaws.regions.Region;
 import com.netflix.simianarmy.EventType;
 import com.netflix.simianarmy.MonkeyType;
 import com.netflix.simianarmy.client.aws.AWSClient;
@@ -54,12 +56,12 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         AmazonSimpleDB sdbMock = mock(AmazonSimpleDB.class);
         AWSClient awsClient = mock(AWSClient.class);
         when(awsClient.sdbClient()).thenReturn(sdbMock);
-        when(awsClient.region()).thenReturn("region");
+        when(awsClient.region()).thenReturn("us-east-1");
         return awsClient;
     }
 
     public TestSimpleDBRecorder() {
-        super(makeMockAWSClient(), "DOMAIN");
+        super(makeMockAWSClient(), Region.getRegion(Regions.fromName("us-east-1")), "DOMAIN");
         sdbMock = super.sdbClient();
     }
 
@@ -95,7 +97,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
     public void testRecordEvent() {
         ArgumentCaptor<PutAttributesRequest> arg = ArgumentCaptor.forClass(PutAttributesRequest.class);
 
-        Event evt = newEvent(Type.MONKEY, EventTypes.EVENT, "region", "testId");
+        Event evt = newEvent(Type.MONKEY, EventTypes.EVENT, "us-east-1", "testId");
         evt.addField("field1", "value1");
         evt.addField("field2", "value2");
         // this will be ignored as it conflicts with reserved key
@@ -107,7 +109,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         PutAttributesRequest req = arg.getValue();
         Assert.assertEquals(req.getDomainName(), "DOMAIN");
-        Assert.assertEquals(req.getItemName(), "MONKEY-testId-region-" + evt.eventTime().getTime());
+        Assert.assertEquals(req.getItemName(), "MONKEY-testId-us-east-1-" + evt.eventTime().getTime());
         Map<String, String> map = new HashMap<String, String>();
         for (ReplaceableAttribute attr : req.getAttributes()) {
             map.put(attr.getName(), attr.getValue());
@@ -115,7 +117,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
 
         Assert.assertEquals(map.remove("id"), "testId");
         Assert.assertEquals(map.remove("eventTime"), String.valueOf(evt.eventTime().getTime()));
-        Assert.assertEquals(map.remove("region"), "region");
+        Assert.assertEquals(map.remove("region"), "us-east-1");
         Assert.assertEquals(map.remove("recordType"), "MonkeyEvent");
         Assert.assertEquals(map.remove("monkeyType"), "MONKEY|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type");
         Assert.assertEquals(map.remove("eventType"),
@@ -130,14 +132,14 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         List<Attribute> attrs = new LinkedList<Attribute>();
         attrs.add(new Attribute("id", id));
         attrs.add(new Attribute("eventTime", "1330538400000"));
-        attrs.add(new Attribute("region", "region"));
+        attrs.add(new Attribute("region", "us-east-1"));
         attrs.add(new Attribute("recordType", "MonkeyEvent"));
         attrs.add(new Attribute("monkeyType", "MONKEY|com.netflix.simianarmy.aws.TestSimpleDBRecorder$Type"));
         attrs.add(new Attribute("eventType", "EVENT|com.netflix.simianarmy.aws.TestSimpleDBRecorder$EventTypes"));
         attrs.add(new Attribute("field1", "value1"));
         attrs.add(new Attribute("field2", "value2"));
         item.setAttributes(attrs);
-        item.setName("MONKEY-" + id + "-region");
+        item.setName("MONKEY-" + id + "-us-east-1");
         SelectResult result = new SelectResult();
         result.setItems(Arrays.asList(item));
         return result;
@@ -161,7 +163,7 @@ public class TestSimpleDBRecorder extends SimpleDBRecorder {
         verify(sdbMock, times(2)).select(arg.capture());
         SelectRequest req = arg.getValue();
         StringBuilder sb = new StringBuilder();
-        sb.append("select * from `DOMAIN` where region = 'region'");
+        sb.append("select * from `DOMAIN` where region = 'us-east-1'");
         sb.append(" and instanceId = 'testId1'");
 
         Assert.assertEquals(req.getSelectExpression(), sb.toString() + " and eventTime > '0' order by eventTime desc");

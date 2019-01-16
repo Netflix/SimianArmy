@@ -25,6 +25,7 @@ import com.amazonaws.services.simpledb.model.PutAttributesRequest;
 import com.amazonaws.services.simpledb.model.ReplaceableAttribute;
 import com.amazonaws.services.simpledb.model.SelectRequest;
 import com.amazonaws.services.simpledb.model.SelectResult;
+import com.amazonaws.regions.Region;
 import com.google.common.collect.Lists;
 import com.netflix.simianarmy.client.aws.AWSClient;
 import com.netflix.simianarmy.conformity.Cluster;
@@ -47,6 +48,9 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
     /** The Constant LOGGER. */
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleDBConformityClusterTracker.class);
 
+    /** The region. */
+    private final Region region;
+
     /** The domain. */
     private final String domain;
 
@@ -60,14 +64,19 @@ public class SimpleDBConformityClusterTracker implements ConformityClusterTracke
      *
      * @param awsClient
      *            the AWS Client
+     * @param region
+     *            the AWS region
      * @param domain
      *            the domain
      */
-    public SimpleDBConformityClusterTracker(AWSClient awsClient, String domain) {
+    public SimpleDBConformityClusterTracker(AWSClient awsClient, Region region, String domain) {
         Validate.notNull(awsClient);
+        Validate.notNull(region);
         Validate.notNull(domain);
+        this.region = region;
         this.domain = domain;
         this.simpleDBClient = awsClient.sdbClient();
+        this.simpleDBClient.setRegion(region);
     }
 
     /**
